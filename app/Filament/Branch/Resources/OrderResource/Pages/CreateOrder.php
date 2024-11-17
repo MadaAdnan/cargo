@@ -3,11 +3,13 @@
 namespace App\Filament\Branch\Resources\OrderResource\Pages;
 
 use App\Enums\BayTypeEnum;
+use App\Enums\LevelUserEnum;
 use App\Enums\OrderStatusEnum;
 use App\Filament\Branch\Resources\OrderResource;
 use App\Helper\HelperBalance;
 use App\Models\City;
 use App\Models\Order;
+use App\Models\User;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -24,7 +26,8 @@ class CreateOrder extends CreateRecord
         $data['code'] = "AWB" . now()->format('YmdHis'); // الطابع الزمني بتنسيق قصير
         $data['branch_source_id'] =$city_source->branch_id;
         $data['branch_target_id'] =$city_target->branch_id;
-
+        $target=User::where('level',LevelUserEnum::BRANCH->value)->where('branch_id',$data['branch_target_id'] )->first();
+        $data['given_id']=$target?->id;
         $data['shipping_date'] = now()->format('Y-h-d');
         $data['status'] = OrderStatusEnum::PENDING->value;
         $data['bay_type'] = BayTypeEnum::AFTER->value;
