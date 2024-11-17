@@ -137,7 +137,7 @@ class AccountStatmentResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     ExportBulkAction::make()->exports([
-                        ExcelExport::make()->queue()->withChunkSize(300)
+                        ExcelExport::make()->withChunkSize(300)
                     ])
                 ]),
             ]);
