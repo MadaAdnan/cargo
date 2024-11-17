@@ -694,7 +694,7 @@ $cities=City::selectRaw('id,name')->get();
                                  Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                              }
                          })->label('تأكيد تسليم المرتجع')->color('danger')
-                         ->visible(fn($record) => $record->status !== OrderStatusEnum::RETURNED)
+                         ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED)
 
                 ])
 
