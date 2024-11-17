@@ -585,10 +585,10 @@ class OrderResource extends Resource
 
                     Tables\Actions\Action::make('success_given')
                         ->form(function ($record) {
-$form=[];
-                            $totalPrice=$record->price+$record->far;
+
+                            $totalPrice=(double)$record->price+(double)$record->far;
                             if($totalPrice==0){
-                                $totalPrice=$record->price_tr+$record->far_tr;
+                                $totalPrice=(double) $record->price_tr+ (double) $record->far_tr;
                             }
                             $priceMessage='انت تأكد إستلامك مبلغ : ';
 
@@ -603,23 +603,24 @@ $form=[];
 
 
 
-                            $farMessage=null;
+                            $farMessage='';
 
-                          if($record->far_sender ===false){
-                              $farMessage='انت تأكد إستلامك مبلغ : ';
-                              if($record->far_tr>0){
-                                  $farMessage.=$record->far_tr .' TRY ';
-                              }
-                              if($record->far>0){
-                                  $farMessage.=' و '.$record->far .' USD ';
-                              }
-                              $farMessage.='أجور شحن الطلب';
+                            if($record->far_sender ==false){
+                                $farMessage='انت تأكد إستلامك مبلغ : ';
+                                if($record->far_tr>0){
+                                    $farMessage.=$record->far_tr .' TRY ';
+                                }
+                                if($record->far>0){
+                                    $farMessage.=' و '.$record->far .' USD ';
+                                }
+                                $farMessage.='أجور شحن الطلب';
 
-                          }
+                            }
+
                             if ($totalPrice > 0) {
                                 $form= [
                                     Forms\Components\Placeholder::make('msg')->content($priceMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه'),
-                                    Forms\Components\Placeholder::make('msg_2')->content($farMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')->visible($farMessage!=null)
+                                    Forms\Components\Placeholder::make('msg_2')->content($farMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
                                 ];
                             }else{
                                 $form= [
