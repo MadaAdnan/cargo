@@ -51,15 +51,13 @@ class ListOrders extends ListRecords
             Tab::make('pick')->modifyQueryUsing(fn($query)=>$query
                 ->where('status',OrderStatusEnum::PICK->value)
                 ->where(fn($query)=>$query->orWhere([
-                    'pick_id'=>auth()->id(),
-                    'branch_source_id'=>auth()->user()->branch_id,
+                    'given_id'=>auth()->id(),
+                    'branch_target_id'=>auth()->user()->branch_id,
                     ]))
 
             )->badge(Order::where('status',OrderStatusEnum::PICK->value)->where(fn($query)=>$query->orWhere([
-                'pick_id'=>auth()->id(),
-
-                'branch_source_id'=>auth()->user()->branch_id,
-
+                'given_id'=>auth()->id(),
+                'branch_target_id'=>auth()->user()->branch_id,
             ]))->count())->label('تم الإلتقاط'),
 
 
