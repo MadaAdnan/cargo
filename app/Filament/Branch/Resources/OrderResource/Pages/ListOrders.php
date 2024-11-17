@@ -88,6 +88,9 @@ class ListOrders extends ListRecords
                 'branch_source_id'=>auth()->user()->branch_id,
                 'branch_target_id'=>auth()->user()->branch_id,
             ])))/*->badge(Order::where('status','success')->count())*/->label('مرتجع'),
+            Tab::make('confirm_returned')->modifyQueryUsing(fn($query)=>$query->where('status',OrderStatusEnum::CONFIRM_RETURNED->value)->where(fn($query)=>$query->orWhere([
+                'branch_source_id'=>auth()->user()->branch_id,
+            ])))/*->badge(Order::where('status','success')->count())*/->label('مرتجع تم تسليمه'),
 
         ];
     }

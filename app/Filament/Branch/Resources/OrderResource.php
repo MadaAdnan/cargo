@@ -642,7 +642,20 @@ class OrderResource extends Resource
                             }
                         })->label('تأكيد تسليم الشحنة')->color('info')
                         ->visible(fn($record) => $record->given_id == auth()->id() && ($record->status == OrderStatusEnum::TRANSFER || $record->status == OrderStatusEnum::PICK)),
-
+                    Tables\Actions\Action::make('confirm_returned')
+                        ->action(function ($record) {
+                            DB::beginTransaction();
+                            try {
+                                $record->update(['status' =>OrderStatusEnum::CONFIRM_RETURNED->value]);
+                                DB::commit();
+                                Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
+                            } catch (\Exception | Error $e) {
+                                DB::rollBack();
+                                Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
+                            }
+                        })->label('تأكيد تسليم المرتجع')->color('danger')
+                        ->requiresConfirmation()
+                        ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->branch_source_id==auth()->user()->branch_id && auth()->user()->level==LevelUserEnum::BRANCH)
                 ])
             ])
             ->bulkActions([
