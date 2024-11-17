@@ -225,7 +225,7 @@ class OrderResource extends Resource
                     Forms\Components\Fieldset::make('المستلم')->schema([
                         Forms\Components\Grid::make()->schema([
                             Forms\Components\Select::make('receive_id')->label('معرف المستلم')->default(fn() => User::where('email', 'zab@gmail.com')->first()?->id)
-                                ->options(User::all()->pluck('name', 'id')->toArray())->searchable()
+                                ->options(User::where('level',LevelUserEnum::USER->value)->pluck('name', 'id')->toArray())->searchable()
                                 ->afterStateUpdated(function ($state, $set) {
                                     $user = User::with('city')->find($state);
                                     if ($user) {

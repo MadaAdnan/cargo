@@ -27,8 +27,8 @@ class CreateOrder extends CreateRecord
         $data['branch_source_id'] =$city_source->branch_id;
         $data['branch_target_id'] =$city_target->branch_id;
         $target=User::where('level',LevelUserEnum::BRANCH->value)->where('branch_id',$data['branch_target_id'] )->first();
-        $data['given_id']=$target?->id;
-        $data['status']=OrderStatusEnum::TRANSFER->value;
+      /*  $data['given_id']=$target?->id;
+        $data['status']=OrderStatusEnum::TRANSFER->value;*/
         $data['shipping_date'] = now()->format('Y-h-d');
        // $data['status'] = OrderStatusEnum::PENDING->value;
         $data['bay_type'] = BayTypeEnum::AFTER->value;
