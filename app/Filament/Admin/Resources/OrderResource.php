@@ -709,7 +709,8 @@ $cities=City::selectRaw('id,name')->get();
                         Forms\Components\Select::make('given_id')->searchable()->getSearchResultsUsing(fn($search)=>DB::table('users')->where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->where('name','Like',"%$search%")->limit(10)->pluck('name','id'))->label('موظف الإلتقاط')
                     ])
                         ->action(function ($records, $data) {
-                            Order::whereIn('id', $records->pluck('id')->toArray())->update(['given_id' => $data['given_id'],'status'=>OrderStatusEnum::TRANSFER->value]);
+
+                            DB::table('orders')->whereIn('id', $records->pluck('id')->toArray())->update(['given_id' => $data['given_id'],'status'=>OrderStatusEnum::TRANSFER->value]);
                             Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف التسليم بنجاح')->success()->send();
                         })
                         ->label('تحديد موظف التسليم')->color('info')
