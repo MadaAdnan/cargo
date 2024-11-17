@@ -46,32 +46,32 @@ class ListOrders extends ListRecords
                 'branch_source_id'=>auth()->user()->branch_id,
                 'branch_target_id'=>auth()->user()->branch_id,
             ]))->count())->label('الكل'),
+
+
             Tab::make('pick')->modifyQueryUsing(fn($query)=>$query
                 ->where('status',OrderStatusEnum::PICK->value)
                 ->where(fn($query)=>$query->orWhere([
                     'pick_id'=>auth()->id(),
-                    'given_id'=>auth()->id(),
                     'branch_source_id'=>auth()->user()->branch_id,
-                    'branch_target_id'=>auth()->user()->branch_id,
                     ]))
 
             )->badge(Order::where('status',OrderStatusEnum::PICK->value)->where(fn($query)=>$query->orWhere([
                 'pick_id'=>auth()->id(),
-                'given_id'=>auth()->id(),
+
                 'branch_source_id'=>auth()->user()->branch_id,
-                'branch_target_id'=>auth()->user()->branch_id,
+
             ]))->count())->label('تم الإلتقاط'),
+
+
             Tab::make('transfer')->modifyQueryUsing(fn($query)=>$query->where('status',OrderStatusEnum::TRANSFER->value)->where(fn($query)=>$query->orWhere([
-                'pick_id'=>auth()->id(),
                 'given_id'=>auth()->id(),
-                'branch_source_id'=>auth()->user()->branch_id,
                 'branch_target_id'=>auth()->user()->branch_id,
             ])))->badge(Order::where('status',OrderStatusEnum::TRANSFER->value)->where(fn($query)=>$query->orWhere([
-                'pick_id'=>auth()->id(),
                 'given_id'=>auth()->id(),
-                'branch_source_id'=>auth()->user()->branch_id,
                 'branch_target_id'=>auth()->user()->branch_id,
             ]))->count())->label('بإنتظار التسليم'),
+
+
             Tab::make('success')->modifyQueryUsing(fn($query)=>$query->where('status',OrderStatusEnum::SUCCESS->value)->where(fn($query)=>$query->orWhere([
                 'pick_id'=>auth()->id(),
                 'given_id'=>auth()->id(),
