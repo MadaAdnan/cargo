@@ -16,6 +16,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use pxlrbt\FilamentExcel\Actions\Pages\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -129,8 +130,12 @@ class AccountStatmentResource extends Resource
                     2 => 'تركي'
                 ])->default(1)->label('العملة'),
             ])
+            ->headerActions([
+                ExportAction::make()->requiresConfirmation(),
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+
 
             ])
             ->bulkActions([
