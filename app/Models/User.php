@@ -140,10 +140,24 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
                 ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
         return  $total;
     }
+    
+    
+    public function getTotalBalanceTrPendingAttribute(): float
+    {
+        $total = DB::table('balances')->where('user_id', $this->id)->where('is_complete', true)
+            ->where('currency_id', 2)
+            ->where('pending', true)
+            ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
+        return  $total;
+    }
 
     public function getPendingBalanceAttribute(): float
     {
-        $total = DB::table('balances')->where('user_id', $this->id)->where('pending', true)->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
+        $total = DB::table('balances')
+        ->where('user_id', $this->id)
+        ->where('currency_id', 1)
+        ->where('pending', true)
+        ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
         return $total;
     }
 
