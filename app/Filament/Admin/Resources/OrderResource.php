@@ -546,7 +546,7 @@ $cities=City::selectRaw('id,name')->get();
                             }
 
                         })
-                        ->visible(fn($record) => $record->pick_id == null)
+                        ->visible(fn($record) => $record->pick_id == null )
                         ->label('تحديد موظف الإلتقاط')->color('info'),
 
                     Tables\Actions\Action::make('set_given')->form([
@@ -562,7 +562,7 @@ $cities=City::selectRaw('id,name')->get();
 
 
                         })
-                        ->visible(fn($record) =>  $record->pick_id == null && $record->status === OrderStatusEnum::AGREE)
+                        ->visible(fn($record) =>  $record->given_id == null && ($record->status === OrderStatusEnum::PICK ||  $record->status === OrderStatusEnum::TRANSFER))
                         ->label('تحديد موظف التسليم')->color('info'),
 
                     Tables\Actions\Action::make('success_pick')
