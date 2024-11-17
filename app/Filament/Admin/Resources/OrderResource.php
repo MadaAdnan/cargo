@@ -706,10 +706,10 @@ $cities=City::selectRaw('id,name')->get();
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('given_id_check')->form([
-                        Forms\Components\Select::make('given_id')->searchable()->getSearchResultsUsing(fn()=>User::where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->limit(50))->label('موظف الإلتقاط')
+                        Forms\Components\Select::make('given_id')->searchable()->getSearchResultsUsing(fn()=>User::where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->limit(50)->pluck('mane','id'))->label('موظف الإلتقاط')
                     ])
                         ->action(function ($records, $data) {
-                            Order::whereNull('given_id')->whereIn('id', $records->pluck('id')->toArray())->update(['given_id' => $data['given_id'],'status'=>OrderStatusEnum::TRANSFER->value]);
+                            Order::whereIn('id', $records->pluck('id')->toArray())->update(['given_id' => $data['given_id'],'status'=>OrderStatusEnum::TRANSFER->value]);
                             Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف التسليم بنجاح')->success()->send();
                         })
                         ->label('تحديد موظف التسليم')->color('info')
