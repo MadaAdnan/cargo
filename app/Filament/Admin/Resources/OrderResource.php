@@ -284,7 +284,7 @@ class OrderResource extends Resource
                         ])->columnSpan(2),
                         Forms\Components\Grid::make()->schema([
 
-                            Forms\Components\Select::make('pick_id')->label('الموظف الملتقط')->options(User::where('level',LevelUserEnum::BRANCH->value)->orWhere('level',LevelUserEnum::STAFF->value)->pluck('name','id'))->searchable()->required()->visible(fn($context)=>$context==='create'),
+                            Forms\Components\Select::make('pick_id')->label('الموظف الملتقط')->options(User::where('level',LevelUserEnum::BRANCH->value)->orWhere('level',LevelUserEnum::STAFF->value)->orWhere('level',LevelUserEnum::ADMIN->value)->pluck('name','id'))->searchable()->required()->visible(fn($context)=>$context==='create'),
 
                         ]),
 
