@@ -562,7 +562,7 @@ $cities=City::selectRaw('id,name')->get();
 
 
                         })
-                        ->visible(fn($record) =>  $record->pick_id == null && ($record->status === OrderStatusEnum::PICK || $record->status === OrderStatusEnum::TRANSFER))
+                        ->visible(fn($record) =>  $record->pick_id == null && $record->status === OrderStatusEnum::AGREE)
                         ->label('تحديد موظف التسليم')->color('info'),
 
                     Tables\Actions\Action::make('success_pick')
