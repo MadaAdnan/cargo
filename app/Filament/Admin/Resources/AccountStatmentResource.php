@@ -131,7 +131,9 @@ class AccountStatmentResource extends Resource
                 ])->default(1)->label('العملة'),
             ])
             ->headerActions([
-                ExportAction::make()->requiresConfirmation(),
+                ExportAction::make()->exports([
+                    ExcelExport::make()->withChunkSize(100)
+                ])
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
