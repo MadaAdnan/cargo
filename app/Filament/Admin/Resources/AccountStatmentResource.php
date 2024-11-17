@@ -16,7 +16,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use pxlrbt\FilamentExcel\Actions\Pages\ExportAction;
+
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -132,7 +133,7 @@ class AccountStatmentResource extends Resource
             ])
             ->headerActions([
                 ExportAction::make()->exports([
-                    ExcelExport::make()->withChunkSize(100)
+                    ExcelExport::make()->queue()->withChunkSize(100)
                 ])
             ])
             ->actions([
