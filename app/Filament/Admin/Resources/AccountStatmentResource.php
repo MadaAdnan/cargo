@@ -133,7 +133,7 @@ class AccountStatmentResource extends Resource
             ])
             ->headerActions([
                 ExportAction::make()->exports([
-                    ExcelExport::make()->queue()->withChunkSize(100)
+                    ExcelExport::make()->withChunkSize(100)
                 ])
             ])
             ->actions([
