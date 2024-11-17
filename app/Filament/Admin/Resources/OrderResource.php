@@ -633,8 +633,7 @@ $cities=City::selectRaw('id,name')->get();
                                 $farMessage.='أجور شحن الطلب';
 
                             }
-                            dd($priceMessage,
-$farMessage);
+
                             if ($totalPrice > 0) {
                                 $form= [
                                     Forms\Components\Placeholder::make('msg')->content($priceMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه'),
