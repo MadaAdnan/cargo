@@ -131,6 +131,15 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
                 ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
         return  $total;
     }
+    public function getPendingBalanceAttribute(): float
+    {
+        $total = DB::table('balances')
+                ->where('user_id', $this->id)
+                ->where('currency_id', 1)
+                ->where('pending', true)
+                ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
+        return $total;
+    }
 
     public function getTotalBalanceTrAttribute(): float
     {
@@ -140,8 +149,8 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
                 ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
         return  $total;
     }
-    
-    
+
+
     public function getTotalBalanceTrPendingAttribute(): float
     {
         $total = DB::table('balances')->where('user_id', $this->id)->where('is_complete', true)
@@ -151,15 +160,7 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
         return  $total;
     }
 
-    public function getPendingBalanceAttribute(): float
-    {
-        $total = DB::table('balances')
-        ->where('user_id', $this->id)
-        ->where('currency_id', 1)
-        ->where('pending', true)
-        ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
-        return $total;
-    }
+
 
     public function getIbanNameAttribute(): string
     {
