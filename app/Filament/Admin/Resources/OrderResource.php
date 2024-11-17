@@ -602,10 +602,10 @@ $cities=City::selectRaw('id,name')->get();
 
                     Tables\Actions\Action::make('success_given')
                         ->form(function ($record) {
-                            $form=[];
-                            $totalPrice=$record->price+$record->far;
+
+                            $totalPrice=(double)$record->price+(double)$record->far;
                             if($totalPrice==0){
-                                $totalPrice=$record->price_tr+$record->far_tr;
+                                $totalPrice=(double) $record->price_tr+ (double) $record->far_tr;
                             }
                             $priceMessage='انت تأكد إستلامك مبلغ : ';
 
@@ -620,9 +620,9 @@ $cities=City::selectRaw('id,name')->get();
 
 
 
-                            $farMessage=null;
+                            $farMessage='';
 
-                            if($record->far_sender ===false){
+                            if($record->far_sender ==false){
                                 $farMessage='انت تأكد إستلامك مبلغ : ';
                                 if($record->far_tr>0){
                                     $farMessage.=$record->far_tr .' TRY ';
