@@ -410,7 +410,11 @@ $cities=City::selectRaw('id,name')->get();
 
                 Tables\Columns\TextColumn::make('sender.name')->label('اسم المرسل')->description(fn($record) => $record->general_sender_name)->searchable(),
 
-                Tables\Columns\TextColumn::make('citySource.name')->label('من بلدة')->description(fn($record) => "إلى {$record->cityTarget?->name}")->searchable(),
+                Tables\Columns\TextColumn::make('citySource.name')->label('من بلدة')->description(fn($record) => " {$record->citySource?->city?->name}")->searchable(),
+                Tables\Columns\TextColumn::make('cityTarget.name')->label('إلى بلدة')->description(fn($record) => " {$record->cityTarget?->city?->name}")->searchable(),
+                Tables\Columns\TextColumn::make('branchSource.name')->label('من فرع')->description(fn($record) => "إلى فرع  {$record->branchTarget?->name}")->searchable(),
+
+
                 Tables\Columns\TextColumn::make('global_name')->label('معرف المستلم ')->description(fn($record) => $record->receive?->name)->searchable(),
                 Tables\Columns\TextColumn::make('receive_phone')
                     ->formatStateUsing(fn($record)=>(string) $record->receive_address .' - '.(string) $record->receive_phone)->label('هاتف المستلم ')
