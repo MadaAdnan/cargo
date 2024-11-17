@@ -706,7 +706,7 @@ $cities=City::selectRaw('id,name')->get();
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('given_id_check')->form([
-                        Forms\Components\Select::make('given_id')->searchable()->getSearchResultsUsing(fn($search)=>DB::table('users')->where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->where('name','Like',"%$search%")->limit(10)->pluck('name','id'))->label('موظف الإلتقاط')
+                        Forms\Components\Select::make('given_id')->searchable()->getSearchResultsUsing(fn($search)=>DB::table('users')->selectRaw('id,name')->where('name','Like',"%$search%")->where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->limit(10)->pluck('name','id'))->label('موظف الإلتقاط')
                     ])
                         ->action(function ($records, $data) {
 
