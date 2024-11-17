@@ -20,7 +20,7 @@ class OrderExport implements FromQuery, WithChunkReading, WithHeadings, WithMapp
 
     public function query()
     {
-      return  Order::query();
+      return  Order::query()->with('citySource','cityTarget','branchTarget','branchSource');
     }
 
     public function chunkSize(): int
@@ -44,8 +44,12 @@ class OrderExport implements FromQuery, WithChunkReading, WithHeadings, WithMapp
             'الأجور تركي',
             'معرف المرسل',
             'اسم المرسل',
+            'المنطقة',
             'من بلدة',
+            'المنطقة',
             'إلى بلدة',
+            'الفرع المرسل',
+            'الفرع المستلم',
             'معرف المستلم',
             'اسم المستلم',
             'هاتف المستلم',
@@ -77,8 +81,12 @@ class OrderExport implements FromQuery, WithChunkReading, WithHeadings, WithMapp
             $row->far_tr,
             $row->sender?->name,
             $row->general_sender_name,
+            $row->citySource?->city?->name,
             $row->citySource?->name,
+            $row->cityTarget?->city?->name,
             $row->cityTarget?->name,
+            $row->branchSource->name,
+            $row->branchTarget->name,
             $row->receive?->name,
             $row->global_name,
             $row->receive_phone,
