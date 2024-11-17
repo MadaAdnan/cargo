@@ -39,7 +39,10 @@ class ListBalances extends ListRecords
                 ])
                 //
                 ->action(function ($data) {
-
+                    if ($data['value'] <= 0) {
+                        Notification::make('error')->title('فشل العملية')->body('يرجى إدخال قيمة صالحة')->danger()->send();
+                        return;
+                    }
                     \DB::beginTransaction();
                     $user = User::find($data['user_id']);
                     try {
@@ -88,8 +91,8 @@ class ListBalances extends ListRecords
                 //
                 ->action(function ($data) {
                     \DB::beginTransaction();
-                    if (auth()->user()->total_balance < $data['value'] && !auth()->user()->hasRole('super_admin')) {
-                        Notification::make('error')->title('فشل العملية')->body('لا تملك رصيد كافي')->danger()->send();
+                    if ($data['value'] <= 0) {
+                        Notification::make('error')->title('فشل العملية')->body('يرجى إدخال قيمة صالحة')->danger()->send();
                         return;
                     }
                     try {
@@ -144,6 +147,7 @@ class ListBalances extends ListRecords
                     ])
                     //
                     ->action(function ($data) {
+
                         \DB::beginTransaction();
                         try {
                             foreach ($data['quid'] as $user) {

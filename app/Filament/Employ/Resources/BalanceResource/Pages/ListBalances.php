@@ -3,11 +3,13 @@
 namespace App\Filament\Employ\Resources\BalanceResource\Pages;
 
 use App\Enums\BalanceTypeEnum;
+use App\Enums\LevelUserEnum;
 use App\Filament\Employ\Resources\BalanceResource;
 use App\Models\Balance;
 use App\Models\User;
 use Closure;
 use Filament\Actions;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -90,6 +92,55 @@ class ListBalances extends ListRecords
                     }
 
                 })->label('إضافة سند'),
+            Actions\Action::make('create_balance_debit')
+                ->form([
+                    Grid::make(3)->schema([
+                        Select::make('user_id')->options(User::where('level',LevelUserEnum::USER->value)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                            ->label('المستخدم'),
+                        TextInput::make('value')->required()->numeric()->label('القيمة'),
+                        TextInput::make('info')->label('بيان'),
+                    ])
+                ])
+                //
+                ->action(function ($data) {
+                    \DB::beginTransaction();
+                    if($data['value'] < 0 ){
+                        Notification::make('error')->title('فشل العملية')->body('ادخل رصيد صحيح')->danger()->send();
+                        return ;
+                    }
+                    $target=User::find($data['user_id']);
+                    try {
+
+                        Balance::create([
+                            'type'=>BalanceTypeEnum::PUSH->value,
+                            'user_id'=>$data['user_id'],
+                            'debit'=>$data['value'],
+                            'credit'=>0,
+                            'info'=>$data['info'],
+                            'is_complete'=>true,
+                            'currency_id'=>1,
+                            'customer_name'=>auth()->user()->name,
+                        ]);
+                        Balance::create([
+                            'type'=>BalanceTypeEnum::CATCH->value,
+                            'user_id'=>auth()->id(),
+                            'debit'=>0,
+                            'credit'=>$data['value'],
+                            'customer_name'=>$target->name,
+                            'info'=>$data['info'],
+                            'is_complete'=>true,
+                            'currency_id'=>1,
+                        ]);
+
+                        \DB::commit();
+                        Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+                    } catch (\Exception | \Error $e) {
+                        \DB::rollBack();
+                        Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
+                    }
+
+                })
+                ->label('إضافة سند قبض'),
 
             Actions\Action::make('quid')->form([
                 TextInput::make('amount')->label('القيمة')->required()->numeric(),

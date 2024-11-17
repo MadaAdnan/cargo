@@ -40,6 +40,10 @@ class ListBalabceTRS extends ListRecords
                 ->action(function ($data) {
 
                     \DB::beginTransaction();
+                    if($data['value']<=0){
+                        Notification::make('error')->title('فشل العملية')->body('يرجى إدخال قيمة صالحة')->danger()->send();
+                        return;
+                    }
 $user=User::find($data['user_id']);
                     try {
                         Balance::create([
@@ -87,10 +91,10 @@ $user=User::find($data['user_id']);
                 //
                 ->action(function ($data) {
                     \DB::beginTransaction();
-//                    if (auth()->user()->total_balance_tr < $data['value'] && !auth()->user()->hasRole('super_admin')) {
-//                        Notification::make('error')->title('فشل العملية')->body('لا تملك رصيد كافي')->danger()->send();
-//                        return;
-//                    }
+                    if($data['value']<=0){
+                        Notification::make('error')->title('فشل العملية')->body('يرجى إدخال قيمة صالحة')->danger()->send();
+                        return;
+                    }
                     try {
                         $user=User::find($data['user_id']);
                         Balance::create([
