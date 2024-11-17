@@ -706,7 +706,7 @@ $cities=City::selectRaw('id,name')->get();
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('given_id_check')->form([
-                        Forms\Components\Select::make('given_id')->searchable()->getSearchResultsUsing(fn()=>User::where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->limit(50)->pluck('name','id'))->label('موظف الإلتقاط')
+                        Forms\Components\Select::make('given_id')->searchable()->getSearchResultsUsing(fn($search)=>DB::table('users')->where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->where('name','Like',"%$search%")->limit(10)->pluck('name','id'))->label('موظف الإلتقاط')
                     ])
                         ->action(function ($records, $data) {
                             Order::whereIn('id', $records->pluck('id')->toArray())->update(['given_id' => $data['given_id'],'status'=>OrderStatusEnum::TRANSFER->value]);
