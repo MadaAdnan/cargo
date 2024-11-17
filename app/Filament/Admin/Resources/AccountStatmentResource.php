@@ -72,7 +72,7 @@ class AccountStatmentResource extends Resource
         return $table
             ->poll(10)
             ->columns([
-                
+
                 Tables\Columns\TextColumn::make('credit')->label('إيداع'),
                 Tables\Columns\TextColumn::make('debit')->label('قبض'),
 
@@ -110,25 +110,16 @@ class AccountStatmentResource extends Resource
                 Tables\Columns\TextColumn::make('order.code')->label('الطلب'),
                 Tables\Columns\TextColumn::make('order.sender.name')->label('المرسل')->description(fn($record) => $record->order?->general_sender_name != null ? "{$record->order->general_sender_name}" : ""),
                 Tables\Columns\TextColumn::make('order.receive.name')->label('المستلم')->description(fn($record) => $record->order?->global_name != null ? " {$record->order->global_name}" : ""),
-                
+
                 //H: disabled the cell
                 //Tables\Columns\TextColumn::make('total')->label('الرصيد'),
 
-                //H: get date and time and split them using two temporary columns 
-                Tables\Columns\TextColumn::make('created_at_date')
-                    ->state(function (Model $rec) {
-                        return \Carbon\Carbon::parse($rec->created_at)->format('Y-m-d');
-                    })
-                    ->label('التاريخ'),
-
-                Tables\Columns\TextColumn::make('created_at_time')
-                    ->state(function (Model $rec) {
-                        return \Carbon\Carbon::parse($rec->created_at)->format('h:i:s');
-                    })
-                    ->label('التوقيت'),
+                //H: get date and time and split them using two temporary columns
+                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->description(fn($record)=>$record->created_at->format('H:i'))
+                    ->label('التاريخ والوقت'),
 
             ])->defaultSort('id', 'desc')
-            //H: up here, added default sorting to table based on id to show the latest total of an account 
+            //H: up here, added default sorting to table based on id to show the latest total of an account
             ->filters([
                 Tables\Filters\SelectFilter::make('user_id')->relationship('user', 'name')->searchable()->default(0)->label('المستخدم'),
                 Tables\Filters\SelectFilter::make('currency_id')->options([
