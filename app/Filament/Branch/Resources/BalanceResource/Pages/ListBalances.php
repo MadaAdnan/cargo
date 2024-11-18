@@ -123,7 +123,9 @@ class ListBalances extends ListRecords
 
                 })
                 ->label('إضافة سند دفع'),
-            Actions\Action::make('create_balance_debit')
+
+
+            Actions\Action::make('create_balance_credit')
                 ->form([
                     Grid::make(3)->schema([
                         Select::make('user_id')->options(User::where('level',LevelUserEnum::USER->value)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
@@ -162,7 +164,6 @@ class ListBalances extends ListRecords
                             'is_complete'=>true,
                             'currency_id'=>1,
                         ]);
-
                         \DB::commit();
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
                     } catch (\Exception | \Error $e) {

@@ -76,7 +76,7 @@ class ListBalabceTRS extends ListRecords
 
                 })
                 ->label('إضافة سند دفع'),
-            Actions\Action::make('create_balance_debit')
+            Actions\Action::make('create_balance_credit')
                 ->form([
                     Grid::make(3)->schema([
                         Select::make('user_id')->options(User::where('level',LevelUserEnum::USER->value)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
