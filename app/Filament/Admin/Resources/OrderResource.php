@@ -731,7 +731,7 @@ $cities=City::selectRaw('id,name')->get();
                     Tables\Actions\BulkAction::make('given_id_check')->form([
                         Forms\Components\Select::make('given_id')
                             ->options(DB::table('users')->where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->pluck('name','id'))
-                            ->searchable()->label('موظف الإلتقاط')
+                            ->searchable()->label('موظف التسليم')
                     ])
                         ->action(function ($records, $data) {
 
