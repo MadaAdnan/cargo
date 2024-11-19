@@ -83,7 +83,7 @@ class AccountStatmentStaffResource extends Resource
 
                 Tables\Columns\TextColumn::make('info')->label('الملاحظات'),
                 Tables\Columns\TextColumn::make('customer_name')->label('الطرف المقابل'),
-                Tables\Columns\TextColumn::make('order.code')->label('الطلب'),
+                Tables\Columns\TextColumn::make('order.id')->description(fn($record)=>$record->order?->code)->label('الطلب'),
                 Tables\Columns\TextColumn::make('order.sender.name')->label('المرسل')->description(fn($record) => $record->order?->general_sender_name != null ? "{$record->order->general_sender_name}" : ""),
                 Tables\Columns\TextColumn::make('order.receive.name')->label('المستلم')->description(fn($record) => $record->order?->global_name != null ? " {$record->order->global_name}" : ""),
                 Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->description(fn($record)=>$record->created_at->format('H:i'))
