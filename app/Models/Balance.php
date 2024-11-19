@@ -39,4 +39,8 @@ class Balance extends Model
         return $this->belongsTo(Currency::class);
     }
 
+    public function scopePending($query){
+        return $query->where('pending',1)->where('is_complete',1);
+    }
+
 }
