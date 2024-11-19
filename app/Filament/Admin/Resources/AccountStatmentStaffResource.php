@@ -92,7 +92,7 @@ class AccountStatmentStaffResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('user_id')->options(User::where('level',LevelUserEnum::BRANCH->value)
                     ->orWhere('level',LevelUserEnum::STAFF->value)->orWhere('level',LevelUserEnum::ADMIN->value)->pluck('name','id'))
-                    ->searchable()->default(0)->label('المستخدم'),
+                    ->searchable()->label('المستخدم'),
                 Tables\Filters\SelectFilter::make('currency_id')->options([
                     1 => 'دولار',
                     2 => 'تركي'
