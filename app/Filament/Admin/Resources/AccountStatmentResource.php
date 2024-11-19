@@ -134,7 +134,7 @@ class AccountStatmentResource extends Resource
                 Tables\Filters\SelectFilter::make('pending')->options([
                     0 => 'جاهز',
                     1 => 'قيد التحصيل'
-                ])->default(1)->label('نوع الرصيد'),
+                ])->default(0)->label('نوع الرصيد'),
 
             ])
             ->headerActions([
