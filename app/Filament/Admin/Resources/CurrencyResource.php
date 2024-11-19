@@ -18,14 +18,13 @@ class CurrencyResource extends Resource
 {
     protected static ?string $model = Currency::class;
     protected static ?string $navigationGroup = 'الحسابات المالية';
-
-
-
     protected static ?string $pluralModelLabel = 'العملات';
-
     protected static ?string $label = 'العملات';
     protected static ?string $navigationLabel = 'العملات';
     protected static ?string $navigationIcon = 'fas-dollar-sign';
+    
+    //H : Hidden (العملات) Button from sidenav in admin panel
+    public static function shouldRegisterNavigation(): bool { return false; }
 
     public static function canDeleteAny(): bool
     {
