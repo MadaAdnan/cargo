@@ -131,12 +131,11 @@ class AccountStatmentResource extends Resource
                     1 => 'دولار',
                     2 => 'تركي'
                 ])->default(1)->label('العملة'),
-                Tables\Filters\TernaryFilter::make('pending')->trueLabel('قيد التحصيل')->falseLabel('مكتمل')
-                    ->queries(
-                        true: fn($query) => $query->where('pending', 1),
-                        false: fn($query) => $query->where('pending', 0),
-                        blank: fn($query) => $query->where('pending', 1)
-                    )
+                Tables\Filters\SelectFilter::make('pending')->options([
+                    0 => 'جاهز',
+                    1 => 'قيد التحصيل'
+                ])->default(1)->label('نوع الرصيد'),
+
             ])
             ->headerActions([
                 ExportAction::make()->exports([
