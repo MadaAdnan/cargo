@@ -139,7 +139,7 @@ class OrderResource extends Resource
                                                         ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
                                                         ->tel()
                                                         ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),// تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-                                                        //H: Made phone number not required to complete account registration while creating an order 
+                                                        //H: Made phone number not required to complete account registration while creating an order
                                                         //->required(),
 
                                                     Forms\Components\TextInput::make('country_code')
@@ -150,7 +150,7 @@ class OrderResource extends Resource
                                                         ->numeric()
                                                         ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
                                                         // تحديد الحد الأقصى للأرقام (بما في ذلك +)
-                                                        //H: Made phone number not required to complete account registration while creating an order 
+                                                        //H: Made phone number not required to complete account registration while creating an order
                                                         //->required(),
                                                 ]),
                                                 Forms\Components\Grid::make()->schema([
@@ -529,7 +529,7 @@ $cities=City::selectRaw('id,name')->get();
                                 $data['created_until'],
                                 fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             )
-                            //H: added the logic to quEry 
+                            //H: added the logic to quEry
                             ->when(
                                 $data['pick_id'],
                                 fn(Builder $query, $value): Builder => $query->where('pick_id', $value),
@@ -729,7 +729,7 @@ $cities=City::selectRaw('id,name')->get();
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('given_id_check')->form([
-                        Forms\Components\Select::make('given_id')->searchable()->getSearchResultsUsing(fn($search)=>DB::table('users')->selectRaw('id,name')->where('name','Like',"%$search%")->where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->limit(10)->pluck('name','id'))->label('موظف الإلتقاط')
+                        Forms\Components\Select::make('given_id')->searchable()->getSearchResultsUsing(fn($search)=>User::where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->where('name','Like',"%$search%")->limit(10)->pluck('name','id'))->label('موظف الإلتقاط')
                     ])
                         ->action(function ($records, $data) {
 
