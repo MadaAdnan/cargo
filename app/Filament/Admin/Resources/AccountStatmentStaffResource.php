@@ -97,6 +97,11 @@ class AccountStatmentStaffResource extends Resource
                     1 => 'دولار',
                     2 => 'تركي'
                 ])->default(1)->label('العملة'),
+                Tables\Filters\TernaryFilter::make('pending')->trueLabel('قيد التحصيل')->falseLabel('مكتمل')
+                    ->queries(
+                        true: fn($query) => $query->where('pending', true),
+                        false: fn($query) => $query->where('pending', false), blank: fn($query) => $query->where('pending', true)
+                    )
             ])
             ->headerActions([
                 ExportAction::make()->exports([
