@@ -55,6 +55,9 @@ class ExchangeResource extends Resource
             ->poll(10)
             ->modifyQueryUsing(fn($query) => $query->latest())
             ->columns([
+                //H : Added the id of the exchange request
+                Tables\Columns\TextColumn::make('id')->label('الرقم التسلسلي')->sortable(),
+                
                 Tables\Columns\TextColumn::make('currency_id')->formatStateUsing(function ($state) {
                     $list = [
                         1 => ' من الدولار إلى التركي',

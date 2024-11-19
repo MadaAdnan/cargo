@@ -138,8 +138,9 @@ class OrderResource extends Resource
                                                         ->maxLength(15)
                                                         ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
                                                         ->tel()
-                                                        ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/')// تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-                                                        ->required(),
+                                                        ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),// تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                                        //H: Made phone number not required to complete account registration while creating an order 
+                                                        //->required(),
 
                                                     Forms\Components\TextInput::make('country_code')
                                                         ->label('رمز الدولة')
@@ -147,9 +148,10 @@ class OrderResource extends Resource
                                                         ->prefix('+')
                                                         ->maxLength(3)
                                                         ->numeric()
-                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']) // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
                                                         // تحديد الحد الأقصى للأرقام (بما في ذلك +)
-                                                        ->required(),
+                                                        //H: Made phone number not required to complete account registration while creating an order 
+                                                        //->required(),
                                                 ]),
                                                 Forms\Components\Grid::make()->schema([
                                                     Forms\Components\Textarea::make('address')->label('العنوان التفصيلي'),
@@ -215,8 +217,9 @@ class OrderResource extends Resource
 
 
                             Forms\Components\TextInput::make('sender_phone')->label('رقم هاتف المرسل')->required(),
-
-                            Forms\Components\TextInput::make('sender_address')->label('عنوان المرسل')->required(),
+                            //H: disabled required for sender address in order creation panel
+                            Forms\Components\TextInput::make('sender_address')->label('عنوان المرسل'),
+                            //->required(),
                         ]),
 
 
@@ -453,6 +456,17 @@ $cities=City::selectRaw('id,name')->get();
                     ->form([
                         Forms\Components\Select::make('branch_source_id')->relationship('branchSource', 'name')
                             ->label('اسم الفرع المرسل')->multiple(),
+                            //H: added delivery employee filter to table
+                            Forms\Components\Select::make('pick_id')
+                            ->label('اسم موظف الإلتقاط')
+                            ->options($users->pluck('name', 'id'))
+                            ->multiple(),
+                            Forms\Components\Select::make('given_id')
+                            ->label('اسم موظف التسليم')
+                            ->options($users->pluck('name', 'id'))
+                            ->multiple(),
+
+
                         Forms\Components\Select::make('branch_target_id')->relationship('branchTarget', 'name')
                             ->label('اسم الفرع المستلم')->multiple(),
 
@@ -514,6 +528,15 @@ $cities=City::selectRaw('id,name')->get();
                             ->when(
                                 $data['created_until'],
                                 fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            )
+                            //H: added the logic to quEry 
+                            ->when(
+                                $data['pick_id'],
+                                fn(Builder $query, $value): Builder => $query->where('pick_id', $value),
+                            )
+                            ->when(
+                                $data['given_id'],
+                                fn(Builder $query, $value): Builder => $query->where('given_id', $value),
                             );
                     })
 

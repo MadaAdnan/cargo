@@ -187,6 +187,9 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                //H: Show Users ID in table cells
+                Tables\Columns\TextColumn::make('id')->label('الرقم التسلسلي')->searchable()->sortable(),
+                
                 Tables\Columns\TextColumn::make('name')->label('الاسم')->searchable(),
                 Tables\Columns\SelectColumn::make('status')->label('حالة المستخدم')
                     ->options([

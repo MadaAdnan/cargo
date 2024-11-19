@@ -104,8 +104,9 @@ class OrderResource extends Resource
                                                         ->maxLength(15)
                                                         ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
                                                         ->tel()
-                                                        ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/')// تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-                                                        ->required(),
+                                                        ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),// تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                                        //H: Made phone number not required to complete account registration while creating an order
+                                                        //->required(),
 
                                                     Forms\Components\TextInput::make('country_code')
                                                         ->label('رمز الدولة')
@@ -113,9 +114,10 @@ class OrderResource extends Resource
                                                         ->prefix('+')
                                                         ->maxLength(3)
                                                         ->numeric()
-                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']) // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
                                                         // تحديد الحد الأقصى للأرقام (بما في ذلك +)
-                                                        ->required(),
+                                                        //H: Made phone number not required to complete account registration while creating an order
+                                                        //->required(),
                                                 ]),
                                                 Forms\Components\Grid::make()->schema([
                                                     Forms\Components\Textarea::make('address')->label('العنوان التفصيلي'),
@@ -177,8 +179,9 @@ class OrderResource extends Resource
                                 Forms\Components\Select::make('city_source_id')
                                     ->relationship('citySource', 'name')
                                     ->label('من بلدة')->reactive()->required()->searchable(),
-
-                                Forms\Components\TextInput::make('sender_address')->label('عنوان المرسل')->required(),
+                                //H: disabled required for sender address in order creation panel
+                                Forms\Components\TextInput::make('sender_address')->label('عنوان المرسل'),
+                                //->required(),
                             ]),
 
                         ]),
