@@ -100,7 +100,8 @@ class AccountStatmentStaffResource extends Resource
                 Tables\Filters\TernaryFilter::make('pending')->trueLabel('قيد التحصيل')->falseLabel('مكتمل')
                     ->queries(
                         true: fn($query) => $query->where('pending', true),
-                        false: fn($query) => $query->where('pending', false), blank: fn($query) => $query->where('pending', true)
+                        false: fn($query) => $query->where('pending', false),
+                        blank: fn($query) => $query->where('pending', false)
                     )
             ])
             ->headerActions([
