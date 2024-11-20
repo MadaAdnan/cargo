@@ -365,7 +365,7 @@ class OrderResource extends Resource
                             Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
                         } catch (\Exception | Error $e) {
                             DB::rollBack();
-                            Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
+                            Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
                         }
                     })->label('الإلغاء / الإعادة')->button()->color('danger')
                     ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED),
