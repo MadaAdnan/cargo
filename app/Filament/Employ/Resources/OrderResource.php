@@ -360,7 +360,7 @@ class OrderResource extends Resource
                     ->action(function ($record, $data) {
                         DB::beginTransaction();
                         try {
-                            $record->update(['status' => $data['status'], 'msg_cancel' => $data['canceled_info']]);
+                            $record->update(['status' => $data['status'], 'canceled_info' => $data['canceled_info']]);
                             DB::commit();
                             Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
                         } catch (\Exception | Error $e) {

@@ -700,12 +700,12 @@ $cities=City::selectRaw('id,name')->get();
                                 OrderStatusEnum::CANCELED->value => OrderStatusEnum::CANCELED->getLabel(),
                                 OrderStatusEnum::RETURNED->value => OrderStatusEnum::RETURNED->getLabel(),
                             ])->label('الحالة')->required()->default(OrderStatusEnum::CANCELED->value),
-                            Forms\Components\Textarea::make('msg_cancel')->label('سبب الإلغاء / الإعادة')
+                            Forms\Components\Textarea::make('canceled_info')->label('سبب الإلغاء / الإعادة')
                         ])
                         ->action(function ($record, $data) {
                             DB::beginTransaction();
                             try {
-                                $record->update(['status' => $data['status'], 'canceled_info' => $data['msg_cancel']]);
+                                $record->update(['status' => $data['status'], 'canceled_info' => $data['canceled_info']]);
                                 DB::commit();
                                 Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
                             } catch (\Exception | Error $e) {
