@@ -112,7 +112,10 @@ class Order extends Model implements HasMedia
     {
         return $this->belongsTo(User::class, 'given_id');
     }
-
+    public function returned(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'returned_id');
+    }
     public function currency(): BelongsTo
     {
         return $this->belongsTo(Currency::class);
