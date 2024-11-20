@@ -726,6 +726,26 @@ $cities=City::selectRaw('id,name')->get();
                         })
                         ->label('تحديد موظف تسليم المرتجع')->visible(fn($record)=>$record->status==OrderStatusEnum::RETURNED ),
                      Tables\Actions\Action::make('confirm_returned')
+                         ->form(function($record){
+                             $list=[];
+                             if ($record->far_sender == false) {
+                                 if ($record->far > 0) {
+                                     $list[]=Forms\Components\Placeholder::make('far_usd')->content('سيتم إضافة '.$record->far .'USD  إلى صندوقك  أجور شحن')->label('تحذير');
+                                 }
+                                 if ($record->far_tr > 0) {
+                                     $list[]=Forms\Components\Placeholder::make('far_try')->content('سيتم إضافة '.$record->far .'TRY  إلى صندوقك  أجور شحن')->label('تحذير');
+                                 }
+                             }
+                             if ($record->price > 0) {
+                                 $list[]=Forms\Components\Placeholder::make('price_usd')->content('سيتم إضافة '.$record->price .'USD  إلى صندوقك  قيمة تحصيل')->label('تحذير');
+
+                             }
+                             if ($record->price_tr > 0) {
+                                 $list[]=Forms\Components\Placeholder::make('price_try')->content('سيتم إضافة '.$record->price .'TRY  إلى صندوقك  قيمة تحصيل')->label('تحذير');
+
+                             }
+                             return $list;
+                         })
                          ->action(function ($record) {
                              DB::beginTransaction();
                              try {
@@ -738,7 +758,7 @@ $cities=City::selectRaw('id,name')->get();
                                  Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                              }
                          })->label('تأكيد تسليم المرتجع')->color('danger')
-                         ->requiresConfirmation()
+
                          ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id!=null)
 
                 ])
