@@ -528,6 +528,17 @@ class OrderResource extends Resource
                         ->visible(fn($record) =>  $record->pick_id != null && ($record->status === OrderStatusEnum::PICK || $record->status === OrderStatusEnum::TRANSFER))
                         ->label('تحديد موظف التسليم')->color('info'),
 
+                    // تحديد موظف غعادة الطلب
+                    Tables\Actions\Action::make('set_returned_id')->form([
+                        Forms\Components\Select::make('staff_id')->searchable()    ->getSearchResultsUsing(fn (string $search): array => User::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())->label('حدد الموظف')->required(),
+
+                    ])
+                        ->action(function($record,$data){
+                            $record->update(['returned_id'=>$data['staff_id']]);
+                            Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف إعادة الطلب بنجاح')->success()->send();
+
+                        })
+                        ->label('تحديد موظف تسليم المرتجع')->visible(fn($record)=>$record->status==OrderStatusEnum::RETURNED && $record->branch_target_id ==auth()->user()->branch_id),
 
                     Tables\Actions\Action::make('cancel_order')
                         ->form([

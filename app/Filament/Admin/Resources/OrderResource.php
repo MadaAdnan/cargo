@@ -704,7 +704,17 @@ $cities=City::selectRaw('id,name')->get();
                             }
                         })->label('الإلغاء / الإعادة')->color('danger')
                         ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED),
+                  // تحديد موظف غعادة الطلب
+                    Tables\Actions\Action::make('set_returned_id')->form([
+                        Forms\Components\Select::make('staff_id')->searchable()    ->getSearchResultsUsing(fn (string $search): array => User::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())->label('حدد الموظف')->required(),
 
+                    ])
+                        ->action(function($record,$data){
+                            $record->update(['returned_id'=>$data['staff_id']]);
+                            Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف إعادة الطلب بنجاح')->success()->send();
+
+                        })
+                        ->label('تحديد موظف تسليم المرتجع')->visible(fn($record)=>$record->status==OrderStatusEnum::RETURNED ),
                      Tables\Actions\Action::make('confirm_returned')
                          ->action(function ($record) {
                              DB::beginTransaction();
