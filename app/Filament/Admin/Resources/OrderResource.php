@@ -729,7 +729,7 @@ $cities=City::selectRaw('id,name')->get();
                              }
                          })->label('تأكيد تسليم المرتجع')->color('danger')
                          ->requiresConfirmation()
-                         ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED)
+                         ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id!=null)
 
                 ])
 
