@@ -374,7 +374,7 @@ class OrderResource extends Resource
                         DB::beginTransaction();
                         try {
                             $record->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value]);
-                           // HelperBalance::confirmReturn($record);
+                            HelperBalance::confirmReturn($record);
                             DB::commit();
                             Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
                         } catch (\Exception | Error $e) {
