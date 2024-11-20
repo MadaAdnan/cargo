@@ -365,11 +365,11 @@ $cities=City::selectRaw('id,name')->get();
             ->poll(10)
             ->columns([
              //  Tables\Columns\SpatieMediaLibraryImageColumn::make('images')->collection('images')->circular()->openUrlInNewTab(),
-                PopoverColumn::make('qr_url')
+             /*   PopoverColumn::make('qr_url')
                     ->trigger('click')
                     ->placement('right')
                     ->content(fn($record) => \LaraZeus\Qr\Facades\Qr::render($record->code))
-                    ->icon('heroicon-o-qr-code'),
+                    ->icon('heroicon-o-qr-code'),*/
 
                 Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->code,'above')->copyable()->searchable(),
 
@@ -550,7 +550,11 @@ $cities=City::selectRaw('id,name')->get();
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('set_picker')->form([
                         Forms\Components\Select::make('pick_id')
-                            ->options(User::selectRaw('id,name')->where('level', LevelUserEnum::STAFF->value)->orWhere('level', LevelUserEnum::BRANCH->value)->pluck('name','id'))
+                            ->options(User::selectRaw('id,name')->whereIn('level',[
+                                LevelUserEnum::STAFF->value,
+                                LevelUserEnum::BRANCH->value,
+                                LevelUserEnum::ADMIN->value,
+                            ] )->pluck('name','id'))
                             ->searchable()->label('موظف الإلتقاط'),
                     ])
                         ->action(function ($record, $data) {
@@ -574,8 +578,14 @@ $cities=City::selectRaw('id,name')->get();
 
                     Tables\Actions\Action::make('set_given')->form([
                         Forms\Components\Select::make('given_id')
-                            ->options(User::selectRaw('id,name')->where('level', LevelUserEnum::STAFF->value)->orWhere('level', LevelUserEnum::BRANCH->value)->pluck('name','id'))
-                            ->searchable()->label('موظف الإلتقاط'),
+
+                            ->searchable()
+                            ->getSearchResultsUsing(fn(string $search)=>User::selectRaw('id,name')->whereIn('level',[
+                                LevelUserEnum::STAFF->value,
+                                LevelUserEnum::BRANCH->value,
+                                LevelUserEnum::ADMIN->value,
+                            ])->where('name','like',"%$search%")->take(10)->pluck('name','id'))
+                            ->label('موظف التسليم'),
                     ])
                         ->action(function ($record, $data) {
 

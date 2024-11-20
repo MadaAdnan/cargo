@@ -394,7 +394,7 @@ class HelperBalance
     {
         $customer = $order->sender;
         $staff = $order->returned;
-        try{
+        try {
             // add Far
             if ($order->far_sender == false) {
                 if ($order->far > 0) {
@@ -471,51 +471,80 @@ class HelperBalance
             //Add Price
             if ($order->price > 0) {
                 Balance::create([
-                    'user_id' => $customer->id,
-                    'debit' => 0,
                     'credit' => $order->price,
-                    'info' => 'قيمة تحصيل الطلب #' . $order->id,
-                    'pending' => true,
+                    'debit' => 0,
+                    'order_id' => $order->id,
+                    'user_id' => $customer->id,
                     'currency_id' => 1,
-                    'order_id' => $order->id
+                    'info' => 'أجور تحصيل  #' . $order->code,
+                    'type' => BalanceTypeEnum::CATCH->value,
+                    'is_complete' => true,
                 ]);
 
                 Balance::create([
-                    'user_id' => $customer->id,
-                    'debit' => $order->price,
                     'credit' => 0,
-                    'info' => 'قيمة تحصيل الطلب #' . $order->id,
-                    'pending' => true,
+                    'debit' => $order->price,
+                    'order_id' => $order->id,
+                    'user_id' => $customer->id,
                     'currency_id' => 1,
-                    'order_id' => $order->id
+                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'type' => BalanceTypeEnum::CATCH->value,
+                    'is_complete' => true,
                 ]);
-            }
 
+                Balance::create([
+                    'credit' => $order->price,
+                    'debit' => 0,
+                    'order_id' => $order->id,
+                    'user_id' => $staff->id,
+                    'currency_id' => 1,
+                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'type' => BalanceTypeEnum::CATCH->value,
+                    'is_complete' => true,
+                ]);
+
+
+            }
             if ($order->price_tr > 0) {
                 Balance::create([
-                    'user_id' => $customer->id,
-                    'debit' => 0,
                     'credit' => $order->price_tr,
-                    'info' => 'قيمة تحصيل الطلب #' . $order->id,
-                    'pending' => true,
+                    'debit' => 0,
+                    'order_id' => $order->id,
+                    'user_id' => $customer->id,
                     'currency_id' => 2,
-                    'order_id' => $order->id
+                    'info' => 'أجور تحصيل  #' . $order->code,
+                    'type' => BalanceTypeEnum::CATCH->value,
+                    'is_complete' => true,
                 ]);
 
                 Balance::create([
-                    'user_id' => $customer->id,
-                    'debit' => $order->price_tr,
                     'credit' => 0,
-                    'info' => 'قيمة تحصيل الطلب #' . $order->id,
-                    'pending' => true,
+                    'debit' => $order->price_tr,
+                    'order_id' => $order->id,
+                    'user_id' => $customer->id,
                     'currency_id' => 2,
-                    'order_id' => $order->id
+                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'type' => BalanceTypeEnum::CATCH->value,
+                    'is_complete' => true,
                 ]);
+
+                Balance::create([
+                    'credit' => $order->price_tr,
+                    'debit' => 0,
+                    'order_id' => $order->id,
+                    'user_id' => $staff->id,
+                    'currency_id' => 2,
+                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'type' => BalanceTypeEnum::CATCH->value,
+                    'is_complete' => true,
+                ]);
+
+
             }
+            Balance::where('order_id', $order->id)->where('pending', true)->delete();
 
-
-        }catch (\Exception |\Error $e){
-           throw new \Exception($e->getMessage());
+        } catch (\Exception | \Error $e) {
+            throw new \Exception($e->getMessage());
         }
     }
 
