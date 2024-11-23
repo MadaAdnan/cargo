@@ -346,6 +346,7 @@ class OrderResource extends Resource
                     ->icon('heroicon-o-qr-code'),
 
                 Tables\Columns\TextColumn::make('code')->description(fn($record) => $record->id,'above')->copyable()->searchable(),
+//                Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
 
 
                 Tables\Columns\TextColumn::make('type')->label('نوع الطلب')
