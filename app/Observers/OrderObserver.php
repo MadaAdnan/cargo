@@ -22,6 +22,7 @@ class OrderObserver
         }else{
             $order->status = OrderStatusEnum::PICK;
         }
+        $order->created_by=auth()->id();
 
     }
 
