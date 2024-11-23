@@ -372,6 +372,7 @@ $cities=City::selectRaw('id,name')->get();
                     ->icon('heroicon-o-qr-code'),*/
 
                 Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->code,'above')->copyable()->searchable(),
+                Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
 
 
                 Tables\Columns\TextColumn::make('type')->label('نوع الطلب')
