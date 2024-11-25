@@ -8,7 +8,11 @@ use App\Filament\Admin\Resources\BalabceTRResource\RelationManagers;
 use App\Helper\HelperBalance;
 use App\Models\BalabceTR;
 use App\Models\Balance;
+use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -45,7 +49,17 @@ class BalabceTRResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([]);
+            ->schema([
+                Grid::make(3)->schema([
+                    Select::make('user_id')->options(User::get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                        ->label('المستخدم'),
+                    TextInput::make('value')->required()->numeric()->label('القيمة'),
+                    TextInput::make('info')->label('البيان'),
+                    TextInput::make('customer_name')->label('الحساب المقابل'),
+                    TextInput::make('created_at')->label('التاريخ'),
+
+                ])
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -62,7 +76,7 @@ class BalabceTRResource extends Resource
                 Tables\Columns\TextColumn::make('order.receive.name')->label('المستلم')->description(fn($record) => $record->order?->global_name != null ? " {$record->order->global_name}" : ""),
 
                 Tables\Columns\TextColumn::make('total')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state))->label('الرصيد'),
-                //H: get date and time and split them using two temporary columns 
+                //H: get date and time and split them using two temporary columns
                 Tables\Columns\TextColumn::make('created_at_date')
                     ->state(function (Model $rec) {
                         return \Carbon\Carbon::parse($rec->created_at)->format('Y-m-d');

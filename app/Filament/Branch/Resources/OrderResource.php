@@ -544,7 +544,7 @@ class OrderResource extends Resource
                     Tables\Actions\Action::make('cancel_order')
                         ->form([
                             Forms\Components\Radio::make('status')->options([
-                                OrderStatusEnum::CANCELED->value => OrderStatusEnum::CANCELED->getLabel(),
+                               // OrderStatusEnum::CANCELED->value => OrderStatusEnum::CANCELED->getLabel(),
                                 OrderStatusEnum::RETURNED->value => OrderStatusEnum::RETURNED->getLabel(),
                             ])->label('الحالة')->required()->default(OrderStatusEnum::CANCELED->value),
                             Forms\Components\Textarea::make('canceled_info')->label('سبب الإلغاء / الإعادة')
@@ -560,7 +560,7 @@ class OrderResource extends Resource
                                 Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                             }
                         })->label('الإلغاء / الإعادة')->color('danger')
-                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED),
+                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED ),
 
 
                     Tables\Actions\Action::make('success_pick')

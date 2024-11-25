@@ -68,6 +68,7 @@ $user=User::find($data['user_id']);
                             'customer_name'=>$user?->name,
                         ]);
                         \DB::commit();
+
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
                     } catch (\Exception | \Error $e) {
                         \DB::rollBack();

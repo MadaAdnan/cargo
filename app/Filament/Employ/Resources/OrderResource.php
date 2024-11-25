@@ -352,7 +352,7 @@ class OrderResource extends Resource
                 Tables\Actions\Action::make('cancel_order')
                     ->form([
                         Forms\Components\Radio::make('status')->options([
-                            OrderStatusEnum::CANCELED->value => OrderStatusEnum::CANCELED->getLabel(),
+                            //OrderStatusEnum::CANCELED->value => OrderStatusEnum::CANCELED->getLabel(),
                             OrderStatusEnum::RETURNED->value => OrderStatusEnum::RETURNED->getLabel(),
                         ])->label('الحالة')->required()->default(OrderStatusEnum::CANCELED->value),
                         Forms\Components\Textarea::make('canceled_info')->label('سبب الإلغاء / الإعادة')
