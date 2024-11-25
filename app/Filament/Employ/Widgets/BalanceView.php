@@ -23,11 +23,11 @@ class BalanceView extends BaseWidget
         $list=[];
 
         foreach ($balances as $balance){
-            $list[]=    Stat::make('رصيد صندوق '.$balance->currency?->name,$balance->totalBalance);
+            $list[]=    Stat::make('رصيد صندوق '.$balance->currency?->name,HelperBalance::formatNumber($balance->totalBalance));
 
         }
         foreach ($balances2 as $balance){
-            $list[]=    Stat::make('رصيد قيد التحصيل صندوق '.$balance->currency?->name,$balance->totalBalance);
+            $list[]=    Stat::make('رصيد قيد التحصيل صندوق '.$balance->currency?->name,HelperBalance::formatNumber($balance->totalBalance));
 
         }
         return $list;
