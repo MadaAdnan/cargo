@@ -243,6 +243,7 @@ class HelperBalance
                     'info' => 'دفع أجور تحصيل  #' . $order->code,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
+                    'created_at'=>$order->created_at,
                 ]);
             }
             if ($order->price_tr > 0) {
@@ -288,6 +289,7 @@ class HelperBalance
                     'info' => 'دفع أجور تحصيل  #' . $order->code,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
+                    'created_at'=>$order->created_at,
                 ]);
             }
             Balance::where('order_id', $order->id)->where('pending', true)->delete();
