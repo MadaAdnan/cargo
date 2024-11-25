@@ -58,6 +58,7 @@ class ListBalabceTRS extends ListRecords
 //                        return;
 //                    }
                     \DB::beginTransaction();
+                    $customer=User::find($data['user_id']);
                     try {
                         Balance::create([
                             'credit' => 0,
@@ -75,7 +76,7 @@ class ListBalabceTRS extends ListRecords
                             'credit' => $data['value'],
                             'debit' => 0,
                             'type' => BalanceTypeEnum::CATCH->value,
-                            'is_complete' => false,
+                            'is_complete' => $customer?->level==LevelUserEnum::USER,
                             'user_id' => $data['user_id'],
                             'currency_id' => 2,
 
