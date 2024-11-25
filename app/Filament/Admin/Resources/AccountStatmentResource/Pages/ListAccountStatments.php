@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\AccountStatmentResource\Pages;
 
 use App\Filament\Admin\Resources\AccountStatmentResource;
 use Filament\Actions;
+use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -17,7 +18,14 @@ class ListAccountStatments extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
-
+    public function getTabs(): array
+    {
+        return [
+            Tab::make('all')->modifyQueryUsing(fn($query)=>$query)->label('الكل'),
+            Tab::make('usd')->modifyQueryUsing(fn($query)=>$query->where('currency_id',1))->label('USD'),
+            Tab::make('try')->modifyQueryUsing(fn($query)=>$query->where('currency_id',2))->label('TRY'),
+        ];
+    }
     protected function getTableQuery(): ?Builder
     {
         return parent::getTableQuery()->where('is_complete',true)

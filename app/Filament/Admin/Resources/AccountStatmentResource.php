@@ -129,10 +129,7 @@ class AccountStatmentResource extends Resource
             //H: up here, added default sorting to table based on id to show the latest total of an account
             ->filters([
                 Tables\Filters\SelectFilter::make('user_id')->relationship('user', 'name')->searchable()->default(0)->label('المستخدم'),
-                Tables\Filters\SelectFilter::make('currency_id')->options([
-                    1 => 'دولار',
-                    2 => 'تركي'
-                ])->default(1)->label('العملة'),
+
 
                 Tables\Filters\TernaryFilter::make('pending')->trueLabel('قيد التحصيل')->falseLabel('مكتمل')
                     ->queries(
