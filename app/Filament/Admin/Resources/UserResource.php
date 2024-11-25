@@ -29,6 +29,8 @@ use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Tabs;
 
 use PHPUnit\Exception;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 
 class UserResource extends Resource
@@ -189,7 +191,7 @@ class UserResource extends Resource
             ->columns([
                 //H: Show Users ID in table cells
                 Tables\Columns\TextColumn::make('id')->label('الرقم التسلسلي')->searchable()->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('name')->label('الاسم')->searchable(),
                 Tables\Columns\SelectColumn::make('status')->label('حالة المستخدم')
                     ->options([
@@ -213,6 +215,10 @@ class UserResource extends Resource
             ])->defaultSort('created_at', 'desc')
             ->filters([
                 //
+            ]) ->headerActions([
+                ExportAction::make()->exports([
+                    ExcelExport::make()->withChunkSize(100)->fromTable()
+                ])
             ])
             ->actions([
 
