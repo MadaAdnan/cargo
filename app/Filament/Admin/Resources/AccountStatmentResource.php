@@ -80,6 +80,7 @@ class AccountStatmentResource extends Resource
 
                 Tables\Columns\TextColumn::make('credit')->label('دائن'),
                 Tables\Columns\TextColumn::make('debit')->label('مدين'),
+                Tables\Columns\TextColumn::make('currency.code')->label('العملة'),
 
                 /*Tables\Columns\BadgeColumn::make('process_type')
                     ->label('نوع العملية')
