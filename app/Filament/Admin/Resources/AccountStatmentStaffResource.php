@@ -77,8 +77,8 @@ class AccountStatmentStaffResource extends Resource
             ->poll(10)
             ->columns([
 
-                Tables\Columns\TextColumn::make('credit')->label('إيداع'),
-                Tables\Columns\TextColumn::make('debit')->label('قبض'),
+                Tables\Columns\TextColumn::make('credit')->label('مدين'),
+                Tables\Columns\TextColumn::make('debit')->label('دائن'),
                 Tables\Columns\TextColumn::make('currency.code')->label('العملة'),
 
                 Tables\Columns\TextColumn::make('info')->label('الملاحظات'),
