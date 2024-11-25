@@ -79,7 +79,7 @@ class AccountStatmentStaffResource extends Resource
 
                 Tables\Columns\TextColumn::make('credit')->label('مدين'),
                 Tables\Columns\TextColumn::make('debit')->label('دائن'),
-                Tables\Columns\TextColumn::make('currency.code')->label('العملة'),
+                Tables\Columns\TextColumn::make('currency.code')->label('العملة')->sortable(),
 
                 Tables\Columns\TextColumn::make('info')->label('الملاحظات'),
                 Tables\Columns\TextColumn::make('customer_name')->label('الطرف المقابل'),
