@@ -104,6 +104,7 @@ class BalanceResource extends Resource
             'index' => Pages\ListBalances::route('/'),
             'create' => Pages\CreateBalance::route('/create'),
             'edit' => Pages\EditBalance::route('/{record}/edit'),
+            'view' => Pages\ViewBalance::route('/{record}'),
         ];
     }
 }
