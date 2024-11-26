@@ -5,6 +5,7 @@ namespace App\Filament\Branch\Resources\BalabceTRResource\Pages;
 use App\Enums\BalanceTypeEnum;
 use App\Enums\LevelUserEnum;
 use App\Filament\Branch\Resources\BalabceTRResource;
+use App\Filament\Branch\Resources\BalanceResource;
 use App\Models\Balance;
 use App\Models\User;
 use Filament\Actions;
@@ -56,7 +57,7 @@ class ListBalabceTRS extends ListRecords
                             'currency_id'=>2,
                             'customer_name'=>auth()->user()->name,
                         ]);
-                        Balance::create([
+                       $balance= Balance::create([
                             'type'=>BalanceTypeEnum::CATCH->value,
                             'user_id'=>auth()->id(),
                             'debit'=>$data['value'],
@@ -69,6 +70,7 @@ class ListBalabceTRS extends ListRecords
 
                         \DB::commit();
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+                        $this->redirect(BalanceResource::getUrl('view',['record'=>$balance->id]));
                     } catch (\Exception | \Error $e) {
                         \DB::rollBack();
                         Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
@@ -105,7 +107,7 @@ class ListBalabceTRS extends ListRecords
                             'currency_id'=>2,
                             'customer_name'=>auth()->user()->name,
                         ]);
-                        Balance::create([
+                    $balance=    Balance::create([
                             'type'=>BalanceTypeEnum::CATCH->value,
                             'user_id'=>auth()->id(),
                             'debit'=>0,
@@ -118,6 +120,7 @@ class ListBalabceTRS extends ListRecords
 
                         \DB::commit();
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+                        $this->redirect(BalanceResource::getUrl('view',['record'=>$balance->id]));
                     } catch (\Exception | \Error $e) {
                         \DB::rollBack();
                         Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();

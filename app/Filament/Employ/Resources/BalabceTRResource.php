@@ -129,6 +129,7 @@ public static function canView(Model $record): bool
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('complete')->action(fn($record)=>$record->update(['is_complete'=>true]))->visible(fn($record)=>!$record->is_complete)
                     ->label('تأكيد إستلام الدفعة')->requiresConfirmation(),
@@ -153,6 +154,7 @@ public static function canView(Model $record): bool
             'index' => Pages\ListBalabceTRS::route('/'),
             'create' => Pages\CreateBalabceTR::route('/create'),
             'edit' => Pages\EditBalabceTR::route('/{record}/edit'),
+            'view' => Pages\ViewBalance::route('/{record}'),
         ];
     }
 }

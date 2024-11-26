@@ -72,7 +72,7 @@ class ListBalabceTRS extends ListRecords
 
                         ]);
 
-                        Balance::create([
+                       $balance= Balance::create([
                             'credit' => $data['value'],
                             'debit' => 0,
                             'type' => BalanceTypeEnum::CATCH->value,
@@ -86,6 +86,7 @@ class ListBalabceTRS extends ListRecords
                         ]);
                         \DB::commit();
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السند')->success()->send();
+                        $this->redirect(BalabceTRResource::getUrl('view',['record'=>$balance->id]));
                     } catch (\Exception | \Error $e) {
                         \DB::rollBack();
                         Notification::make('success')->title('فشل العملية')->body('لم يتم إضافة السند')->danger()->send();
@@ -112,7 +113,7 @@ class ListBalabceTRS extends ListRecords
                     $target=User::find($data['user_id']);
                     try {
 
-                        Balance::create([
+                       Balance::create([
                             'type'=>BalanceTypeEnum::PUSH->value,
                             'user_id'=>$data['user_id'],
                             'debit'=>$data['value'],
@@ -122,7 +123,7 @@ class ListBalabceTRS extends ListRecords
                             'currency_id'=>2,
                             'customer_name'=>auth()->user()->name,
                         ]);
-                        Balance::create([
+                        $balance=     Balance::create([
                             'type'=>BalanceTypeEnum::CATCH->value,
                             'user_id'=>auth()->id(),
                             'debit'=>0,
@@ -135,6 +136,7 @@ class ListBalabceTRS extends ListRecords
 
                         \DB::commit();
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+                        $this->redirect(BalabceTRResource::getUrl('view',['record'=>$balance->id]));
                     } catch (\Exception | \Error $e) {
                         \DB::rollBack();
                         Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();

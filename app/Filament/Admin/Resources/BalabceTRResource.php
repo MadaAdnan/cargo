@@ -91,6 +91,7 @@ class BalabceTRResource extends Resource
             ])
             ->filters([])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()->visible(fn($record) => $record->type === BalanceTypeEnum::START),
                 Tables\Actions\Action::make('complete')->action(fn($record) => $record->update(['is_complete' => true]))->visible(fn($record) => !$record->is_complete)
                     ->label('تأكيد إستلام الدفعة')->requiresConfirmation(),
@@ -115,6 +116,7 @@ class BalabceTRResource extends Resource
             'index' => Pages\ListBalabceTRS::route('/'),
             'create' => Pages\CreateBalabceTR::route('/create'),
             'edit' => Pages\EditBalabceTR::route('/{record}/edit'),
+          'view'=>Pages\ViewBalanceTR::route('/{record}')
         ];
     }
 }

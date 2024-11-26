@@ -57,7 +57,7 @@ class ListBalances extends ListRecords
                             'customer_name' => auth()->user()->name,
                         ]);
 
-                        Balance::create([
+                        $balance=   Balance::create([
                             'type' => BalanceTypeEnum::PUSH->value,
                             'user_id' => auth()->id(),
                             'debit' => 0,
@@ -69,6 +69,7 @@ class ListBalances extends ListRecords
                         ]);
                         \DB::commit();
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+                        $this->redirect(BalanceResource::getUrl('view',['record'=>$balance->id]));
                     } catch (\Exception | \Error $e) {
                         \DB::rollBack();
                         Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
@@ -107,7 +108,7 @@ class ListBalances extends ListRecords
                             'is_complete' => true,
                             'customer_name' => auth()->user()->name,
                         ]);
-                        Balance::create([
+                       $balance= Balance::create([
                             'type' => BalanceTypeEnum::CATCH->value,
                             'user_id' => auth()->id(),
                             'debit' => $data['value'],
@@ -120,6 +121,7 @@ class ListBalances extends ListRecords
 
                         \DB::commit();
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+                        $this->redirect(BalanceResource::getUrl('view',['record'=>$balance->id]));
                     } catch (\Exception | \Error $e) {
                         \DB::rollBack();
                         Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();

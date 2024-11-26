@@ -57,7 +57,7 @@ $user=User::find($data['user_id']);
                             'is_complete' => true,
                         ]);
 
-                        Balance::create([
+                      $balance=  Balance::create([
                             'type' => BalanceTypeEnum::PUSH->value,
                             'user_id' => auth()->id(),
                             'debit' => 0,
@@ -70,6 +70,7 @@ $user=User::find($data['user_id']);
                         \DB::commit();
 
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+                        $this->redirect(\App\Filament\Employ\Resources\BalabceTRResource::getUrl('view',['record'=>$balance->id]));
                     } catch (\Exception | \Error $e) {
                         \DB::rollBack();
                         Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
