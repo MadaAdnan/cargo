@@ -51,8 +51,8 @@ class BalanceResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('credit')->label('إيداع')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
-                Tables\Columns\TextColumn::make('debit')->label('قبض')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
+                Tables\Columns\TextColumn::make('credit')->label('دائن')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
+                Tables\Columns\TextColumn::make('debit')->label('مدين')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
 
                 Tables\Columns\TextColumn::make('info')->label('الملاحظات'),
                 Tables\Columns\TextColumn::make('customer_name')->label('الطرف المقابل'),
@@ -62,7 +62,7 @@ class BalanceResource extends Resource
 
                 Tables\Columns\TextColumn::make('total')->label('الرصيد')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
 
-                //H: get date and time and split them using two temporary columns 
+                //H: get date and time and split them using two temporary columns
                 Tables\Columns\TextColumn::make('created_at_date')
                     ->state(function (Model $rec) {
                         return \Carbon\Carbon::parse($rec->created_at)->format('Y-m-d');

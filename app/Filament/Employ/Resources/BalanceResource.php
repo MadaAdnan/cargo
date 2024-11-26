@@ -111,8 +111,8 @@ class BalanceResource extends Resource
         return $table
 
             ->columns([
-                Tables\Columns\TextColumn::make('credit')->label('إيداع')->formatStateUsing(fn($state)=>HelperBalance::formatNumber($state)),
-                Tables\Columns\TextColumn::make('debit')->label('قبض')->formatStateUsing(fn($state)=>HelperBalance::formatNumber($state)),
+                Tables\Columns\TextColumn::make('credit')->label('دائن')->formatStateUsing(fn($state)=>HelperBalance::formatNumber($state)),
+                Tables\Columns\TextColumn::make('debit')->label('مدين')->formatStateUsing(fn($state)=>HelperBalance::formatNumber($state)),
                 Tables\Columns\TextColumn::make('customer_name')->label('اسم الزبون المستلم'),
                 Tables\Columns\TextColumn::make('info')->label('الملاحظات'),
                 Tables\Columns\TextColumn::make('customer_name')->label('الطرف المقابل'),
