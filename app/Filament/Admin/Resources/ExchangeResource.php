@@ -68,7 +68,7 @@ class ExchangeResource extends Resource
                 })->label('نوع التحويل'),
                 Tables\Columns\TextColumn::make('amount')->label('الكمية'),
                 Tables\Columns\TextColumn::make('exchange')->label('سعر الصرف'),
-                Tables\Columns\TextColumn::make('created_at')->formatStateUsing(fn($record)=>HelperBalance::formatNumber($record->amount*$record->exchange))->label('قيمة ما سيحصل عليه'),
+                Tables\Columns\TextColumn::make('created_at')->formatStateUsing(fn($record)=>$record->currency_id==1?HelperBalance::formatNumber($record->amount*$record->exchange):HelperBalance::formatNumber($record->amount/$record->exchange))->label('قيمة ما سيحصل عليه'),
                 Tables\Columns\TextColumn::make('user.name')->label('طلب من'),
                 Tables\Columns\TextColumn::make('status')->formatStateUsing(fn($state) => OrderStatusEnum::tryFrom($state)?->getLabel())->label('الحالة'),
             ])
