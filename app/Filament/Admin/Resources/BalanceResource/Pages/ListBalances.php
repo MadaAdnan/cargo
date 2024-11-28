@@ -54,7 +54,7 @@ class ListBalances extends ListRecords
                             'info' => $data['info'],
                             'currency_id' => 1,
                             'is_complete' => true,
-                            'customer_name' => auth()->user()->name,
+                            'customer_name' => auth()->user()?->name,
                         ]);
 
                         $balance=   Balance::create([
@@ -65,7 +65,7 @@ class ListBalances extends ListRecords
                             'info' => $data['info'],
                             'currency_id' => 1,
                             'is_complete' => true,
-                            'customer_name' => $user->name,
+                            'customer_name' => $user?->name??$user?->id,
                         ]);
                         \DB::commit();
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
@@ -116,7 +116,7 @@ class ListBalances extends ListRecords
                             'info' => $data['info'],
                             'currency_id' => 1,
                             'is_complete' => true,
-                            'customer_name' => $user->name,
+                            'customer_name' => $user?->name??$user?->id,
                         ]);
 
                         \DB::commit();
@@ -257,7 +257,7 @@ class ListBalances extends ListRecords
                                 'info' => $data['info'],
                                 'is_complete' => true,
                                 'currency_id' => 1,
-                                'customer_name' => $user->name,
+                                'customer_name' => $user?->name??$user->id,
                             ]);
 
                             \DB::commit();
@@ -310,7 +310,7 @@ class ListBalances extends ListRecords
                                 'info' => $data['info'],
                                 'currency_id' => 1,
                                 'is_complete' => true,
-                                'customer_name' => $user->name,
+                                'customer_name' => $user?->name??$user?->id,
                             ]);
 
                             \DB::commit();
