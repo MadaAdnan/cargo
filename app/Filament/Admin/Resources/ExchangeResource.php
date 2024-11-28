@@ -71,10 +71,7 @@ class ExchangeResource extends Resource
                 Tables\Columns\TextColumn::make('status')->formatStateUsing(fn($state) => OrderStatusEnum::tryFrom($state)?->getLabel())->label('الحالة'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('currency_id')->options([
-                    1 => ' من الدولار إلى التركي',
-                    2 => 'من التركي إلى الدولار',
-                ])->label('نوع التصريف'),
+
                 Tables\Filters\TernaryFilter::make('status')->trueLabel('بالإنتظار')->falseLabel('تم')
                     ->queries(
                         true: fn($query) => $query->where('status', 'pending'), false: fn($query) => $query->where('status', 'success'), blank: fn($query) => $query
