@@ -209,8 +209,10 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('branch.name')->label('فرع')->sortable(),
                 Tables\Columns\TextColumn::make('city.name')->label('المدينة')->sortable(),
                 //H: added currency report for users
-                Tables\Columns\TextColumn::make('total_balance')->label('الرصيد USD')->description(fn($record)=>$record->pending_balance),
-                Tables\Columns\TextColumn::make('total_balance_tr')->label('الرصيد TRY')->description(fn($record) => $record->total_balance_tr_pending)
+                Tables\Columns\TextColumn::make('total_balance')->label('الرصيد USD'),
+                Tables\Columns\TextColumn::make('pending_balance')->label('الرصيد USD قيد التحصيل'),
+                Tables\Columns\TextColumn::make('total_balance_tr')->label('الرصيد TRY'),
+                Tables\Columns\TextColumn::make('total_balance_tr_pending')->label('الرصيد TRYقيد التحصيل')
 
             ])->defaultSort('created_at', 'desc')
             ->filters([
