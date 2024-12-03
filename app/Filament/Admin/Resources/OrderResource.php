@@ -362,7 +362,7 @@ class OrderResource extends Resource
     {
 $users=User::selectRaw('id,name')->get();
 $cities=City::selectRaw('id,name,area_id')->get();
-$area=Area::pluck('name','id');
+//$area=Area::pluck('name','id');
         return $table
             ->poll(10)
             ->columns([
