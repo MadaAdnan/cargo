@@ -361,7 +361,7 @@ class OrderResource extends Resource
     public static function table(Table $table): Table
     {
 $users=User::selectRaw('id,name')->get();
-$cities=City::selectRaw('id,name,area_id')->get();
+$cities=City::selectRaw('id,name')->get();
 //$area=Area::pluck('name','id');
         return $table
             ->poll(10)
