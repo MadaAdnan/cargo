@@ -362,7 +362,7 @@ class OrderResource extends Resource
     {
 $users=User::selectRaw('id,name')->get();
 $cities=City::selectRaw('id,name,city_id')->get();
-$area=Area::pluck('name','id');
+
         return $table
             ->poll(10)
             ->columns([
@@ -486,9 +486,9 @@ $area=Area::pluck('name','id');
 
 
                         ])->label('حالة الطلب')->multiple(),
-                        Forms\Components\Select::make('area_source')->options($area)
+                        Forms\Components\Select::make('area_source')->options($cities->where('is_main','=',1)->pluck('name','id'))
                             ->label('من منطقة')->live(),
-                        Forms\Components\Select::make('area_target')->options($area)
+                        Forms\Components\Select::make('area_target')->options($cities->where('is_main','=',1)->pluck('name','id'))
                             ->label('إلى منطقة')->live(),
                         Forms\Components\Select::make('city_source_id')->options($cities->pluck('name','id'))
                             ->label('من بلدة')->multiple(),
