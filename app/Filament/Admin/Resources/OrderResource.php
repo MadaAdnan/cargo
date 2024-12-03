@@ -361,8 +361,8 @@ class OrderResource extends Resource
     public static function table(Table $table): Table
     {
 $users=User::selectRaw('id,name')->get();
-$cities=City::selectRaw('id,name')->get();
-//$area=Area::pluck('name','id');
+$cities=City::selectRaw('id,name,city_id')->get();
+$area=Area::pluck('name','id');
         return $table
             ->poll(10)
             ->columns([
@@ -486,10 +486,10 @@ $cities=City::selectRaw('id,name')->get();
 
 
                         ])->label('حالة الطلب')->multiple(),
-                       /* Forms\Components\Select::make('area_source')->options($area)
+                        Forms\Components\Select::make('area_source')->options($area)
                             ->label('من منطقة')->live(),
                         Forms\Components\Select::make('area_target')->options($area)
-                            ->label('إلى منطقة')->live(),*/
+                            ->label('إلى منطقة')->live(),
                         Forms\Components\Select::make('city_source_id')->options($cities->pluck('name','id'))
                             ->label('من بلدة')->multiple(),
                         Forms\Components\Select::make('city_target_id')->options($cities->pluck('name','id'))
@@ -500,14 +500,14 @@ $cities=City::selectRaw('id,name')->get();
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
-                           /* ->when(
+                           ->when(
                                 $data['area_source'],
-                                fn(Builder $query, $date): Builder => $query->whereHas('citySource', fn($query)=>$query->where('cities.area_id',$date)),
+                                fn(Builder $query, $date): Builder => $query->whereHas('citySource', fn($query)=>$query->where('cities.city_id',$date)),
                             )
                             ->when(
                                 $data['area_target'],
-                                fn(Builder $query, $date): Builder => $query->whereHas('cityTarget', fn($query)=>$query->where('cities.area_id',$date)),
-                            )*/
+                                fn(Builder $query, $date): Builder => $query->whereHas('cityTarget', fn($query)=>$query->where('cities.city_id',$date)),
+                            )
                             ->when(
                                 $data['branch_target_id'],
                                 fn(Builder $query, $date): Builder => $query->where('branch_target_id', $date),
