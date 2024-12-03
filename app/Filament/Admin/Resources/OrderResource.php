@@ -486,9 +486,9 @@ $cities=City::selectRaw('id,name,city_id')->get();
 
 
                         ])->label('حالة الطلب')->multiple(),
-                        Forms\Components\Select::make('area_source')->options($cities->where('is_main','=',1)->pluck('name','id'))
+                        Forms\Components\Select::make('area_source')->options(City::where('is_main','=',1)->pluck('name','id'))
                             ->label('من منطقة')->live(),
-                        Forms\Components\Select::make('area_target')->options($cities->where('is_main','=',1)->pluck('name','id'))
+                        Forms\Components\Select::make('area_target')->options(City::where('is_main','=',1)->pluck('name','id'))
                             ->label('إلى منطقة')->live(),
                         Forms\Components\Select::make('city_source_id')->options($cities->pluck('name','id'))
                             ->label('من بلدة')->multiple(),
