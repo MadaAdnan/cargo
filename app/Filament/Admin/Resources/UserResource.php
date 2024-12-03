@@ -64,28 +64,28 @@ class UserResource extends Resource
 
                                 //                                Forms\Components\TextInput::make('phone')->label('الهاتف')->tel()->required(),
                                 Forms\Components\Grid::make(2) // تقسيم الحقول إلى صفين
-                                    ->schema([
+                                ->schema([
 
-                                        Forms\Components\TextInput::make('phone_number')
-                                            ->label('رقم الهاتف')
-                                            ->placeholder('1234567890')
-                                            ->numeric() // التأكد أن الحقل يقبل الأرقام فقط
-                                            ->maxLength(15)
-                                            ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
-                                            ->tel()
-                                            ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),
-                                        // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-                                        // الحد الأقصى لطول الرق,
+                                    Forms\Components\TextInput::make('phone_number')
+                                        ->label('رقم الهاتف')
+                                        ->placeholder('1234567890')
+                                        ->numeric() // التأكد أن الحقل يقبل الأرقام فقط
+                                        ->maxLength(15)
+                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
+                                        ->tel()
+                                        ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),
+                                    // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                    // الحد الأقصى لطول الرق,
 
-                                        Forms\Components\TextInput::make('country_code')
-                                            ->label('رمز الدولة')
-                                            ->placeholder('963')
-                                            ->prefix('+')
-                                            ->maxLength(3)
-                                            ->numeric()
-                                            ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']),
-                                        // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-                                    ]),
+                                    Forms\Components\TextInput::make('country_code')
+                                        ->label('رمز الدولة')
+                                        ->placeholder('963')
+                                        ->prefix('+')
+                                        ->maxLength(3)
+                                        ->numeric()
+                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']),
+                                    // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                ]),
 
 
                                 Forms\Components\Textarea::make('address')->label('العنوان التفصيلي'),
@@ -96,7 +96,6 @@ class UserResource extends Resource
                                         $set('branch_id', null);
                                         $set('temp', Branch::where('city_id', $state)->pluck('name'));
                                     })->live(),
-
 
 
                                 Forms\Components\Radio::make('level')->options(
@@ -146,7 +145,6 @@ class UserResource extends Resource
 
 
                             ]),
-
 
 
                         Tabs\Tab::make('الخارطة')
@@ -217,13 +215,19 @@ class UserResource extends Resource
             ])->defaultSort('created_at', 'desc')
             ->filters([
                 //
-            ]) ->headerActions([
+            ])->headerActions([
                 ExportAction::make()->exports([
                     ExcelExport::make()->withChunkSize(100)->fromTable()
                 ])
             ])
             ->actions([
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('balance_usd')->url(fn($record) => UserResource::getUrl('balance', ['record' => $record, 'currency' => 1,'pending'=>0]))->label('كشف حساب دولار'),
+                    Tables\Actions\Action::make('balance_tr')->url(fn($record) => UserResource::getUrl('balance', ['record' => $record, 'currency' => 2,'pending'=>0]))->label('كشف حساب تركي'),
+                    Tables\Actions\Action::make('balance_usd_pending')->url(fn($record) => UserResource::getUrl('balance', ['record' => $record, 'currency' => 1,'pending'=>1]))->label('كشف حساب دولار قيد التحصيل'),
+                    Tables\Actions\Action::make('balance_tr_pending')->url(fn($record) => UserResource::getUrl('balance', ['record' => $record, 'currency' => 2,'pending'=>1]))->label('كشف حساب تركي قيد التحصيل'),
 
+                ])->label('كشف حساب'),
                 Tables\Actions\ViewAction::make(),
 
                 Tables\Actions\EditAction::make(),
@@ -248,6 +252,7 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
+            'balance' => Pages\AccountStatement::route('/{record}/{currency}/{pending}/balances')
         ];
     }
 
