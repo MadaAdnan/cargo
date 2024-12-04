@@ -214,7 +214,15 @@ class UserResource extends Resource
 
             ])->defaultSort('created_at', 'desc')
             ->filters([
-                //
+                Tables\Filters\Filter::make('filter')->form([
+                    Forms\Components\Select::make('main_city')->options(City::where('is_main',true)->pluck('name','id'))->label('المنطقة')->reactive(),
+                    Forms\Components\Select::make('city_id')->options(fn($get)=>City::where('city_id',$get('main_city'))->pluck('name','id'))->label('المدينة')->reactive(),
+                    Forms\Components\Select::make('branch_id')->options(fn($get)=>Branch::where('city_id',$get('main_city'))->pluck('name','id'))->label('الفرع'),
+                ])->query(fn($query,$data)=>$query
+                ->when($data['main_city'],fn($query)=>$query->where('city_id',$data['main_city'])->orWhereHas('city',fn($query)=>$query->where('cities.city_id',$data['main_city'])))
+                    ->when($data['city_id'],fn($query)=>$query->where('city_id',$data['city_id']))
+                    ->when($data['branch_id'],fn($query)=>$query->where('branch_id',$data['branch_id']))
+                )
             ])->headerActions([
                 ExportAction::make()->exports([
                     ExcelExport::make()->withChunkSize(100)->fromTable()
