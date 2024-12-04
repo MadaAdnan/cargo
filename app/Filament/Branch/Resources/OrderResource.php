@@ -249,6 +249,7 @@ class OrderResource extends Resource
                             Forms\Components\Grid::make()->schema([
                                 Forms\Components\Select::make('unit_id')
                                     ->relationship('unit', 'name')->label('الوحدة')->required(),
+                                Forms\Components\TextInput::make('note')->label('ملاحظات')
                             ]),
 
                         ]),
@@ -415,7 +416,9 @@ class OrderResource extends Resource
                     })->openUrlInNewTab()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record)=>'موظف الإلتقاط : '.$record->pick?->name)->description(fn($record)=>'موظف التسليم : '.$record->given?->name)->label('التوكيل')
+                Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record)=>'موظف الإلتقاط : '.$record->pick?->name)->description(fn($record)=>'موظف التسليم : '.$record->given?->name)->label('التوكيل'),
+
+                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary')
 
 
             ])->defaultSort('created_at', 'desc')

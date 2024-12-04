@@ -149,6 +149,7 @@ class OrderResource extends Resource
                                 ->relationship('weight', 'name')
                                 ->label
                                 ('فئة الوزن')->searchable()->preload(),
+                            Forms\Components\TextInput::make('note')->label('ملاحظات')
                         ]),
 
 
@@ -246,6 +247,8 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('receive_address')->label('هاتف المستلم ')->description(fn($record) => $record->receive_phone)
                     ->url(fn($record) => url('https://wa.me/' . ltrim($record?->receive_phone, '+')))->openUrlInNewTab()
                     ->searchable(),
+
+                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
 
 
             ])->defaultSort('created_at', 'desc')
