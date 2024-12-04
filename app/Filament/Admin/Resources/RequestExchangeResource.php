@@ -41,7 +41,11 @@ class RequestExchangeResource extends Resource
                             $result= HelperBalance::formatNumber($get('amount') * $get('exchange'));
                             $set('result',$result);
                         } elseif ($get('currency_id') == 2) {
-                            $result=  HelperBalance::formatNumber($get('amount') / $get('exchange'));
+                            try{
+                                $result=  HelperBalance::formatNumber($get('amount') / $get('exchange'));
+                            }catch (\Exception $e){
+                                $result=0;
+                            }
                             $set('result',$result);
                         }
                     })->live(),
@@ -50,7 +54,11 @@ class RequestExchangeResource extends Resource
                             $result= HelperBalance::formatNumber($get('amount') * $get('exchange'));
                             $set('result',$result);
                         } elseif ($get('currency_id') == 2) {
-                            $result=  HelperBalance::formatNumber($get('amount') / $get('exchange'));
+                            try{
+                                $result=  HelperBalance::formatNumber($get('amount') / $get('exchange'));
+                            }catch (\Exception $e){
+                                $result=0;
+                            }
                             $set('result',$result);
                         }
                     })->live(),
@@ -59,7 +67,11 @@ class RequestExchangeResource extends Resource
                             $result= HelperBalance::formatNumber($get('amount') * $get('exchange'));
                             $set('result',$result);
                         } elseif ($get('currency_id') == 2) {
-                            $result=  HelperBalance::formatNumber($get('amount') / $get('exchange'));
+                            try{
+                                $result=  HelperBalance::formatNumber($get('amount') / $get('exchange'));
+                            }catch (\Exception $e){
+                                $result=0;
+                            }
                             $set('result',$result);
                         }
                     })->live(),
