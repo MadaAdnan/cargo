@@ -48,7 +48,7 @@ class RequestExchangeResource extends Resource
                             }
                             $set('result',$result);
                         }
-                    })->live(),
+                    })->live()->debounce(1000),
                     Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required()->afterStateUpdated(function ($get,$set) {
                         if ($get('currency_id') == 1) {
                             $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
@@ -61,7 +61,7 @@ class RequestExchangeResource extends Resource
                             }
                             $set('result',$result);
                         }
-                    })->live(),
+                    })->live()->debounce(1000),
                     Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->numeric()->required()->afterStateUpdated(function ($get,$set) {
                         if ($get('currency_id') == 1) {
                             $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
@@ -74,7 +74,7 @@ class RequestExchangeResource extends Resource
                             }
                             $set('result',$result);
                         }
-                    })->live(),
+                    })->live()->debounce(1000),
                     Forms\Components\TextInput::make('result')->dehydrated(false)->label('الإجمالي')->numeric()->required(),
 
                 ])
