@@ -38,11 +38,11 @@ class RequestExchangeResource extends Resource
                         2 => 'من التركي إلى الدولار',
                     ])->label('نوع التحويل')->required()->afterStateUpdated(function ($get,$set) {
                         if ($get('currency_id') == 1) {
-                            $result= HelperBalance::formatNumber($get('amount') * $get('exchange'));
+                            $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
                             $set('result',$result);
                         } elseif ($get('currency_id') == 2) {
                             try{
-                                $result=  HelperBalance::formatNumber($get('amount') / $get('exchange'));
+                                $result=  HelperBalance::formatNumber((double)$get('amount') / (double)$get('exchange'));
                             }catch (\Exception $e){
                                 $result=0;
                             }
@@ -51,11 +51,11 @@ class RequestExchangeResource extends Resource
                     })->live(),
                     Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required()->afterStateUpdated(function ($get,$set) {
                         if ($get('currency_id') == 1) {
-                            $result= HelperBalance::formatNumber($get('amount') * $get('exchange'));
+                            $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
                             $set('result',$result);
                         } elseif ($get('currency_id') == 2) {
                             try{
-                                $result=  HelperBalance::formatNumber($get('amount') / $get('exchange'));
+                                $result=  HelperBalance::formatNumber((double)$get('amount') / (double)$get('exchange'));
                             }catch (\Exception $e){
                                 $result=0;
                             }
@@ -64,11 +64,11 @@ class RequestExchangeResource extends Resource
                     })->live(),
                     Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->numeric()->required()->afterStateUpdated(function ($get,$set) {
                         if ($get('currency_id') == 1) {
-                            $result= HelperBalance::formatNumber($get('amount') * $get('exchange'));
+                            $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
                             $set('result',$result);
                         } elseif ($get('currency_id') == 2) {
                             try{
-                                $result=  HelperBalance::formatNumber($get('amount') / $get('exchange'));
+                                $result=  HelperBalance::formatNumber((double)$get('amount') / (double)$get('exchange'));
                             }catch (\Exception $e){
                                 $result=0;
                             }
