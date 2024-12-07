@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\UserResource;
 use App\Helper\HelperBalance;
 use App\Models\Balance;
 use App\Models\User;
+use DB;
 use Filament\Resources\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -16,6 +17,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class AccountStatement extends Page implements HasTable
 {
@@ -42,21 +44,57 @@ public function getTitle(): string|Htmlable
         $this->currencyId = $currency;
         $this->record = User::find($record);
     }
+    protected function getTableQuery(): Builder
+    {
+        return  Balance::where([
+            'user_id' => $this->recordId,
+            'currency_id' => $this->currencyId,
+            'is_complete' => true,
+            'pending' => $this->isPending,
+        ]);
+    }
+    public function getRecords(): LengthAwarePaginator
+    {
+        $query = $this->query();
 
+        $records = $query->get();
 
+        $runningTotal = 0;
+        foreach ($records as $record) {
+            $runningTotal += $record->credit - $record->debit;
+            $record->running_total = $runningTotal;
+        }
+
+        return new LengthAwarePaginator(
+            $records,
+            $query->count(),
+            $this->getPerPage(),
+            $this->getPage(),
+            ['path' => $this->query()->toSql()]
+        );
+    }
     // إعداد أعمدة الجدول
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn() => Balance::where([
+           /* ->query(fn() => Balance::where([
                 'user_id' => $this->recordId,
                 'currency_id' => $this->currencyId,
                 'is_complete' => true,
                 'pending' => $this->isPending,
-            ]))
+            ])->select(
+                '*',
+                DB::raw('SUM(credit - debit) OVER (ORDER BY id) AS balance')
+            )
+                ->orderBy('id'))*/
             ->columns([
                 TextColumn::make('credit')->label('دائن')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
                 TextColumn::make('debit')->label('مدين')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
+                TextColumn::make('id')->label('مدين') ->formatStateUsing(function ($record) {
+                    static $runningTotal = 0;
+                    $runningTotal += $record->credit - $record->debit;
+                    return $runningTotal;
+                }),
 
                 TextColumn::make('info')->label('الملاحظات'),
                 TextColumn::make('customer_name')->label('الطرف المقابل'),

@@ -17,6 +17,8 @@ use App\Filament\Admin\Resources\UserResource;
 
 Route::get('/', function () {
 
+
+
     //$users=\App\Models\User::where('level',\App\Enums\LevelUserEnum::USER->value)->pluck('id')->toArray();
    // \App\Models\Balance::where('is_complete',false)->whereIn('user_id',$users)->delete();
 
