@@ -44,49 +44,22 @@ public function getTitle(): string|Htmlable
         $this->currencyId = $currency;
         $this->record = User::find($record);
     }
-    protected function getTableQuery(): Builder
-    {
-        return  Balance::where([
-            'user_id' => $this->recordId,
-            'currency_id' => $this->currencyId,
-            'is_complete' => true,
-            'pending' => $this->isPending,
-        ]);
-    }
-    public function getRecords(): LengthAwarePaginator
-    {
-        $query = $this->query();
 
-        $records = $query->get();
 
-        $runningTotal = 0;
-        foreach ($records as $record) {
-            $runningTotal += $record->credit - $record->debit;
-            $record->running_total = $runningTotal;
-        }
-
-        return new LengthAwarePaginator(
-            $records,
-            $query->count(),
-            $this->getPerPage(),
-            $this->getPage(),
-            ['path' => $this->query()->toSql()]
-        );
-    }
     // إعداد أعمدة الجدول
     public function table(Table $table): Table
     {
         return $table
-           /* ->query(fn() => Balance::where([
+            ->query(fn() => Balance::where([
                 'user_id' => $this->recordId,
                 'currency_id' => $this->currencyId,
                 'is_complete' => true,
                 'pending' => $this->isPending,
-            ])->select(
+            ])/*->select(
                 '*',
                 DB::raw('SUM(credit - debit) OVER (ORDER BY id) AS balance')
-            )
-                ->orderBy('id'))*/
+            )*/
+                ->orderBy('id'))
             ->columns([
                 TextColumn::make('credit')->label('دائن')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
                 TextColumn::make('debit')->label('مدين')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
