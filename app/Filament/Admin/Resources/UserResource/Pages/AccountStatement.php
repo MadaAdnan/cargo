@@ -47,6 +47,20 @@ public function getTitle(): string|Htmlable
         $this->record = User::find($record);
     }
 
+    protected function getTableQuery(): Builder|Relation|null
+    {
+        return Balance::where([
+            'user_id' => $this->recordId,
+            'currency_id' => $this->currencyId,
+            'is_complete' => true,
+            'pending' => $this->isPending,
+        ])/*->select(
+                '*',
+                DB::raw('SUM(credit - debit) OVER (ORDER BY id) AS balance')
+            )*/
+        ->orderBy('id');
+    }
+
 
     // إعداد أعمدة الجدول
     public function table(Table $table): Table
