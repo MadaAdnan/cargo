@@ -22,7 +22,7 @@ for ($i=7185;$i<7293;$i++){
     if($i==7269){
         continue;
     }
-    \App\Models\Order::find($i)->update(['status'=>\App\Enums\OrderStatusEnum::CANCELED->value]);
+    \App\Models\Order::find($i)?->update(['status'=>\App\Enums\OrderStatusEnum::CANCELED->value]);
 
 }
 
