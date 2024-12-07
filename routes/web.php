@@ -18,13 +18,7 @@ use App\Filament\Admin\Resources\UserResource;
 Route::get('/delete', function () {
 
 // 7185 - 7293
-for ($i=7185;$i<7293;$i++){
-    if($i==7269){
-        continue;
-    }
-    \App\Models\Order::find($i)?->update(['status'=>\App\Enums\OrderStatusEnum::CANCELED->value]);
 
-}
 
     //$users=\App\Models\User::where('level',\App\Enums\LevelUserEnum::USER->value)->pluck('id')->toArray();
    // \App\Models\Balance::where('is_complete',false)->whereIn('user_id',$users)->delete();
