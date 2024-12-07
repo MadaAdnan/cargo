@@ -46,7 +46,7 @@ class PendingBalanceCustomerTRYWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('net_balance')->label('الرصيد الحالي')->sortable()->formatStateUsing(fn($state)=>HelperBalance::formatNumber($state))
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('id')->options(User::pluck('name','id'))->searchable()
+                Tables\Filters\SelectFilter::make('id')->options(User::where('level', LevelUserEnum::USER->value)->pluck('name','id'))->searchable()
             ])
             ;
     }

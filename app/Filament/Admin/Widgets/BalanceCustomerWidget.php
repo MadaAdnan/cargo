@@ -45,7 +45,7 @@ class BalanceCustomerWidget extends BaseWidget
                 ])
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('id')->options(User::pluck('name', 'id'))->searchable()
+                Tables\Filters\SelectFilter::make('id')->options(User::where('level', LevelUserEnum::USER->value)->pluck('name', 'id'))->searchable()
             ]);
     }
 }
