@@ -93,7 +93,7 @@ public function getTitle(): string|Htmlable
                     ->label('التوقيت'),
             ])
             ->headerActions([
-                ExportAction::make()->exports([
+                ExportAction::make()->model(Balance::class)->exports([
                     ExcelExport::make()->withChunkSize(100)->fromTable()
                 ])
             ]);
