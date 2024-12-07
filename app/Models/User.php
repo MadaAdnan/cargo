@@ -117,6 +117,23 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
     {
         return $this->hasMany(Balance::class)->where('balances.is_complete', 1)->where('pending', '!=', true);
     }
+    public function balancesTr(): HasMany
+    {
+        return $this->balances()->where('currency_id',2);
+    }
+    public function balancesUsd(): HasMany
+    {
+        return $this->balances()->where('currency_id',1);
+    }
+
+    public function balancesPendingTr(): HasMany
+    {
+        return  $this->hasMany(Balance::class)->where('balances.is_complete', 1)->where('pending', '=', true)->where('currency_id',2);
+    }
+    public function balancesPendingUsd(): HasMany
+    {
+        return $this->hasMany(Balance::class)->where('balances.is_complete', 1)->where('pending', '=', true)->where('currency_id',1);
+    }
 
     public function pendingBalances(): HasMany
     {

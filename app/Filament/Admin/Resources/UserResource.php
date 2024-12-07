@@ -230,10 +230,10 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('balance_usd')->url(fn($record) => UserResource::getUrl('balance', ['record' => $record, 'currency' => 1,'pending'=>0]))->label('كشف حساب دولار'),
-                    Tables\Actions\Action::make('balance_tr')->url(fn($record) => UserResource::getUrl('balance', ['record' => $record, 'currency' => 2,'pending'=>0]))->label('كشف حساب تركي'),
-                    Tables\Actions\Action::make('balance_usd_pending')->url(fn($record) => UserResource::getUrl('balance', ['record' => $record, 'currency' => 1,'pending'=>1]))->label('كشف حساب دولار قيد التحصيل'),
-                    Tables\Actions\Action::make('balance_tr_pending')->url(fn($record) => UserResource::getUrl('balance', ['record' => $record, 'currency' => 2,'pending'=>1]))->label('كشف حساب تركي قيد التحصيل'),
+                    Tables\Actions\Action::make('balance_usd')->url(fn($record) => UserResource::getUrl('balanceUsd', ['record' => $record]))->label('كشف حساب دولار'),
+                    Tables\Actions\Action::make('balance_tr')->url(fn($record) => UserResource::getUrl('balanceTr', ['record' => $record]))->label('كشف حساب تركي'),
+                    Tables\Actions\Action::make('balance_usd_pending')->url(fn($record) => UserResource::getUrl('balancePendingUsd', ['record' => $record, 'currency' => 1,'pending'=>1]))->label('كشف حساب دولار قيد التحصيل'),
+                    Tables\Actions\Action::make('balance_tr_pending')->url(fn($record) => UserResource::getUrl('balancePendingTR', ['record' => $record, 'currency' => 2,'pending'=>1]))->label('كشف حساب تركي قيد التحصيل'),
 
                 ])->label('كشف حساب'),
                 Tables\Actions\ViewAction::make(),
@@ -260,7 +260,10 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
-            'balance' => Pages\AccountStatement::route('/{record}/{currency}/{pending}/balances')
+            'balanceTr' => Pages\BalancesTr::route('/{record}/balancesTr'),
+            'balanceUsd' => Pages\BalancesUsd::route('/{record}/balancesUsd'),
+            'balancePendingUsd' => Pages\BalancesUsd::route('/{record}/balancesPendingUsd'),
+            'balancePendingTR' => Pages\BalancesPendingTr::route('/{record}/balancesPendingTr'),
         ];
     }
 
