@@ -59,7 +59,7 @@ public function getTitle(): string|Htmlable
                 '*',
                 DB::raw('SUM(credit - debit) OVER (ORDER BY id) AS balance')
             )*/
-                ->orderBy('id'))
+                ->orderBy('id'))->paginated()
             ->columns([
                 TextColumn::make('credit')->label('دائن')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
                 TextColumn::make('debit')->label('مدين')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
