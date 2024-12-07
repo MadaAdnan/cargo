@@ -90,7 +90,10 @@ class ListBalances extends ListRecords
 //                        return ;
 //                    }
                     $target=User::find($data['user_id']);
-
+                    if($target?->id ==auth()->id()){
+                        Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                        return;
+                    }
                     try {
 
                             Balance::create([
@@ -142,6 +145,10 @@ class ListBalances extends ListRecords
 //                        return ;
 //                    }
                     $target=User::find($data['user_id']);
+                    if($target?->id ==auth()->id()){
+                        Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                        return;
+                    }
                     try {
 
                         Balance::create([

@@ -46,9 +46,14 @@ class ListBalabceTRS extends ListRecords
             ])
                 ->action(function ($data) {
                     $user = User::find($data['user_id']);
+
                     if (!$user) {
                         Notification::make('success')->title('فشل العملية')->body('لم يتم العثور على المستخدم')->danger()->send();
 
+                        return;
+                    }
+                    if($user?->id ==auth()->id()){
+                        Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
                         return;
                     }
 
@@ -111,6 +116,10 @@ class ListBalabceTRS extends ListRecords
                         return ;
                     }
                     $target=User::find($data['user_id']);
+                    if($target?->id ==auth()->id()){
+                        Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                        return;
+                    }
                     try {
 
                        Balance::create([

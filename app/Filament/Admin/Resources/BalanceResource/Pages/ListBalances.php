@@ -45,6 +45,10 @@ class ListBalances extends ListRecords
                     }
                     \DB::beginTransaction();
                     $user = User::find($data['user_id']);
+                    if($user?->id ==auth()->id()){
+                        Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                        return;
+                    }
                     try {
                         Balance::create([
                             'type' => BalanceTypeEnum::CATCH->value,
@@ -98,6 +102,10 @@ class ListBalances extends ListRecords
                     }
                     try {
                         $user = User::find($data['user_id']);
+                        if($user?->id ==auth()->id()){
+                            Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                            return;
+                        }
                         Balance::create([
                             'type' => BalanceTypeEnum::PUSH->value,
                             'user_id' => $data['user_id'],
@@ -239,6 +247,10 @@ class ListBalances extends ListRecords
                         \DB::beginTransaction();
                         try {
                             $user = User::find($data['user_id']);
+                            if($user?->id ==auth()->id()){
+                                Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                                return;
+                            }
                             Balance::create([
                                 'type' => BalanceTypeEnum::PUSH->value,
                                 'user_id' => $data['user_id'],
@@ -291,6 +303,10 @@ class ListBalances extends ListRecords
                                 return;
                             }
                             $user = User::find($data['user_id']);
+                            if($user?->id ==auth()->id()){
+                                Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                                return;
+                            }
                             Balance::create([
                                 'type' => BalanceTypeEnum::CATCH->value,
                                 'user_id' => $data['user_id'],

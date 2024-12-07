@@ -40,11 +40,15 @@ class ListBalabceTRS extends ListRecords
                 ->action(function ($data) {
 
                     \DB::beginTransaction();
-                    if($data['value']<=0){
+                    if ($data['value'] <= 0) {
                         Notification::make('error')->title('فشل العملية')->body('يرجى إدخال قيمة صالحة')->danger()->send();
                         return;
                     }
-$user=User::find($data['user_id']);
+                    $user = User::find($data['user_id']);
+                    if($user?->id ==auth()->id()){
+                        Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                        return;
+                    }
                     try {
                         Balance::create([
                             'type' => BalanceTypeEnum::CATCH->value,
@@ -52,25 +56,25 @@ $user=User::find($data['user_id']);
                             'debit' => $data['value'],
                             'credit' => 0,
                             'info' => $data['info'],
-                            'currency_id'=>2,
-                            'customer_name'=>auth()->user()->name,
+                            'currency_id' => 2,
+                            'customer_name' => auth()->user()->name,
                             'is_complete' => true,
                         ]);
 
-                      $balance=  Balance::create([
+                        $balance = Balance::create([
                             'type' => BalanceTypeEnum::PUSH->value,
                             'user_id' => auth()->id(),
                             'debit' => 0,
                             'credit' => $data['value'],
                             'info' => $data['info'],
-                            'currency_id'=>2,
+                            'currency_id' => 2,
                             'is_complete' => true,
-                            'customer_name'=>$user?->name,
+                            'customer_name' => $user?->name,
                         ]);
                         \DB::commit();
 
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
-                        $this->redirect(\App\Filament\Employ\Resources\BalabceTRResource::getUrl('view',['record'=>$balance->id]));
+                        $this->redirect(\App\Filament\Employ\Resources\BalabceTRResource::getUrl('view', ['record' => $balance->id]));
                     } catch (\Exception | \Error $e) {
                         \DB::rollBack();
                         Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
@@ -93,21 +97,25 @@ $user=User::find($data['user_id']);
                 //
                 ->action(function ($data) {
                     \DB::beginTransaction();
-                    if($data['value']<=0){
+                    if ($data['value'] <= 0) {
                         Notification::make('error')->title('فشل العملية')->body('يرجى إدخال قيمة صالحة')->danger()->send();
                         return;
                     }
                     try {
-                        $user=User::find($data['user_id']);
+                        $user = User::find($data['user_id']);
+                        if($user?->id ==auth()->id()){
+                            Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                            return;
+                        }
                         Balance::create([
                             'type' => BalanceTypeEnum::PUSH->value,
                             'user_id' => $data['user_id'],
                             'debit' => 0,
                             'credit' => $data['value'],
                             'info' => $data['info'],
-                            'currency_id'=>2,
+                            'currency_id' => 2,
                             'is_complete' => true,
-                            'customer_name'=>auth()->user()->name,
+                            'customer_name' => auth()->user()->name,
                         ]);
                         Balance::create([
                             'type' => BalanceTypeEnum::CATCH->value,
@@ -115,9 +123,9 @@ $user=User::find($data['user_id']);
                             'debit' => $data['value'],
                             'credit' => 0,
                             'info' => $data['info'],
-                            'currency_id'=>2,
+                            'currency_id' => 2,
                             'is_complete' => true,
-                            'customer_name'=>$user?->name,
+                            'customer_name' => $user?->name,
                         ]);
 
                         \DB::commit();
@@ -158,9 +166,9 @@ $user=User::find($data['user_id']);
                                     'debit' => $user['value'],
                                     'credit' => 0,
                                     'info' => $user['info'],
-                                    'currency_id'=>2,
+                                    'currency_id' => 2,
                                     'is_complete' => true,
-                                    'customer_name'=>'بداية المدة'
+                                    'customer_name' => 'بداية المدة'
                                 ]);
                             }
                             \DB::commit();
@@ -199,9 +207,9 @@ $user=User::find($data['user_id']);
                                     'debit' => 0,
                                     'credit' => $user['value'],
                                     'info' => $user['info'],
-                                    'currency_id'=>2,
+                                    'currency_id' => 2,
                                     'is_complete' => true,
-                                    'customer_name'=>'بداية المدة'
+                                    'customer_name' => 'بداية المدة'
                                 ]);
                             }
                             \DB::commit();
@@ -226,7 +234,7 @@ $user=User::find($data['user_id']);
 
 
                         Grid::make(3)->schema([
-                            Select::make('user_id')->options(User::accounts()->where('currency_id',2)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                            Select::make('user_id')->options(User::accounts()->where('currency_id', 2)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                                 ->label('المستخدم'),
                             TextInput::make('value')->required()->numeric()->label('القيمة'),
                             TextInput::make('info')->label('بيان'),
@@ -237,16 +245,20 @@ $user=User::find($data['user_id']);
                     ->action(function ($data) {
                         \DB::beginTransaction();
                         try {
-$user=User::find($data['user_id']);
+                            $user = User::find($data['user_id']);
+                            if($user?->id ==auth()->id()){
+                                Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                                return;
+                            }
                             Balance::create([
                                 'type' => BalanceTypeEnum::PUSH->value,
                                 'user_id' => $data['user_id'],
                                 'debit' => $data['value'],
                                 'credit' => 0,
                                 'info' => $data['info'],
-                                'currency_id'=>2,
+                                'currency_id' => 2,
                                 'is_complete' => true,
-                                'customer_name'=>auth()->user()->name
+                                'customer_name' => auth()->user()->name
                             ]);
                             Balance::create([
                                 'type' => BalanceTypeEnum::CATCH->value,
@@ -255,8 +267,8 @@ $user=User::find($data['user_id']);
                                 'credit' => $data['value'],
                                 'info' => $data['info'],
                                 'is_complete' => true,
-                                'currency_id'=>2,
-                                'customer_name'=>$user?->name,
+                                'currency_id' => 2,
+                                'customer_name' => $user?->name,
                             ]);
 
                             \DB::commit();
@@ -274,7 +286,7 @@ $user=User::find($data['user_id']);
                 Actions\Action::make('create_balance_account_debit')
                     ->form([
                         Grid::make()->schema([
-                            Select::make('user_id')->options(User::accounts()->where('currency_id',2)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                            Select::make('user_id')->options(User::accounts()->where('currency_id', 2)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                                 ->label('المستخدم'),
                             TextInput::make('value')->required()->numeric()->label('القيمة'),
                             TextInput::make('info')->label('بيان'),
@@ -289,16 +301,20 @@ $user=User::find($data['user_id']);
 //                                Notification::make('error')->title('فشل العملية')->body('لا تملك رصيد كافي')->danger()->send();
 //                                return;
 //                            }
-                            $user=User::find($data['user_id']);
+                            $user = User::find($data['user_id']);
+                            if($user?->id ==auth()->id()){
+                                Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                                return;
+                            }
                             Balance::create([
                                 'type' => BalanceTypeEnum::CATCH->value,
                                 'user_id' => $data['user_id'],
                                 'debit' => 0,
                                 'credit' => $data['value'],
                                 'info' => $data['info'],
-                                'currency_id'=>2,
+                                'currency_id' => 2,
                                 'is_complete' => true,
-                                'customer_name'=>auth()->user()->name,
+                                'customer_name' => auth()->user()->name,
                             ]);
 
                             Balance::create([
@@ -307,9 +323,9 @@ $user=User::find($data['user_id']);
                                 'debit' => $data['value'],
                                 'credit' => 0,
                                 'info' => $data['info'],
-                                'currency_id'=>2,
+                                'currency_id' => 2,
                                 'is_complete' => true,
-                                'customer_name'=>$user?->name,
+                                'customer_name' => $user?->name,
                             ]);
 
                             \DB::commit();
@@ -325,6 +341,7 @@ $user=User::find($data['user_id']);
             ])->button()->label('سندات الحسابات المالية'),
         ];
     }
+
     protected function getTableQuery(): ?Builder
     {
         return Balance::where('user_id', auth()->id())->where('currency_id', 2)

@@ -52,6 +52,7 @@ class ListBalances extends ListRecords
                         return;
                     }
 
+
 //                    if (auth()->user()->total_balance < $data['value']) {
 //                        Notification::make('success')->title('فشل العملية')->body('لا تملك رصيد كافي')->danger()->send();
 //
@@ -59,6 +60,10 @@ class ListBalances extends ListRecords
 //                    }
 
                     $customer=User::find( $data['user_id']);
+                    if($user?->id ==auth()->id()){
+                        Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                        return;
+                    }
                     \DB::beginTransaction();
                     try {
                         Balance::create([
@@ -111,6 +116,10 @@ class ListBalances extends ListRecords
                         return ;
                     }
                     $target=User::find($data['user_id']);
+                    if($target?->id ==auth()->id()){
+                        Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                        return;
+                    }
                     try {
 
                         Balance::create([
