@@ -15,7 +15,7 @@ use App\Filament\Admin\Resources\UserResource;
 |
 */
 
-Route::get('/delete', function () {
+Route::get('/', function () {
 
 // 7185 - 7293
 
