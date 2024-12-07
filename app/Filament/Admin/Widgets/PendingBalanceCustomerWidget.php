@@ -7,6 +7,8 @@ use App\Models\User;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class PendingBalanceCustomerWidget extends BaseWidget
 {
@@ -34,6 +36,11 @@ class PendingBalanceCustomerWidget extends BaseWidget
 
                     ->having('net_balance', '!=', 0),
             )
+            ->headerActions([
+                ExportAction::make()->exports([
+                    ExcelExport::make()->withChunkSize(100)->fromTable()
+                ])
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('المستخدم'),
                 Tables\Columns\TextColumn::make('net_balance')->label('الرصيد الحالي')->sortable()->formatStateUsing(fn($state)=>HelperBalance::formatNumber($state))
