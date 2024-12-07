@@ -49,11 +49,11 @@ class BalancesPendingTr extends ManageRelatedRecords
                 Tables\Columns\TextColumn::make('credit')->label('دائن')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
                 Tables\Columns\TextColumn::make('debit')->label('مدين')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
                 Tables\Columns\TextColumn::make('currency.name')->label('العملة'),
-                TextColumn::make('id')->label('مدين') ->formatStateUsing(function ($record) {
+              /*  TextColumn::make('id')->label('مدين') ->formatStateUsing(function ($record) {
                     static $runningTotal = 0;
                     $runningTotal += $record->credit - $record->debit;
                     return $runningTotal;
-                }),
+                }),*/
                 Tables\Columns\TextColumn::make('info')->label('الملاحظات'),
                 Tables\Columns\TextColumn::make('customer_name')->label('الطرف المقابل'),
                 Tables\Columns\TextColumn::make('order.code')->label('الطلب'),
