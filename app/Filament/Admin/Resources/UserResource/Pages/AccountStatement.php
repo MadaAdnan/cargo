@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\LengthAwarePaginator;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class AccountStatement extends Page implements HasTable
 {
@@ -89,6 +91,11 @@ public function getTitle(): string|Htmlable
                         return \Carbon\Carbon::parse($rec->created_at)->format('h:i:s');
                     })
                     ->label('التوقيت'),
+            ])
+            ->headerActions([
+                ExportAction::make()->exports([
+                    ExcelExport::make()->withChunkSize(100)->fromTable()
+                ])
             ]);
     }
 
