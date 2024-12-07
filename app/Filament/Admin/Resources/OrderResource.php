@@ -785,7 +785,15 @@ $cities=City::selectRaw('id,name,city_id')->get();
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('cancel_order')->action(function($records){
+                        foreach ($records as $record){
+                            $record->update(['status'=>OrderStatusEnum::CANCELED->value]);
+                            Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
+
+                        }
+                    })->label('إلغاء الشحنات'),
                     Tables\Actions\DeleteBulkAction::make(),
+
                     Tables\Actions\BulkAction::make('given_id_check')->form([
                         Forms\Components\Select::make('given_id')
                             ->options(DB::table('users')->where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->pluck('name','id'))
