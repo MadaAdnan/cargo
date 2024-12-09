@@ -48,27 +48,21 @@ class BalanceEmployeeTRWidget extends BaseWidget
                     Tables\Columns\TextColumn::make('name')->label('المستخدم'),
                 Tables\Columns\TextColumn::make('net_balance')->formatStateUsing(fn($record)=>HelperBalance::formatNumber($record->net_balance))->label('الرصيد الحالي')->sortable()
             ])  ->filters([
-            Tables\Filters\Filter::make('id')->form([
-                Select::make('id')->options(User::whereIn('level', [
-                    LevelUserEnum::BRANCH->value,
-                    LevelUserEnum::ADMIN->value,
-                    LevelUserEnum::STAFF->value,
-                ])/*->where('name','like',"%{$search}%")*/->pluck('name','id'))->searchable()->label('الموظف')
-            ])->query(fn(Builder $query,array  $data)=>User::select('users.id','users.name')
-                ->whereIn('level', [
-                    LevelUserEnum::STAFF->value,
-                    LevelUserEnum::BRANCH->value,
-                    LevelUserEnum::ADMIN->value
-                ])
-                ->selectSub(function ($query) {
-                    $query->from('balances')
-                        ->selectRaw('SUM(credit - debit)')
-                        ->whereColumn('user_id', 'users.id')
-                        ->where('balances.is_complete', 1)
-                        ->where('balances.pending', '=', false)
-                        ->where('balances.currency_id', '=', 2);
-                }, 'net_balance')
-                ->having('net_balance', '!=', 0)->where('name','like',"%{$data['id']}%"))
+          Tables\Filters\SelectFilter::make('id')->options(User::select('users.id','users.name')
+              ->whereIn('level', [
+                  LevelUserEnum::STAFF->value,
+                  LevelUserEnum::BRANCH->value,
+                  LevelUserEnum::ADMIN->value
+              ])
+              ->selectSub(function ($query) {
+                  $query->from('balances')
+                      ->selectRaw('SUM(credit - debit)')
+                      ->whereColumn('user_id', 'users.id')
+                      ->where('balances.is_complete', 1)
+                      ->where('balances.pending', '=', false)
+                      ->where('balances.currency_id', '=', 2);
+              }, 'net_balance')
+              ->having('net_balance', '!=', 0)->pluck('name','id'))
             ]);
     }
 }
