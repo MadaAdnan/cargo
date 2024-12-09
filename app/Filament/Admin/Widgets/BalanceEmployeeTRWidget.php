@@ -62,7 +62,7 @@ class BalanceEmployeeTRWidget extends BaseWidget
                       ->where('balances.pending', '=', false)
                       ->where('balances.currency_id', '=', 2);
               }, 'net_balance')
-              ->having('net_balance', '!=', 0)->pluck('name','id'))
+              ->having('net_balance', '!=', 0)->pluck('name','id'))->searchable()
             ]);
     }
 }
