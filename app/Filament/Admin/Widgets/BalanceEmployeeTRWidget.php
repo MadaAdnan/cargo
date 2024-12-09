@@ -40,7 +40,7 @@ class BalanceEmployeeTRWidget extends BaseWidget
                     ->having('net_balance', '!=', 0),
             )
             ->columns([
-                Tables\Columns\TextColumn::make('name')->label('المستخدم')->searchable(isIndividual: true),
+                    Tables\Columns\TextColumn::make('name')->label('المستخدم'),
                 Tables\Columns\TextColumn::make('net_balance')->formatStateUsing(fn($record)=>HelperBalance::formatNumber($record->net_balance))->label('الرصيد الحالي')->sortable()
             ])  ->filters([
              Tables\Filters\SelectFilter::make('id')->options(User::whereIn('level', [
