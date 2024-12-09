@@ -49,8 +49,8 @@ class BalanceEmployeeTRWidget extends BaseWidget
                     LevelUserEnum::BRANCH->value,
                     LevelUserEnum::ADMIN->value,
                     LevelUserEnum::STAFF->value,
-                ])/*->where('name','like',"%{$search}%")*/->pluck('name','id'))->label('الموظف')
-            ])->query(fn(Builder $query,$data)=>$query->where('name','like',"%{$data['id']}%"))
+                ])/*->where('name','like',"%{$search}%")*/->pluck('name','id'))->searchable()->label('الموظف')
+            ])->query(fn(Builder $query,array  $data)=>$query->where('name','like',"%{$data['id']}%"))
             ]);
     }
 }
