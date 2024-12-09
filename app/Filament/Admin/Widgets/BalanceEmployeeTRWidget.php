@@ -54,7 +54,21 @@ class BalanceEmployeeTRWidget extends BaseWidget
                     LevelUserEnum::ADMIN->value,
                     LevelUserEnum::STAFF->value,
                 ])/*->where('name','like',"%{$search}%")*/->pluck('name','id'))->searchable()->label('الموظف')
-            ])->query(fn(Builder $query,array  $data)=>$query->where('name','like',"%{$data['id']}%"))
+            ])->query(fn(Builder $query,array  $data)=>User::select('users.id','users.name')
+                ->whereIn('level', [
+                    LevelUserEnum::STAFF->value,
+                    LevelUserEnum::BRANCH->value,
+                    LevelUserEnum::ADMIN->value
+                ])
+                ->selectSub(function ($query) {
+                    $query->from('balances')
+                        ->selectRaw('SUM(credit - debit)')
+                        ->whereColumn('user_id', 'users.id')
+                        ->where('balances.is_complete', 1)
+                        ->where('balances.pending', '=', false)
+                        ->where('balances.currency_id', '=', 2);
+                }, 'net_balance')
+                ->having('net_balance', '!=', 0)->where('name','like',"%{$data['id']}%"))
             ]);
     }
 }
