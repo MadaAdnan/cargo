@@ -11,7 +11,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class BalanceEmployeeTRWidget extends BaseWidget
 {
     protected static ?string $heading = "أرصدة الموظفين TRY";
-    protected int | string | array $columnSpan=1;
+    protected int | string | array $columnSpan=2;
     public static function canView(): bool
     {
         ;
