@@ -28,8 +28,12 @@ class BalanceEmployeeTRWidget extends BaseWidget
     {
         return $table
             ->query(
-                fn() => User::select('users.*')
-                    ->where('level', LevelUserEnum::STAFF->value)->orWhere('level', LevelUserEnum::BRANCH->value)->orWhere('level', LevelUserEnum::ADMIN->value)
+                fn() => User::select('users.id','users.name')
+                    ->whereIn('level', [
+                        LevelUserEnum::STAFF->value,
+                        LevelUserEnum::BRANCH->value,
+                        LevelUserEnum::ADMIN->value
+                    ])
                     ->selectSub(function ($query) {
                         $query->from('balances')
                             ->selectRaw('SUM(credit - debit)')
