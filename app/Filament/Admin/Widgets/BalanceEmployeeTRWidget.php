@@ -48,12 +48,12 @@ class BalanceEmployeeTRWidget extends BaseWidget
                     Tables\Columns\TextColumn::make('name')->label('المستخدم'),
                 Tables\Columns\TextColumn::make('net_balance')->formatStateUsing(fn($record)=>HelperBalance::formatNumber($record->net_balance))->label('الرصيد الحالي')->sortable()
             ])  ->filters([
-          Tables\Filters\SelectFilter::make('id')->searchable()->getSearchResultsUsing(fn(string $search)=>User::select('users.id','users.name')
+          Tables\Filters\SelectFilter::make('id') ->options(User::select('users.id','users.name')
               ->whereIn('level', [
                   LevelUserEnum::STAFF->value,
                   LevelUserEnum::BRANCH->value,
                   LevelUserEnum::ADMIN->value
-              ])->where('name','like',"%{$search}%")
+              ])
               ->selectSub(function ($query) {
                   $query->from('balances')
                       ->selectRaw('SUM(credit - debit)')
@@ -62,7 +62,7 @@ class BalanceEmployeeTRWidget extends BaseWidget
                       ->where('balances.pending', '=', false)
                       ->where('balances.currency_id', '=', 2);
               }, 'net_balance')
-              ->having('net_balance', '!=', 0)->pluck('name','id'))
+              ->having('net_balance', '!=', 0)->orderBy('name')->pluck('name','id'))->label('الموظف')
 
             ]);
     }
