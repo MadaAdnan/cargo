@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Widgets;
 use App\Enums\LevelUserEnum;
 use App\Helper\HelperBalance;
 use App\Models\User;
+use Filament\Forms\Components\Select;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -43,11 +44,13 @@ class BalanceEmployeeTRWidget extends BaseWidget
                     Tables\Columns\TextColumn::make('name')->label('المستخدم'),
                 Tables\Columns\TextColumn::make('net_balance')->formatStateUsing(fn($record)=>HelperBalance::formatNumber($record->net_balance))->label('الرصيد الحالي')->sortable()
             ])  ->filters([
-             Tables\Filters\SelectFilter::make('id')->searchable()->options(fn()=>User::whereIn('level', [
-                 LevelUserEnum::BRANCH->value,
-                 LevelUserEnum::ADMIN->value,
-                 LevelUserEnum::STAFF->value,
-             ])/*->where('name','like',"%{$search}%")*/->pluck('name','id'))->label('الموظف')
+            Tables\Filters\Filter::make('id')->form([
+                Select::make('id')->options(User::whereIn('level', [
+                    LevelUserEnum::BRANCH->value,
+                    LevelUserEnum::ADMIN->value,
+                    LevelUserEnum::STAFF->value,
+                ])/*->where('name','like',"%{$search}%")*/->pluck('name','id'))->label('الموظف')
+            ])
             ]);
     }
 }
