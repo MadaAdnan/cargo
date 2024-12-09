@@ -62,21 +62,8 @@ class BalanceEmployeeTRWidget extends BaseWidget
                       ->where('balances.pending', '=', false)
                       ->where('balances.currency_id', '=', 2);
               }, 'net_balance')
-              ->having('net_balance', '!=', 0)->pluck('name','id'))->options(User::select('users.id','users.name')
-              ->whereIn('level', [
-                  LevelUserEnum::STAFF->value,
-                  LevelUserEnum::BRANCH->value,
-                  LevelUserEnum::ADMIN->value
-              ])
-              ->selectSub(function ($query) {
-                  $query->from('balances')
-                      ->selectRaw('SUM(credit - debit)')
-                      ->whereColumn('user_id', 'users.id')
-                      ->where('balances.is_complete', 1)
-                      ->where('balances.pending', '=', false)
-                      ->where('balances.currency_id', '=', 2);
-              }, 'net_balance')
               ->having('net_balance', '!=', 0)->pluck('name','id'))
+
             ]);
     }
 }
