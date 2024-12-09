@@ -21,32 +21,37 @@ class BalanceEmployeeTRWidget extends BaseWidget
     }
     protected function getTableQuery(): Builder|Relation|null
     {
-     return   User::select('users.*')
-            ->where('level', LevelUserEnum::STAFF->value)->orWhere('level', LevelUserEnum::BRANCH->value)->orWhere('level', LevelUserEnum::ADMIN->value)
-            ->selectSub(function ($query) {
-                $query->from('balances')
-                    ->selectRaw('SUM(credit - debit)')
-                    ->whereColumn('user_id', 'users.id')
-                    ->where('balances.is_complete', 1)
-                    ->where('balances.pending', '=', false)
-                    ->where('balances.currency_id', '=', 2);
-            }, 'net_balance')
-            ->having('net_balance', '!=', 0);
     }
 
     public function table(Table $table): Table
     {
         return $table
-
+            ->query(
+                fn() => User::select('users.*')
+                    ->where('level', LevelUserEnum::STAFF->value)->orWhere('level', LevelUserEnum::BRANCH->value)->orWhere('level', LevelUserEnum::ADMIN->value)
+                    ->selectSub(function ($query) {
+                        $query->from('balances')
+                            ->selectRaw('SUM(credit - debit)')
+                            ->whereColumn('user_id', 'users.id')
+                            ->where('balances.is_complete', 1)
+                            ->where('balances.pending', '=', false)
+                            ->where('balances.currency_id', '=', 2);
+                    }, 'net_balance')
+                    ->having('net_balance', '!=', 0),
+            )
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('المستخدم')->searchable(isIndividual: true),
                 Tables\Columns\TextColumn::make('net_balance')->formatStateUsing(fn($record)=>HelperBalance::formatNumber($record->net_balance))->label('الرصيد الحالي')->sortable()
             ])  ->filters([
-//                Tables\Filters\SelectFilter::make('id')->options(User::whereIn('level', [
-//                    LevelUserEnum::BRANCH->value,
-//                    LevelUserEnum::ADMIN->value,
-//                    LevelUserEnum::STAFF->value,
-//                ])->pluck('name','id'))->searchable()
+             Tables\Filters\SelectFilter::make('id')->options(User::whereIn('level', [
+                   LevelUserEnum::BRANCH->value,
+                    LevelUserEnum::ADMIN->value,
+                   LevelUserEnum::STAFF->value,
+               ])->pluck('name','id'))->searchable()->getSearchResultsUsing(fn(string $search)=>User::whereIn('level', [
+                 LevelUserEnum::BRANCH->value,
+                 LevelUserEnum::ADMIN->value,
+                 LevelUserEnum::STAFF->value,
+             ])->where('name','like',"%{$search}%")->pluck('name','id'))->label('الموظف')
             ]);
     }
 }
