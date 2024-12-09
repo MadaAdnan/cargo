@@ -43,11 +43,11 @@ class BalanceEmployeeTRWidget extends BaseWidget
                     Tables\Columns\TextColumn::make('name')->label('المستخدم'),
                 Tables\Columns\TextColumn::make('net_balance')->formatStateUsing(fn($record)=>HelperBalance::formatNumber($record->net_balance))->label('الرصيد الحالي')->sortable()
             ])  ->filters([
-             Tables\Filters\SelectFilter::make('id')->options(User::whereIn('level', [
-                   LevelUserEnum::BRANCH->value,
-                    LevelUserEnum::ADMIN->value,
-                   LevelUserEnum::STAFF->value,
-               ])->pluck('name','id'))->searchable()->getSearchResultsUsing(fn(string $search, $query)=>$query->where('name','like',"%{$search}%"))->label('الموظف')
+             Tables\Filters\SelectFilter::make('id')->searchable()->getSearchResultsUsing(fn(string $search,Builder $query)=>User::whereIn('level', [
+                 LevelUserEnum::BRANCH->value,
+                 LevelUserEnum::ADMIN->value,
+                 LevelUserEnum::STAFF->value,
+             ])->where('name','like',"%{$search}%")->pluck('name','id'))->label('الموظف')
             ]);
     }
 }
