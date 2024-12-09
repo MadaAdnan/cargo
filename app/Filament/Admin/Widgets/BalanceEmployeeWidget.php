@@ -37,15 +37,15 @@ class BalanceEmployeeWidget extends BaseWidget
                    ->having('net_balance', '!=', 0),
             )
             ->columns([
-                Tables\Columns\TextColumn::make('name')->label('المستخدم')->searchable(fn(string $search)=>User::where('name','like',"%$search%")->pluck('name','id')),
+                Tables\Columns\TextColumn::make('name')->label('المستخدم'),
                 Tables\Columns\TextColumn::make('net_balance')->formatStateUsing(fn($record)=>HelperBalance::formatNumber($record->net_balance))->label('الرصيد الحالي')->sortable()
             ])
             ->filters([
-//                Tables\Filters\SelectFilter::make('id')->options(User::whereIn('level', [
-//                    LevelUserEnum::BRANCH->value,
-//                    LevelUserEnum::ADMIN->value,
-//                    LevelUserEnum::STAFF->value,
-//                ])->pluck('name','id'))->searchable()
+                Tables\Filters\SelectFilter::make('id')->options(User::whereIn('level', [
+                    LevelUserEnum::BRANCH->value,
+                    LevelUserEnum::ADMIN->value,
+                    LevelUserEnum::STAFF->value,
+                ])->pluck('name','id'))->searchable()
             ])
             ;
     }
