@@ -371,7 +371,7 @@ class OrderResource extends Resource
                             Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
                         }
                     })->label('الإلغاء / الإعادة')->button()->color('danger')
-                    ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED),
+                    ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED),
 
                 Tables\Actions\Action::make('confirm_returned')
                     ->form(function($record){
