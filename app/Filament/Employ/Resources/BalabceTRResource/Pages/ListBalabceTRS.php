@@ -3,11 +3,13 @@
 namespace App\Filament\Employ\Resources\BalabceTRResource\Pages;
 
 use App\Enums\BalanceTypeEnum;
+use App\Enums\LevelUserEnum;
 use App\Filament\Employ\Resources\BalabceTRResource;
 use App\Models\Balance;
 use App\Models\User;
 use Closure;
 use Filament\Actions;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -44,9 +46,14 @@ class ListBalabceTRS extends ListRecords
             ])
                 ->action(function ($data) {
                     $user = User::find($data['user_id']);
+
                     if (!$user) {
                         Notification::make('success')->title('فشل العملية')->body('لم يتم العثور على المستخدم')->danger()->send();
 
+                        return;
+                    }
+                    if($user?->id ==auth()->id()){
+                        Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
                         return;
                     }
 
@@ -56,6 +63,7 @@ class ListBalabceTRS extends ListRecords
 //                        return;
 //                    }
                     \DB::beginTransaction();
+                    $customer=User::find($data['user_id']);
                     try {
                         Balance::create([
                             'credit' => 0,
@@ -69,11 +77,11 @@ class ListBalabceTRS extends ListRecords
 
                         ]);
 
-                        Balance::create([
+                       $balance= Balance::create([
                             'credit' => $data['value'],
                             'debit' => 0,
                             'type' => BalanceTypeEnum::CATCH->value,
-                            'is_complete' => false,
+                            'is_complete' => $customer?->level==LevelUserEnum::USER,
                             'user_id' => $data['user_id'],
                             'currency_id' => 2,
 
@@ -83,6 +91,7 @@ class ListBalabceTRS extends ListRecords
                         ]);
                         \DB::commit();
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السند')->success()->send();
+                        $this->redirect(BalabceTRResource::getUrl('view',['record'=>$balance->id]));
                     } catch (\Exception | \Error $e) {
                         \DB::rollBack();
                         Notification::make('success')->title('فشل العملية')->body('لم يتم إضافة السند')->danger()->send();
@@ -90,6 +99,60 @@ class ListBalabceTRS extends ListRecords
                     }
 
                 })->label('إضافة سند'),
+            Actions\Action::make('create_balance_debit')
+                ->form([
+                    Grid::make(3)->schema([
+                        Select::make('user_id')->options(User::where('level',LevelUserEnum::USER->value)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                            ->label('المستخدم'),
+                        TextInput::make('value')->required()->numeric()->label('القيمة'),
+                        TextInput::make('info')->label('بيان'),
+                    ])
+                ])
+                //
+                ->action(function ($data) {
+                    \DB::beginTransaction();
+                    if($data['value'] < 0 ){
+                        Notification::make('error')->title('فشل العملية')->body('ادخل رصيد صحيح')->danger()->send();
+                        return ;
+                    }
+                    $target=User::find($data['user_id']);
+                    if($target?->id ==auth()->id()){
+                        Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                        return;
+                    }
+                    try {
+
+                       Balance::create([
+                            'type'=>BalanceTypeEnum::PUSH->value,
+                            'user_id'=>$data['user_id'],
+                            'debit'=>$data['value'],
+                            'credit'=>0,
+                            'info'=>$data['info'],
+                            'is_complete'=>true,
+                            'currency_id'=>2,
+                            'customer_name'=>auth()->user()->name,
+                        ]);
+                        $balance=     Balance::create([
+                            'type'=>BalanceTypeEnum::CATCH->value,
+                            'user_id'=>auth()->id(),
+                            'debit'=>0,
+                            'credit'=>$data['value'],
+                            'customer_name'=>$target->name,
+                            'info'=>$data['info'],
+                            'is_complete'=>true,
+                            'currency_id'=>2,
+                        ]);
+
+                        \DB::commit();
+                        Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+                        $this->redirect(BalabceTRResource::getUrl('view',['record'=>$balance->id]));
+                    } catch (\Exception | \Error $e) {
+                        \DB::rollBack();
+                        Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
+                    }
+
+                })
+                ->label('إضافة سند قبض'),
         ];
     }
 

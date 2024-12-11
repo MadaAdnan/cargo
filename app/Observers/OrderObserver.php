@@ -22,6 +22,7 @@ class OrderObserver
         }else{
             $order->status = OrderStatusEnum::PICK;
         }
+        $order->created_by=auth()->id();
 
     }
 
@@ -57,7 +58,7 @@ class OrderObserver
 
 
 
-        if ($order->status->value == OrderStatusEnum::CANCELED->value || $order->status->value == OrderStatusEnum::RETURNED->value ) {
+        if ($order->status->value == OrderStatusEnum::CANCELED->value || $order->status->value == OrderStatusEnum::CONFIRM_RETURNED->value ) {
             $order->balances()->delete();
         }
 

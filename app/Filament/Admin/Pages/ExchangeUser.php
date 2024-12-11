@@ -18,6 +18,9 @@ class ExchangeUser extends Page implements HasForms
 {
     use InteractsWithForms;
 
+    //H : Hidden (تصريف دولار) Page button from sidenav in admin panel
+    public static function shouldRegisterNavigation(): bool { return false; }
+
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static string $view = 'filament.admin.pages.exchange-user';

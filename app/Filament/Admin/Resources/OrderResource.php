@@ -11,6 +11,7 @@ use App\Enums\TaskAgencyEnum;
 use App\Filament\Admin\Resources\OrderResource\Pages;
 use App\Filament\Admin\Resources\OrderResource\RelationManagers;
 use App\Helper\HelperBalance;
+use App\Models\Area;
 use App\Models\Branch;
 use App\Models\City;
 use App\Models\Order;
@@ -138,8 +139,9 @@ class OrderResource extends Resource
                                                         ->maxLength(15)
                                                         ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
                                                         ->tel()
-                                                        ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/')// تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-                                                        ->required(),
+                                                        ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),// تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                                        //H: Made phone number not required to complete account registration while creating an order
+                                                        //->required(),
 
                                                     Forms\Components\TextInput::make('country_code')
                                                         ->label('رمز الدولة')
@@ -147,9 +149,10 @@ class OrderResource extends Resource
                                                         ->prefix('+')
                                                         ->maxLength(3)
                                                         ->numeric()
-                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']) // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
                                                         // تحديد الحد الأقصى للأرقام (بما في ذلك +)
-                                                        ->required(),
+                                                        //H: Made phone number not required to complete account registration while creating an order
+                                                        //->required(),
                                                 ]),
                                                 Forms\Components\Grid::make()->schema([
                                                     Forms\Components\Textarea::make('address')->label('العنوان التفصيلي'),
@@ -215,8 +218,9 @@ class OrderResource extends Resource
 
 
                             Forms\Components\TextInput::make('sender_phone')->label('رقم هاتف المرسل')->required(),
-
-                            Forms\Components\TextInput::make('sender_address')->label('عنوان المرسل')->required(),
+                            //H: disabled required for sender address in order creation panel
+                            Forms\Components\TextInput::make('sender_address')->label('عنوان المرسل'),
+                            //->required(),
                         ]),
 
 
@@ -225,7 +229,7 @@ class OrderResource extends Resource
                     Forms\Components\Fieldset::make('المستلم')->schema([
                         Forms\Components\Grid::make()->schema([
                             Forms\Components\Select::make('receive_id')->label('معرف المستلم')->default(fn() => User::where('email', 'zab@gmail.com')->first()?->id)
-                                ->options(User::all()->pluck('name', 'id')->toArray())->searchable()
+                                ->options(User::where('level',LevelUserEnum::USER->value)->pluck('name', 'id')->toArray())->searchable()
                                 ->afterStateUpdated(function ($state, $set) {
                                     $user = User::with('city')->find($state);
                                     if ($user) {
@@ -269,6 +273,7 @@ class OrderResource extends Resource
                         Forms\Components\Grid::make()->schema([
                             Forms\Components\Select::make('unit_id')
                                 ->relationship('unit', 'name')->label('الوحدة')->required(),
+                            Forms\Components\TextInput::make('note')->label('ملاحظات')
                         ]),
                     ]),
                     Forms\Components\Fieldset::make('الأجور')->schema([
@@ -284,7 +289,7 @@ class OrderResource extends Resource
                         ])->columnSpan(2),
                         Forms\Components\Grid::make()->schema([
 
-                            Forms\Components\Select::make('pick_id')->label('الموظف الملتقط')->options(User::where('level',LevelUserEnum::BRANCH->value)->orWhere('level',LevelUserEnum::STAFF->value)->pluck('name','id'))->searchable()->required()->visible(fn($context)=>$context==='create'),
+                            Forms\Components\Select::make('pick_id')->label('الموظف الملتقط')->options(User::where('level',LevelUserEnum::BRANCH->value)->orWhere('level',LevelUserEnum::STAFF->value)->orWhere('level',LevelUserEnum::ADMIN->value)->pluck('name','id'))->searchable()->required()->visible(fn($context)=>$context==='create'),
 
                         ]),
 
@@ -357,18 +362,20 @@ class OrderResource extends Resource
     public static function table(Table $table): Table
     {
 $users=User::selectRaw('id,name')->get();
-$cities=City::selectRaw('id,name')->get();
+$cities=City::selectRaw('id,name,city_id')->get();
+
         return $table
             ->poll(10)
             ->columns([
              //  Tables\Columns\SpatieMediaLibraryImageColumn::make('images')->collection('images')->circular()->openUrlInNewTab(),
-                PopoverColumn::make('qr_url')
+             /*   PopoverColumn::make('qr_url')
                     ->trigger('click')
                     ->placement('right')
                     ->content(fn($record) => \LaraZeus\Qr\Facades\Qr::render($record->code))
-                    ->icon('heroicon-o-qr-code'),
+                    ->icon('heroicon-o-qr-code'),*/
 
                 Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->code,'above')->copyable()->searchable(),
+                Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
 
 
                 Tables\Columns\TextColumn::make('type')->label('نوع الطلب')
@@ -410,7 +417,11 @@ $cities=City::selectRaw('id,name')->get();
 
                 Tables\Columns\TextColumn::make('sender.name')->label('اسم المرسل')->description(fn($record) => $record->general_sender_name)->searchable(),
 
-                Tables\Columns\TextColumn::make('citySource.name')->label('من بلدة')->description(fn($record) => "إلى {$record->cityTarget?->name}")->searchable(),
+                Tables\Columns\TextColumn::make('citySource.name')->label('من بلدة')->description(fn($record) => " {$record->citySource?->city?->name}")->searchable(),
+                Tables\Columns\TextColumn::make('cityTarget.name')->label('إلى بلدة')->description(fn($record) => " {$record->cityTarget?->city?->name}")->searchable(),
+                Tables\Columns\TextColumn::make('branchSource.name')->label('من فرع')->description(fn($record) => "إلى فرع  {$record->branchTarget?->name}")->searchable(),
+
+
                 Tables\Columns\TextColumn::make('global_name')->label('معرف المستلم ')->description(fn($record) => $record->receive?->name)->searchable(),
                 Tables\Columns\TextColumn::make('receive_phone')
                     ->formatStateUsing(fn($record)=>(string) $record->receive_address .' - '.(string) $record->receive_phone)->label('هاتف المستلم ')
@@ -438,7 +449,8 @@ $cities=City::selectRaw('id,name')->get();
                         return url('https://wa.me/' . ltrim($record?->receive_phone, '+').'?text='.$message);
                     })->openUrlInNewTab()
                     ->searchable()->color('danger'),
-                Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record)=>'موظف الإلتقاط : '.$record->pick?->name)->description(fn($record)=>'موظف التسليم : '.$record->given?->name)->label('التوكيل')
+                Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record)=>'موظف الإلتقاط : '.$record->pick?->name)->description(fn($record)=>'موظف التسليم : '.$record->given?->name)->label('التوكيل'),
+                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary')
 
 
             ])->defaultSort('created_at', 'desc')
@@ -449,6 +461,17 @@ $cities=City::selectRaw('id,name')->get();
                     ->form([
                         Forms\Components\Select::make('branch_source_id')->relationship('branchSource', 'name')
                             ->label('اسم الفرع المرسل')->multiple(),
+                            //H: added delivery employee filter to table
+                            Forms\Components\Select::make('pick_id')
+                            ->label('اسم موظف الإلتقاط')
+                            ->options($users->pluck('name', 'id'))
+                            ->multiple(),
+                            Forms\Components\Select::make('given_id')
+                            ->label('اسم موظف التسليم')
+                            ->options($users->pluck('name', 'id'))
+                            ->multiple(),
+
+
                         Forms\Components\Select::make('branch_target_id')->relationship('branchTarget', 'name')
                             ->label('اسم الفرع المستلم')->multiple(),
 
@@ -465,6 +488,10 @@ $cities=City::selectRaw('id,name')->get();
 
 
                         ])->label('حالة الطلب')->multiple(),
+                        Forms\Components\Select::make('area_source')->options(City::where('is_main','=',1)->pluck('name','id'))
+                            ->label('من منطقة')->live(),
+                        Forms\Components\Select::make('area_target')->options(City::where('is_main','=',1)->pluck('name','id'))
+                            ->label('إلى منطقة')->live(),
                         Forms\Components\Select::make('city_source_id')->options($cities->pluck('name','id'))
                             ->label('من بلدة')->multiple(),
                         Forms\Components\Select::make('city_target_id')->options($cities->pluck('name','id'))
@@ -475,6 +502,14 @@ $cities=City::selectRaw('id,name')->get();
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
+                           ->when(
+                                $data['area_source'],
+                                fn(Builder $query, $date): Builder => $query->whereHas('citySource', fn($query)=>$query->where('cities.city_id',$date)),
+                            )
+                            ->when(
+                                $data['area_target'],
+                                fn(Builder $query, $date): Builder => $query->whereHas('cityTarget', fn($query)=>$query->where('cities.city_id',$date)),
+                            )
                             ->when(
                                 $data['branch_target_id'],
                                 fn(Builder $query, $date): Builder => $query->where('branch_target_id', $date),
@@ -510,6 +545,15 @@ $cities=City::selectRaw('id,name')->get();
                             ->when(
                                 $data['created_until'],
                                 fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            )
+                            //H: added the logic to quEry
+                            ->when(
+                                $data['pick_id'],
+                                fn(Builder $query, $value): Builder => $query->where('pick_id', $value),
+                            )
+                            ->when(
+                                $data['given_id'],
+                                fn(Builder $query, $value): Builder => $query->where('given_id', $value),
                             );
                     })
 
@@ -523,7 +567,11 @@ $cities=City::selectRaw('id,name')->get();
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('set_picker')->form([
                         Forms\Components\Select::make('pick_id')
-                            ->options(User::selectRaw('id,name')->where('level', LevelUserEnum::STAFF->value)->orWhere('level', LevelUserEnum::BRANCH->value)->pluck('name','id'))
+                            ->options(User::selectRaw('id,name')->whereIn('level',[
+                                LevelUserEnum::STAFF->value,
+                                LevelUserEnum::BRANCH->value,
+                                LevelUserEnum::ADMIN->value,
+                            ] )->pluck('name','id'))
                             ->searchable()->label('موظف الإلتقاط'),
                     ])
                         ->action(function ($record, $data) {
@@ -542,13 +590,19 @@ $cities=City::selectRaw('id,name')->get();
                             }
 
                         })
-                        ->visible(fn($record) => $record->pick_id == null)
+                        ->visible(fn($record) => $record->pick_id == null )
                         ->label('تحديد موظف الإلتقاط')->color('info'),
 
                     Tables\Actions\Action::make('set_given')->form([
                         Forms\Components\Select::make('given_id')
-                            ->options(User::selectRaw('id,name')->where('level', LevelUserEnum::STAFF->value)->orWhere('level', LevelUserEnum::BRANCH->value)->pluck('name','id'))
-                            ->searchable()->label('موظف الإلتقاط'),
+
+                            ->searchable()
+                            ->getSearchResultsUsing(fn(string $search)=>User::selectRaw('id,name')->whereIn('level',[
+                                LevelUserEnum::STAFF->value,
+                                LevelUserEnum::BRANCH->value,
+                                LevelUserEnum::ADMIN->value,
+                            ])->where('name','like',"%$search%")->take(10)->pluck('name','id'))
+                            ->label('موظف التسليم'),
                     ])
                         ->action(function ($record, $data) {
 
@@ -558,7 +612,7 @@ $cities=City::selectRaw('id,name')->get();
 
 
                         })
-                        ->visible(fn($record) =>  $record->pick_id != null && ($record->status === OrderStatusEnum::PICK || $record->status === OrderStatusEnum::TRANSFER))
+                        ->visible(fn($record) =>  $record->given_id == null && ($record->status === OrderStatusEnum::PICK ||  $record->status === OrderStatusEnum::TRANSFER))
                         ->label('تحديد موظف التسليم')->color('info'),
 
                     Tables\Actions\Action::make('success_pick')
@@ -594,14 +648,14 @@ $cities=City::selectRaw('id,name')->get();
                             }
                         })
                         ->label('تأكيد إلتقاط الشحنة')->color('info')
-                        ->visible(fn($record) => !auth()->user()->hasRole('super_admin') && $record->pick_id !=null ),
+                        ->visible(fn($record) =>  $record->pick_id !=null&& ($record->status == OrderStatusEnum::AGREE) ),
 
                     Tables\Actions\Action::make('success_given')
                         ->form(function ($record) {
-                            $form=[];
-                            $totalPrice=$record->price+$record->far;
+
+                            $totalPrice=(double)$record->price+(double)$record->far;
                             if($totalPrice==0){
-                                $totalPrice=$record->price_tr+$record->far_tr;
+                                $totalPrice=(double) $record->price_tr+ (double) $record->far_tr;
                             }
                             $priceMessage='انت تأكد إستلامك مبلغ : ';
 
@@ -616,9 +670,9 @@ $cities=City::selectRaw('id,name')->get();
 
 
 
-                            $farMessage=null;
+                            $farMessage='';
 
-                            if($record->far_sender ===false){
+                            if($record->far_sender ==false){
                                 $farMessage='انت تأكد إستلامك مبلغ : ';
                                 if($record->far_tr>0){
                                     $farMessage.=$record->far_tr .' TRY ';
@@ -629,10 +683,11 @@ $cities=City::selectRaw('id,name')->get();
                                 $farMessage.='أجور شحن الطلب';
 
                             }
+
                             if ($totalPrice > 0) {
                                 $form= [
                                     Forms\Components\Placeholder::make('msg')->content($priceMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه'),
-                                    Forms\Components\Placeholder::make('msg_2')->content($farMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')->visible($farMessage!=null)
+                                    Forms\Components\Placeholder::make('msg_2')->content($farMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
                                 ];
                             }else{
                                 $form= [
@@ -653,7 +708,7 @@ $cities=City::selectRaw('id,name')->get();
                                 Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                             }
                         })->label('تأكيد تسليم الشحنة')->color('info')
-                        ->visible(fn($record) =>!auth()->user()->hasRole('super_admin') && $record->given_id !=null && ($record->status == OrderStatusEnum::TRANSFER || $record->status == OrderStatusEnum::PICK)),
+                        ->visible(fn($record) => $record->given_id !=null && ($record->status == OrderStatusEnum::TRANSFER)),
 
 
                     Tables\Actions\Action::make('cancel_order')
@@ -662,12 +717,12 @@ $cities=City::selectRaw('id,name')->get();
                                 OrderStatusEnum::CANCELED->value => OrderStatusEnum::CANCELED->getLabel(),
                                 OrderStatusEnum::RETURNED->value => OrderStatusEnum::RETURNED->getLabel(),
                             ])->label('الحالة')->required()->default(OrderStatusEnum::CANCELED->value),
-                            Forms\Components\Textarea::make('msg_cancel')->label('سبب الإلغاء / الإعادة')
+                            Forms\Components\Textarea::make('canceled_info')->label('سبب الإلغاء / الإعادة')
                         ])
                         ->action(function ($record, $data) {
                             DB::beginTransaction();
                             try {
-                                $record->update(['status' => $data['status'], 'canceled_info' => $data['msg_cancel']]);
+                                $record->update(['status' => $data['status'], 'canceled_info' => $data['canceled_info']]);
                                 DB::commit();
                                 Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
                             } catch (\Exception | Error $e) {
@@ -675,7 +730,53 @@ $cities=City::selectRaw('id,name')->get();
                                 Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                             }
                         })->label('الإلغاء / الإعادة')->color('danger')
-                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED)
+                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED),
+                  // تحديد موظف غعادة الطلب
+                    Tables\Actions\Action::make('set_returned_id')->form([
+                        Forms\Components\Select::make('staff_id')->searchable()    ->getSearchResultsUsing(fn (string $search): array => User::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())->label('حدد الموظف')->required(),
+
+                    ])
+                        ->action(function($record,$data){
+                            $record->update(['returned_id'=>$data['staff_id']]);
+                            Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف إعادة الطلب بنجاح')->success()->send();
+
+                        })
+                        ->label('تحديد موظف تسليم المرتجع')->visible(fn($record)=>$record->status==OrderStatusEnum::RETURNED ),
+                     Tables\Actions\Action::make('confirm_returned')
+                         ->form(function($record){
+                             $list=[];
+                             if ($record->far_sender == false) {
+                                 if ($record->far > 0) {
+                                     $list[]=Forms\Components\Placeholder::make('far_usd')->content('سيتم إضافة  '.$record->far .' USD  إلى صندوقك  أجور شحن')->label('تحذير');
+                                 }
+                                 if ($record->far_tr > 0) {
+                                     $list[]=Forms\Components\Placeholder::make('far_try')->content('سيتم إضافة   '.$record->far_tr .' TRY  إلى صندوقك  أجور شحن')->label('تحذير');
+                                 }
+                             }
+                             if ($record->price > 0) {
+                                 $list[]=Forms\Components\Placeholder::make('price_usd')->content('سيتم إضافة  '.$record->price .' USD  إلى صندوقك  قيمة تحصيل')->label('تحذير');
+
+                             }
+                             if ($record->price_tr > 0) {
+                                 $list[]=Forms\Components\Placeholder::make('price_try')->content('سيتم إضافة  '.$record->price_tr .' TRY  إلى صندوقك  قيمة تحصيل')->label('تحذير');
+
+                             }
+                             return $list;
+                         })
+                         ->action(function ($record) {
+                             DB::beginTransaction();
+                             try {
+                                 $record->update(['status' =>OrderStatusEnum::CONFIRM_RETURNED->value]);
+                                 HelperBalance::confirmReturn($record);
+                                 DB::commit();
+                                 Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
+                             } catch (\Exception | Error $e) {
+                                 DB::rollBack();
+                                 Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
+                             }
+                         })->label('تأكيد تسليم المرتجع')->color('danger')
+
+                         ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id!=null)
 
                 ])
 
@@ -684,12 +785,23 @@ $cities=City::selectRaw('id,name')->get();
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('cancel_order')->action(function($records){
+                        foreach ($records as $record){
+                            $record->update(['status'=>OrderStatusEnum::CANCELED->value]);
+                            Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
+
+                        }
+                    })->label('إلغاء الشحنات'),
                     Tables\Actions\DeleteBulkAction::make(),
+
                     Tables\Actions\BulkAction::make('given_id_check')->form([
-                        Forms\Components\Select::make('given_id')->options(User::where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->selectRaw('id,name,iban')->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->label('موظف الإلتقاط')
+                        Forms\Components\Select::make('given_id')
+                            ->options(DB::table('users')->where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->pluck('name','id'))
+                            ->searchable()->label('موظف التسليم')
                     ])
                         ->action(function ($records, $data) {
-                            Order::whereNull('given_id')->whereIn('id', $records->pluck('id')->toArray())->update(['given_id' => $data['given_id'],'status'=>OrderStatusEnum::TRANSFER->value]);
+
+                            DB::table('orders')->whereIn('id', $records->pluck('id')->toArray())->update(['given_id' => $data['given_id'],'status'=>OrderStatusEnum::TRANSFER->value]);
                             Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف التسليم بنجاح')->success()->send();
                         })
                         ->label('تحديد موظف التسليم')->color('info')

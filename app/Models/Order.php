@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CategoryTypeEnum;
+use App\Enums\LevelUserEnum;
 use App\Observers\OrderObserver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -55,12 +56,12 @@ class Order extends Model implements HasMedia
 
     public function sender(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'sender_id');
+        return $this->belongsTo(User::class, 'sender_id')->where('level',LevelUserEnum::USER->value);
     }
 
     public function receive(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'receive_id');
+        return $this->belongsTo(User::class, 'receive_id')->where('level',LevelUserEnum::USER->value);
     }
 
     public function packages(): HasMany
@@ -111,10 +112,17 @@ class Order extends Model implements HasMedia
     {
         return $this->belongsTo(User::class, 'given_id');
     }
-
+    public function returned(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'returned_id');
+    }
     public function currency(): BelongsTo
     {
         return $this->belongsTo(Currency::class);
+    }
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class,'created_by');
     }
 
 }

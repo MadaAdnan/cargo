@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\OrderResource\Pages;
 
+use App\Enums\LevelUserEnum;
 use App\Enums\OrderStatusEnum;
 use App\Filament\Admin\Resources\OrderResource;
 use App\Helper\HelperBalance;
@@ -24,8 +25,12 @@ class CreateOrder extends CreateRecord
 
         $city_source=City::find($data['city_source_id']);
         $city_target=City::find($data['city_target_id']);
+
         $data['branch_source_id'] =$city_source->branch_id;
         $data['branch_target_id'] =$city_target->branch_id;
+        $target=User::where('level',LevelUserEnum::BRANCH->value)->where('branch_id',$data['branch_target_id'] )->first();
+       /* $data['given_id']=$target?->id;
+        $data['status']=OrderStatusEnum::TRANSFER->value;*/
         $data['code'] = "AWB" . now()->format('YmdHis'); // الطابع الزمني بتنسيق قصير
         $data['shipping_date'] = now()->format('Y-m-d');
 

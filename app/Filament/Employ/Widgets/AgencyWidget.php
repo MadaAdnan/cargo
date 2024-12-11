@@ -39,9 +39,7 @@ protected static ?int $sort=5;
                 ])->orderBy('order_id')
             )
             ->columns([
-//                Tables\Columns\TextColumn::make('task')->label('المهمة')->sortable(),
-//                Tables\Columns\TextColumn::make('status')->label('نوع المهمة')->sortable(),
-//                Tables\Columns\TextColumn::make('activate')->label('حالة المهمة')->sortable(),
+
                 Tables\Columns\TextColumn::make('task')->label('ملاحظات'),
 
                 Tables\Columns\TextColumn::make('order.status')->label('حالة الطلب')

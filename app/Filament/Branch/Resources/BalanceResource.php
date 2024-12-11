@@ -53,8 +53,8 @@ class BalanceResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('credit')->label('إيداع')->formatStateUsing(fn($state)=>HelperBalance::formatNumber($state)),
-                Tables\Columns\TextColumn::make('debit')->label('قبض')->formatStateUsing(fn($state)=>HelperBalance::formatNumber($state)),
+                Tables\Columns\TextColumn::make('credit')->label('دائن')->formatStateUsing(fn($state)=>HelperBalance::formatNumber($state)),
+                Tables\Columns\TextColumn::make('debit')->label('مدين')->formatStateUsing(fn($state)=>HelperBalance::formatNumber($state)),
                 Tables\Columns\TextColumn::make('customer_name')->label('اسم الزبون المستلم'),
                 Tables\Columns\TextColumn::make('info')->label('الملاحظات'),
                 Tables\Columns\TextColumn::make('customer_name')->label('الطرف المقابل'),
@@ -69,6 +69,7 @@ class BalanceResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('complete')->action(fn($record)=>$record->update(['is_complete'=>true]))->visible(fn($record)=>!$record->is_complete)
                     ->label('تأكيد إستلام الدفعة')->requiresConfirmation(),
@@ -93,6 +94,7 @@ class BalanceResource extends Resource
             'index' => Pages\ListBalances::route('/'),
             'create' => Pages\CreateBalance::route('/create'),
             'edit' => Pages\EditBalance::route('/{record}/edit'),
+            'view' => Pages\ViewBalance::route('/{record}'),
         ];
     }
 }

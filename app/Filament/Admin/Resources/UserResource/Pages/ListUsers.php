@@ -22,7 +22,7 @@ class ListUsers extends ListRecords
     }
 
     public function getTabs(): array
-    {
+    {;
         return [
             Tab::make('user')->modifyQueryUsing(fn($query)=>$query->where('id','!=',''))->label('الكل'),
 

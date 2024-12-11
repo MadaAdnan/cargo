@@ -1,4 +1,6 @@
-<?php /** @noinspection ALL */
+<?php
+
+/** @noinspection ALL */
 
 /** @noinspection PhpUndefinedClassInspection */
 
@@ -27,6 +29,8 @@ use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Tabs;
 
 use PHPUnit\Exception;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 
 class UserResource extends Resource
@@ -40,7 +44,7 @@ class UserResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $max=User::max('id')+1;
+        $max = User::max('id') + 1;
         return $form
             ->schema([
 
@@ -49,16 +53,16 @@ class UserResource extends Resource
                         Tabs\Tab::make('المعلومات الاساسية')
                             ->schema([
                                 Forms\Components\CheckboxList::make('roles')
-                                    ->relationship('roles', 'name',fn($query)=>$query->when(!auth()->user()->hasRole('super_admin'),fn($query)=>$query->where('name','!=','super_admin')))->label('الصلاحيات'),
+                                    ->relationship('roles', 'name', fn($query) => $query->when(!auth()->user()->hasRole('super_admin'), fn($query) => $query->where('name', '!=', 'super_admin')))->label('الصلاحيات'),
                                 Forms\Components\TextInput::make('name')->label('الاسم')->required(),
-                                Forms\Components\TextInput::make('email')->label('البريد الالكتروني')->email()->required()->unique(ignoreRecord: true)->default('user'. $max.'@gmail.com'),
+                                Forms\Components\TextInput::make('email')->label('البريد الالكتروني')->email()->required()->unique(ignoreRecord: true)->default('user' . $max . '@gmail.com'),
                                 Forms\Components\TextInput::make('username')->label('username')
-                                    ->unique(ignoreRecord: true)->required()->default('user'.$max ),
+                                    ->unique(ignoreRecord: true)->required()->default('user' . $max),
                                 Forms\Components\TextInput::make('password')->password()->dehydrateStateUsing(fn($state) => Hash::make($state))
                                     ->dehydrated(fn($state) => filled($state))->label('كلمة المرور')->revealable()->default('12345'),
 
 
-//                                Forms\Components\TextInput::make('phone')->label('الهاتف')->tel()->required(),
+                                //                                Forms\Components\TextInput::make('phone')->label('الهاتف')->tel()->required(),
                                 Forms\Components\Grid::make(2) // تقسيم الحقول إلى صفين
                                 ->schema([
 
@@ -71,7 +75,7 @@ class UserResource extends Resource
                                         ->tel()
                                         ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),
                                     // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-// الحد الأقصى لطول الرق,
+                                    // الحد الأقصى لطول الرق,
 
                                     Forms\Components\TextInput::make('country_code')
                                         ->label('رمز الدولة')
@@ -79,21 +83,19 @@ class UserResource extends Resource
                                         ->prefix('+')
                                         ->maxLength(3)
                                         ->numeric()
-                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']) ,
+                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']),
                                     // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
                                 ]),
 
 
                                 Forms\Components\Textarea::make('address')->label('العنوان التفصيلي'),
-                                Forms\Components\Select::make('city_id')->options(City::where('is_main', false)->pluck
-                                ('name', 'id'))->required()
+                                Forms\Components\Select::make('city_id')->options(City::where('is_main', false)->pluck('name', 'id'))->required()
                                     ->label('البلدة/البلدة')
                                     ->live()->searchable()->preload()
                                     ->reactive()->afterStateUpdated(function ($state, callable $set) {
                                         $set('branch_id', null);
                                         $set('temp', Branch::where('city_id', $state)->pluck('name'));
                                     })->live(),
-
 
 
                                 Forms\Components\Radio::make('level')->options(
@@ -107,15 +109,19 @@ class UserResource extends Resource
 
 
                                 Forms\Components\Select::make('branch_id')->label('الفرع')
-                              ->options(fn($get,$context,$record)=> Branch::when($context=='create' && $get('level')===LevelUserEnum::BRANCH->value,
-                                  fn($query)=>$query->whereDoesntHave('users',fn($query)=>$query->where('level',LevelUserEnum::BRANCH->value)))
-                                  ->when($context=='edit' && $get('level')===LevelUserEnum::BRANCH->value,
-                                      fn($query)=>$query
-                                          ->whereDoesntHave('users',fn($query)=>$query->where('level',LevelUserEnum::BRANCH->value))
-                                          ->orWhereHas('users',fn($query)=>$query->where('level',LevelUserEnum::BRANCH->value)->where('users.id',$record->id)))
-                                  ->pluck('name','id'))->searchable()->visible(fn($get)=>$get('level')==LevelUserEnum::STAFF->value || $get('level')==LevelUserEnum::STAFF->value || $get('level')==LevelUserEnum::BRANCH->value)->required(),
+                                    ->options(fn($get, $context, $record) => Branch::when(
+                                        $context == 'create' && $get('level') === LevelUserEnum::BRANCH->value,
+                                        fn($query) => $query->whereDoesntHave('users', fn($query) => $query->where('level', LevelUserEnum::BRANCH->value))
+                                    )
+                                        ->when(
+                                            $context == 'edit' && $get('level') === LevelUserEnum::BRANCH->value,
+                                            fn($query) => $query
+                                                ->whereDoesntHave('users', fn($query) => $query->where('level', LevelUserEnum::BRANCH->value))
+                                                ->orWhereHas('users', fn($query) => $query->where('level', LevelUserEnum::BRANCH->value)->where('users.id', $record->id))
+                                        )
+                                        ->pluck('name', 'id'))->searchable()->visible(fn($get) => $get('level') == LevelUserEnum::STAFF->value || $get('level') == LevelUserEnum::STAFF->value || $get('level') == LevelUserEnum::BRANCH->value)->required(),
 
-//                                Forms\Components\TextInput::make('full_name')->label('الاسم الكامل'),
+                                //                                Forms\Components\TextInput::make('full_name')->label('الاسم الكامل'),
                                 Forms\Components\DatePicker::make('birth_date')->label('تاريخ الميلاد')
                                     ->format('Y-m-d')->default(now()),
 
@@ -139,7 +145,6 @@ class UserResource extends Resource
 
 
                             ]),
-
 
 
                         Tabs\Tab::make('الخارطة')
@@ -182,14 +187,17 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                //H: Show Users ID in table cells
+                Tables\Columns\TextColumn::make('id')->label('الرقم التسلسلي')->searchable()->sortable(),
+
                 Tables\Columns\TextColumn::make('name')->label('الاسم')->searchable(),
                 Tables\Columns\SelectColumn::make('status')->label('حالة المستخدم')
-                ->options([
-                    ActivateStatusEnum::ACTIVE->value=>ActivateStatusEnum::ACTIVE->getLabel(),
-                    ActivateStatusEnum::PENDING->value=>ActivateStatusEnum::PENDING->getLabel(),
-                    ActivateStatusEnum::BLOCK->value=>ActivateStatusEnum::BLOCK->getLabel()
+                    ->options([
+                        ActivateStatusEnum::ACTIVE->value => ActivateStatusEnum::ACTIVE->getLabel(),
+                        ActivateStatusEnum::PENDING->value => ActivateStatusEnum::PENDING->getLabel(),
+                        ActivateStatusEnum::BLOCK->value => ActivateStatusEnum::BLOCK->getLabel()
 
-                ]),
+                    ]),
                 Tables\Columns\TextColumn::make('level')->badge()
                     ->label('فئة المستخدم')->sortable(),
                 Tables\Columns\TextColumn::make('iban')->disabled()->label('IBAN')->copyable(),
@@ -198,24 +206,43 @@ class UserResource extends Resource
 
                 Tables\Columns\TextColumn::make('branch.name')->label('فرع')->sortable(),
                 Tables\Columns\TextColumn::make('city.name')->label('المدينة')->sortable(),
-
+                //H: added currency report for users
+                Tables\Columns\TextColumn::make('total_balance')->label('الرصيد USD'),
+                Tables\Columns\TextColumn::make('pending_balance')->label('الرصيد USD قيد التحصيل'),
+                Tables\Columns\TextColumn::make('total_balance_tr')->label('الرصيد TRY'),
+                Tables\Columns\TextColumn::make('total_balance_tr_pending')->label('الرصيد TRYقيد التحصيل')
 
             ])->defaultSort('created_at', 'desc')
             ->filters([
-                //
+                Tables\Filters\Filter::make('filter')->form([
+                    Forms\Components\Select::make('main_city')->options(City::where('is_main',true)->pluck('name','id'))->label('المنطقة')->reactive(),
+                    Forms\Components\Select::make('city_id')->options(fn($get)=>City::where('city_id',$get('main_city'))->pluck('name','id'))->label('المدينة')->reactive(),
+                    Forms\Components\Select::make('branch_id')->options(fn($get)=>Branch::where('city_id',$get('main_city'))->pluck('name','id'))->label('الفرع'),
+                ])->query(fn($query,$data)=>$query
+                ->when($data['main_city'],fn($query)=>$query->where('city_id',$data['main_city'])->orWhereHas('city',fn($query)=>$query->where('cities.city_id',$data['main_city'])))
+                    ->when($data['city_id'],fn($query)=>$query->where('city_id',$data['city_id']))
+                    ->when($data['branch_id'],fn($query)=>$query->where('branch_id',$data['branch_id']))
+                )
+            ])->headerActions([
+                ExportAction::make()->exports([
+                    ExcelExport::make()->withChunkSize(100)->fromTable()
+                ])
             ])
             ->actions([
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('balance_usd')->url(fn($record) => UserResource::getUrl('balanceUsd', ['record' => $record]))->label('كشف حساب دولار'),
+                    Tables\Actions\Action::make('balance_tr')->url(fn($record) => UserResource::getUrl('balanceTr', ['record' => $record]))->label('كشف حساب تركي'),
+                    Tables\Actions\Action::make('balance_usd_pending')->url(fn($record) => UserResource::getUrl('balancePendingUsd', ['record' => $record, 'currency' => 1,'pending'=>1]))->label('كشف حساب دولار قيد التحصيل'),
+                    Tables\Actions\Action::make('balance_tr_pending')->url(fn($record) => UserResource::getUrl('balancePendingTR', ['record' => $record, 'currency' => 2,'pending'=>1]))->label('كشف حساب تركي قيد التحصيل'),
 
+                ])->label('كشف حساب'),
                 Tables\Actions\ViewAction::make(),
 
                 Tables\Actions\EditAction::make(),
 
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-
-
-                ]),
+                Tables\Actions\BulkActionGroup::make([]),
             ]);
     }
 
@@ -233,6 +260,10 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
+            'balanceTr' => Pages\BalancesTr::route('/{record}/balancesTr'),
+            'balanceUsd' => Pages\BalancesUsd::route('/{record}/balancesUsd'),
+            'balancePendingUsd' => Pages\BalancesUsd::route('/{record}/balancesPendingUsd'),
+            'balancePendingTR' => Pages\BalancesPendingTr::route('/{record}/balancesPendingTr'),
         ];
     }
 

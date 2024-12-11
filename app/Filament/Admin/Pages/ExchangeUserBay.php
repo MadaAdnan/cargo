@@ -18,6 +18,9 @@ class ExchangeUserBay extends Page  implements HasForms
 {
     use InteractsWithForms;
 
+    //H : Hidden (شراء دولار) Page button from sidenav in admin panel
+    public static function shouldRegisterNavigation(): bool { return false; }
+
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel='شراء دولار';
      protected ?string $heading='شراء دولار';

@@ -23,6 +23,9 @@ class ExchangePage extends Page implements HasForms
 {
     use InteractsWithForms;
 
+    //H : Hidden (مناقلات الحسابات المالية) Page button from sidenav in admin panel
+    public static function shouldRegisterNavigation(): bool { return false; }
+    
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $model = Balance::class;
     protected static ?string $navigationGroup = 'الحسابات المالية';
@@ -30,6 +33,8 @@ class ExchangePage extends Page implements HasForms
     protected static ?string $pluralLabel = 'إنشاء سند';
     protected static ?string $navigationLabel='مناقلات الحسابات المالية';
     protected ?string $heading='مناقلات الحسابات المالية';
+
+    
 
     public $data = [
         'from' => '',

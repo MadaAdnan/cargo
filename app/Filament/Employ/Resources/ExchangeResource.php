@@ -29,14 +29,52 @@ class ExchangeResource extends Resource
     {
         return $form
             ->schema([
-               Forms\Components\Section::make('طلب التصريف')->schema([
-                   Forms\Components\Radio::make('currency_id')->options([
-                       1=>' من الدولار إلى التركي',
-                       2=>'من التركي إلى الدولار',
-                   ])->label('نوع التحويل')->required(),
-                   Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required(),
-                   Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->numeric()->required(),
-               ])
+                Forms\Components\Section::make('طلب التصريف')->schema([
+                    Forms\Components\Radio::make('currency_id')->options([
+                        1 => ' من الدولار إلى التركي',
+                        2 => 'من التركي إلى الدولار',
+                    ])->label('نوع التحويل')->required()->afterStateUpdated(function ($get,$set) {
+                        if ($get('currency_id') == 1) {
+                            $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
+                            $set('result',$result);
+                        } elseif ($get('currency_id') == 2) {
+                            try{
+                                $result=  HelperBalance::formatNumber((double)$get('amount') / (double)$get('exchange'));
+                            }catch (\Exception $e){
+                                $result=0;
+                            }
+                            $set('result',$result);
+                        }
+                    })->live()->debounce(1000),
+                    Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required()->afterStateUpdated(function ($get,$set) {
+                        if ($get('currency_id') == 1) {
+                            $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
+                            $set('result',$result);
+                        } elseif ($get('currency_id') == 2) {
+                            try{
+                                $result=  HelperBalance::formatNumber((double)$get('amount') / (double)$get('exchange'));
+                            }catch (\Exception $e){
+                                $result=0;
+                            }
+                            $set('result',$result);
+                        }
+                    })->live()->debounce(1000),
+                    Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->numeric()->required()->afterStateUpdated(function ($get,$set) {
+                        if ($get('currency_id') == 1) {
+                            $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
+                            $set('result',$result);
+                        } elseif ($get('currency_id') == 2) {
+                            try{
+                                $result=  HelperBalance::formatNumber((double)$get('amount') / (double)$get('exchange'));
+                            }catch (\Exception $e){
+                                $result=0;
+                            }
+                            $set('result',$result);
+                        }
+                    })->live()->debounce(1000),
+                    Forms\Components\TextInput::make('result')->dehydrated(false)->label('الإجمالي')->numeric()->required(),
+
+                ])
 
             ]);
     }

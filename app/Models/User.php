@@ -117,6 +117,23 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
     {
         return $this->hasMany(Balance::class)->where('balances.is_complete', 1)->where('pending', '!=', true);
     }
+    public function balancesTr(): HasMany
+    {
+        return $this->balances()->where('currency_id',2);
+    }
+    public function balancesUsd(): HasMany
+    {
+        return $this->balances()->where('currency_id',1);
+    }
+
+    public function balancesPendingTr(): HasMany
+    {
+        return  $this->hasMany(Balance::class)->where('balances.is_complete', 1)->where('pending', '=', true)->where('currency_id',2);
+    }
+    public function balancesPendingUsd(): HasMany
+    {
+        return $this->hasMany(Balance::class)->where('balances.is_complete', 1)->where('pending', '=', true)->where('currency_id',1);
+    }
 
     public function pendingBalances(): HasMany
     {
@@ -129,7 +146,16 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
                 ->where('currency_id',1)
                 ->where('pending', '!=', true)
                 ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
-        return  $total;
+        return  HelperBalance::formatNumber($total);
+    }
+    public function getPendingBalanceAttribute(): float
+    {
+        $total = DB::table('balances')
+                ->where('user_id', $this->id)
+                ->where('currency_id', 1)
+                ->where('pending', true)
+                ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
+        return  HelperBalance::formatNumber($total);
     }
 
     public function getTotalBalanceTrAttribute(): float
@@ -138,14 +164,20 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
                 ->where('currency_id',2)
                 ->where('pending', '!=', true)
                 ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
-        return  $total;
+        return  HelperBalance::formatNumber($total);
     }
 
-    public function getPendingBalanceAttribute(): float
+
+    public function getTotalBalanceTrPendingAttribute(): float
     {
-        $total = DB::table('balances')->where('user_id', $this->id)->where('pending', true)->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
-        return $total;
+        $total = DB::table('balances')->where('user_id', $this->id)->where('is_complete', true)
+            ->where('currency_id', 2)
+            ->where('pending', true)
+            ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
+        return  HelperBalance::formatNumber($total);
     }
+
+
 
     public function getIbanNameAttribute(): string
     {

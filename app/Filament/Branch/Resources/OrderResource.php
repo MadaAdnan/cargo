@@ -104,8 +104,9 @@ class OrderResource extends Resource
                                                         ->maxLength(15)
                                                         ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
                                                         ->tel()
-                                                        ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/')// تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-                                                        ->required(),
+                                                        ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),// تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                                        //H: Made phone number not required to complete account registration while creating an order
+                                                        //->required(),
 
                                                     Forms\Components\TextInput::make('country_code')
                                                         ->label('رمز الدولة')
@@ -113,9 +114,10 @@ class OrderResource extends Resource
                                                         ->prefix('+')
                                                         ->maxLength(3)
                                                         ->numeric()
-                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']) // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
                                                         // تحديد الحد الأقصى للأرقام (بما في ذلك +)
-                                                        ->required(),
+                                                        //H: Made phone number not required to complete account registration while creating an order
+                                                        //->required(),
                                                 ]),
                                                 Forms\Components\Grid::make()->schema([
                                                     Forms\Components\Textarea::make('address')->label('العنوان التفصيلي'),
@@ -177,8 +179,9 @@ class OrderResource extends Resource
                                 Forms\Components\Select::make('city_source_id')
                                     ->relationship('citySource', 'name')
                                     ->label('من بلدة')->reactive()->required()->searchable(),
-
-                                Forms\Components\TextInput::make('sender_address')->label('عنوان المرسل')->required(),
+                                //H: disabled required for sender address in order creation panel
+                                Forms\Components\TextInput::make('sender_address')->label('عنوان المرسل'),
+                                //->required(),
                             ]),
 
                         ]),
@@ -246,6 +249,7 @@ class OrderResource extends Resource
                             Forms\Components\Grid::make()->schema([
                                 Forms\Components\Select::make('unit_id')
                                     ->relationship('unit', 'name')->label('الوحدة')->required(),
+                                Forms\Components\TextInput::make('note')->label('ملاحظات')
                             ]),
 
                         ]),
@@ -343,6 +347,7 @@ class OrderResource extends Resource
                     ->icon('heroicon-o-qr-code'),
 
                 Tables\Columns\TextColumn::make('code')->description(fn($record) => $record->id,'above')->copyable()->searchable(),
+                Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
 
 
                 Tables\Columns\TextColumn::make('type')->label('نوع الطلب')
@@ -411,7 +416,9 @@ class OrderResource extends Resource
                     })->openUrlInNewTab()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record)=>'موظف الإلتقاط : '.$record->pick?->name)->description(fn($record)=>'موظف التسليم : '.$record->given?->name)->label('التوكيل')
+                Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record)=>'موظف الإلتقاط : '.$record->pick?->name)->description(fn($record)=>'موظف التسليم : '.$record->given?->name)->label('التوكيل'),
+
+                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary')
 
 
             ])->defaultSort('created_at', 'desc')
@@ -525,19 +532,30 @@ class OrderResource extends Resource
                         ->visible(fn($record) =>  $record->pick_id != null && ($record->status === OrderStatusEnum::PICK || $record->status === OrderStatusEnum::TRANSFER))
                         ->label('تحديد موظف التسليم')->color('info'),
 
+                    // تحديد موظف غعادة الطلب
+                    Tables\Actions\Action::make('set_returned_id')->form([
+                        Forms\Components\Select::make('staff_id')->searchable()    ->getSearchResultsUsing(fn (string $search): array => User::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())->label('حدد الموظف')->required(),
+
+                    ])
+                        ->action(function($record,$data){
+                            $record->update(['returned_id'=>$data['staff_id']]);
+                            Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف إعادة الطلب بنجاح')->success()->send();
+
+                        })
+                        ->label('تحديد موظف تسليم المرتجع')->visible(fn($record)=>$record->status==OrderStatusEnum::RETURNED && $record->branch_source_id ==auth()->user()->branch_id),
 
                     Tables\Actions\Action::make('cancel_order')
                         ->form([
                             Forms\Components\Radio::make('status')->options([
-                                OrderStatusEnum::CANCELED->value => OrderStatusEnum::CANCELED->getLabel(),
+                               // OrderStatusEnum::CANCELED->value => OrderStatusEnum::CANCELED->getLabel(),
                                 OrderStatusEnum::RETURNED->value => OrderStatusEnum::RETURNED->getLabel(),
                             ])->label('الحالة')->required()->default(OrderStatusEnum::CANCELED->value),
-                            Forms\Components\Textarea::make('msg_cancel')->label('سبب الإلغاء / الإعادة')
+                            Forms\Components\Textarea::make('canceled_info')->label('سبب الإلغاء / الإعادة')
                         ])
                         ->action(function ($record, $data) {
                             DB::beginTransaction();
                             try {
-                                $record->update(['status' => $data['status'], 'canceled_info' => $data['msg_cancel']]);
+                                $record->update(['status' => $data['status'], 'canceled_info' => $data['canceled_info']]);
                                 DB::commit();
                                 Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
                             } catch (\Exception | Error $e) {
@@ -545,7 +563,7 @@ class OrderResource extends Resource
                                 Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                             }
                         })->label('الإلغاء / الإعادة')->color('danger')
-                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED),
+                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED),
 
 
                     Tables\Actions\Action::make('success_pick')
@@ -585,10 +603,10 @@ class OrderResource extends Resource
 
                     Tables\Actions\Action::make('success_given')
                         ->form(function ($record) {
-$form=[];
-                            $totalPrice=$record->price+$record->far;
+
+                            $totalPrice=(double)$record->price+(double)$record->far;
                             if($totalPrice==0){
-                                $totalPrice=$record->price_tr+$record->far_tr;
+                                $totalPrice=(double) $record->price_tr+ (double) $record->far_tr;
                             }
                             $priceMessage='انت تأكد إستلامك مبلغ : ';
 
@@ -603,23 +621,24 @@ $form=[];
 
 
 
-                            $farMessage=null;
+                            $farMessage='';
 
-                          if($record->far_sender ===false){
-                              $farMessage='انت تأكد إستلامك مبلغ : ';
-                              if($record->far_tr>0){
-                                  $farMessage.=$record->far_tr .' TRY ';
-                              }
-                              if($record->far>0){
-                                  $farMessage.=' و '.$record->far .' USD ';
-                              }
-                              $farMessage.='أجور شحن الطلب';
+                            if($record->far_sender ==false){
+                                $farMessage='انت تأكد إستلامك مبلغ : ';
+                                if($record->far_tr>0){
+                                    $farMessage.=$record->far_tr .' TRY ';
+                                }
+                                if($record->far>0){
+                                    $farMessage.=' و '.$record->far .' USD ';
+                                }
+                                $farMessage.='أجور شحن الطلب';
 
-                          }
+                            }
+
                             if ($totalPrice > 0) {
                                 $form= [
                                     Forms\Components\Placeholder::make('msg')->content($priceMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه'),
-                                    Forms\Components\Placeholder::make('msg_2')->content($farMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')->visible($farMessage!=null)
+                                    Forms\Components\Placeholder::make('msg_2')->content($farMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
                                 ];
                             }else{
                                 $form= [
@@ -642,6 +661,42 @@ $form=[];
                         })->label('تأكيد تسليم الشحنة')->color('info')
                         ->visible(fn($record) => $record->given_id == auth()->id() && ($record->status == OrderStatusEnum::TRANSFER || $record->status == OrderStatusEnum::PICK)),
 
+
+                    Tables\Actions\Action::make('confirm_returned')
+                        ->form(function($record){
+                            $list=[];
+                            if ($record->far_sender == false) {
+                                if ($record->far > 0) {
+                                    $list[]=Forms\Components\Placeholder::make('far_usd')->content('سيتم إضافة  '.$record->far .' USD  إلى صندوقك  أجور شحن')->label('تحذير');
+                                }
+                                if ($record->far_tr > 0) {
+                                    $list[]=Forms\Components\Placeholder::make('far_try')->content('سيتم إضافة   '.$record->far_tr .' TRY  إلى صندوقك  أجور شحن')->label('تحذير');
+                                }
+                            }
+                            if ($record->price > 0) {
+                                $list[]=Forms\Components\Placeholder::make('price_usd')->content('سيتم إضافة  '.$record->price .' USD  إلى صندوقك  قيمة تحصيل')->label('تحذير');
+
+                            }
+                            if ($record->price_tr > 0) {
+                                $list[]=Forms\Components\Placeholder::make('price_try')->content('سيتم إضافة  '.$record->price_tr .' TRY  إلى صندوقك  قيمة تحصيل')->label('تحذير');
+
+                            }
+                            return $list;
+                        })
+                        ->action(function ($record) {
+                            DB::beginTransaction();
+                            try {
+                                $record->update(['status' =>OrderStatusEnum::CONFIRM_RETURNED->value]);
+                                HelperBalance::confirmReturn($record);
+                                DB::commit();
+                                Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
+                            } catch (\Exception | Error $e) {
+                                DB::rollBack();
+                                Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
+                            }
+                        })->label('تأكيد تسليم المرتجع')->color('danger')
+
+                        ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id==auth()->id())
                 ])
             ])
             ->bulkActions([

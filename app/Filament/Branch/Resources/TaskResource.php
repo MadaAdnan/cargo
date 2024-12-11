@@ -2,6 +2,7 @@
 
 namespace App\Filament\Branch\Resources;
 
+use App\Enums\LevelUserEnum;
 use App\Filament\Branch\Resources\TaskResource\Pages;
 use App\Filament\Branch\Resources\TaskResource\RelationManagers;
 use App\Models\Task;
@@ -30,7 +31,10 @@ class TaskResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('مهام')->schema([
-                    Forms\Components\Select::make('user_id')->relationship('user', 'name')->label('المستخدم')->searchable()->required(),
+                    Forms\Components\Select::make('user_id')->relationship('user', 'name',fn($query)=>$query->whereIn('level',[LevelUserEnum::STAFF->value,
+                        LevelUserEnum::BRANCH->value,
+                        LevelUserEnum::ADMIN->value,
+                    ] ))->label('المستخدم')->searchable()->required(),
                     Forms\Components\Grid::make(3)->schema([
                         Forms\Components\TextInput::make('from')->label('إستلام من')->datalist($usersList),
                         Forms\Components\TextInput::make('sender_phone')->label('رقم الهاتف'),

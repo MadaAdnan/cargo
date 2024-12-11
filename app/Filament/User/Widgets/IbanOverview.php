@@ -10,7 +10,8 @@ class IbanOverview extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Iban', auth()->user()->iban)
+            //H: fixed the word Iban -> now its IBAN
+            Stat::make('IBAN', auth()->user()->iban)
                 ->description('الرمز الخاص بك')
                 ->color('success'),
 

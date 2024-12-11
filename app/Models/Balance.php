@@ -24,6 +24,7 @@ class Balance extends Model
         return $this->belongsTo(User::class);
     }
 
+
     public function account(){
         return $this->belongsTo(User::class,'user_id')->withoutGlobalScope('userOnly')->where('is_account',true);
     }
@@ -36,6 +37,10 @@ class Balance extends Model
     public function currency(): BelongsTo
     {
         return $this->belongsTo(Currency::class);
+    }
+
+    public function scopePending($query){
+        return $query->where('pending',1)->where('is_complete',1);
     }
 
 }

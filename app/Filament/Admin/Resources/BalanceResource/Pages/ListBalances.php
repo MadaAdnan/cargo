@@ -39,9 +39,16 @@ class ListBalances extends ListRecords
                 ])
                 //
                 ->action(function ($data) {
-
+                    if ($data['value'] <= 0) {
+                        Notification::make('error')->title('فشل العملية')->body('يرجى إدخال قيمة صالحة')->danger()->send();
+                        return;
+                    }
                     \DB::beginTransaction();
                     $user = User::find($data['user_id']);
+                    if($user?->id ==auth()->id()){
+                        Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                        return;
+                    }
                     try {
                         Balance::create([
                             'type' => BalanceTypeEnum::CATCH->value,
@@ -51,10 +58,10 @@ class ListBalances extends ListRecords
                             'info' => $data['info'],
                             'currency_id' => 1,
                             'is_complete' => true,
-                            'customer_name' => auth()->user()->name,
+                            'customer_name' => auth()->user()?->name,
                         ]);
 
-                        Balance::create([
+                        $balance=   Balance::create([
                             'type' => BalanceTypeEnum::PUSH->value,
                             'user_id' => auth()->id(),
                             'debit' => 0,
@@ -62,10 +69,11 @@ class ListBalances extends ListRecords
                             'info' => $data['info'],
                             'currency_id' => 1,
                             'is_complete' => true,
-                            'customer_name' => $user->name,
+                            'customer_name' => $user?->name??$user?->id,
                         ]);
                         \DB::commit();
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+                        $this->redirect(BalanceResource::getUrl('view',['record'=>$balance->id]));
                     } catch (\Exception | \Error $e) {
                         \DB::rollBack();
                         Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
@@ -88,12 +96,16 @@ class ListBalances extends ListRecords
                 //
                 ->action(function ($data) {
                     \DB::beginTransaction();
-                    if (auth()->user()->total_balance < $data['value'] && !auth()->user()->hasRole('super_admin')) {
-                        Notification::make('error')->title('فشل العملية')->body('لا تملك رصيد كافي')->danger()->send();
+                    if ($data['value'] <= 0) {
+                        Notification::make('error')->title('فشل العملية')->body('يرجى إدخال قيمة صالحة')->danger()->send();
                         return;
                     }
                     try {
                         $user = User::find($data['user_id']);
+                        if($user?->id ==auth()->id()){
+                            Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                            return;
+                        }
                         Balance::create([
                             'type' => BalanceTypeEnum::PUSH->value,
                             'user_id' => $data['user_id'],
@@ -104,7 +116,7 @@ class ListBalances extends ListRecords
                             'is_complete' => true,
                             'customer_name' => auth()->user()->name,
                         ]);
-                        Balance::create([
+                       $balance= Balance::create([
                             'type' => BalanceTypeEnum::CATCH->value,
                             'user_id' => auth()->id(),
                             'debit' => $data['value'],
@@ -112,11 +124,12 @@ class ListBalances extends ListRecords
                             'info' => $data['info'],
                             'currency_id' => 1,
                             'is_complete' => true,
-                            'customer_name' => $user->name,
+                            'customer_name' => $user?->name??$user?->id,
                         ]);
 
                         \DB::commit();
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+                        $this->redirect(BalanceResource::getUrl('view',['record'=>$balance->id]));
                     } catch (\Exception | \Error $e) {
                         \DB::rollBack();
                         Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
@@ -144,6 +157,7 @@ class ListBalances extends ListRecords
                     ])
                     //
                     ->action(function ($data) {
+
                         \DB::beginTransaction();
                         try {
                             foreach ($data['quid'] as $user) {
@@ -233,6 +247,10 @@ class ListBalances extends ListRecords
                         \DB::beginTransaction();
                         try {
                             $user = User::find($data['user_id']);
+                            if($user?->id ==auth()->id()){
+                                Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                                return;
+                            }
                             Balance::create([
                                 'type' => BalanceTypeEnum::PUSH->value,
                                 'user_id' => $data['user_id'],
@@ -251,7 +269,7 @@ class ListBalances extends ListRecords
                                 'info' => $data['info'],
                                 'is_complete' => true,
                                 'currency_id' => 1,
-                                'customer_name' => $user->name,
+                                'customer_name' => $user?->name??$user->id,
                             ]);
 
                             \DB::commit();
@@ -285,6 +303,10 @@ class ListBalances extends ListRecords
                                 return;
                             }
                             $user = User::find($data['user_id']);
+                            if($user?->id ==auth()->id()){
+                                Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+                                return;
+                            }
                             Balance::create([
                                 'type' => BalanceTypeEnum::CATCH->value,
                                 'user_id' => $data['user_id'],
@@ -304,7 +326,7 @@ class ListBalances extends ListRecords
                                 'info' => $data['info'],
                                 'currency_id' => 1,
                                 'is_complete' => true,
-                                'customer_name' => $user->name,
+                                'customer_name' => $user?->name??$user?->id,
                             ]);
 
                             \DB::commit();

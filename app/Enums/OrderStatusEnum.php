@@ -14,6 +14,7 @@ enum OrderStatusEnum:string implements HasLabel ,HasColor,HasIcon
     case TRANSFER='transfer';
     case SUCCESS='success';
     case RETURNED='returned';
+    case CONFIRM_RETURNED='confirm_returned';
     case CANCELED='canceled';
 
 
@@ -26,6 +27,7 @@ enum OrderStatusEnum:string implements HasLabel ,HasColor,HasIcon
             self::TRANSFER => 'بإنتظار التسليم',
             self::SUCCESS => 'تم التسليم',
             self::RETURNED => 'مرتجع',
+            self::CONFIRM_RETURNED => 'تسليم المرتجع',
             self::CANCELED => 'ملغي',
 
         };
@@ -39,6 +41,7 @@ enum OrderStatusEnum:string implements HasLabel ,HasColor,HasIcon
             self::TRANSFER => 'primary',
             self::SUCCESS => 'success',
             self::RETURNED => 'danger',
+            self::CONFIRM_RETURNED => 'red',
             self::CANCELED => 'warning',
 
         };
@@ -53,6 +56,7 @@ enum OrderStatusEnum:string implements HasLabel ,HasColor,HasIcon
             self::TRANSFER => 'fas-cart-flatbed',
             self::SUCCESS => 'fas-cart-flatbed',
             self::RETURNED => 'fas-cart-flatbed',
+            self::CONFIRM_RETURNED => 'fas-cart-flatbed',
             self::CANCELED => 'fas-cart-flatbed',
 
         };
