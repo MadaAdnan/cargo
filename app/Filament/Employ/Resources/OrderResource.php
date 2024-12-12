@@ -350,7 +350,7 @@ public static function canCreate(): bool
                     })->label('تأكيد تسليم الشحنة')->button()->color('info')
                     ->visible(fn($record) => $record->given_id == auth()->id() && ($record->status == OrderStatusEnum::TRANSFER || $record->status == OrderStatusEnum::PICK)),
 
-                Tables\Actions\Action::make('cancel_order')
+                /*Tables\Actions\Action::make('cancel_order')
                     ->form([
                         Forms\Components\Radio::make('status')->options([
                             OrderStatusEnum::CANCELED->value => OrderStatusEnum::CANCELED->getLabel(),
@@ -369,7 +369,7 @@ public static function canCreate(): bool
                             Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                         }
                     })->label('الإلغاء / الإعادة')->button()->color('danger')
-                    ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED)
+                    ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED)*/
 
 
             ])

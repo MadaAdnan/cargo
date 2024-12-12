@@ -528,8 +528,8 @@ class OrderResource extends Resource
                         ->visible(fn($record) =>  $record->pick_id != null && ($record->status === OrderStatusEnum::PICK || $record->status === OrderStatusEnum::TRANSFER))
                         ->label('تحديد موظف التسليم')->color('info'),
 
-
-                    Tables\Actions\Action::make('cancel_order')
+ // الغاء الاعادة الارتجاع
+                    /*Tables\Actions\Action::make('cancel_order')
                         ->form([
                             Forms\Components\Radio::make('status')->options([
                                 OrderStatusEnum::CANCELED->value => OrderStatusEnum::CANCELED->getLabel(),
@@ -548,7 +548,7 @@ class OrderResource extends Resource
                                 Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                             }
                         })->label('الإلغاء / الإعادة')->color('danger')
-                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED),
+                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED),*/
 
 
                     Tables\Actions\Action::make('success_pick')
