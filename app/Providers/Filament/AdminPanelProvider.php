@@ -34,10 +34,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->plugins([
-                
+
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
                 FilamentApexChartsPlugin::make(),
-                ApiServicePlugin::make(),
+               // ApiServicePlugin::make(),
                 FilamentEditProfilePlugin::make()
                     ->shouldShowDeleteAccountForm(false)
                     ->shouldShowAvatarForm()
