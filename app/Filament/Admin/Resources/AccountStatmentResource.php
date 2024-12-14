@@ -75,7 +75,7 @@ class AccountStatmentResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->poll(10)
+          //  ->poll(10)
             ->columns([
 
                 Tables\Columns\TextColumn::make('credit')->label('دائن'),
