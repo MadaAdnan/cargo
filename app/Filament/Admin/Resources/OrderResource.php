@@ -365,7 +365,7 @@ $users=User::selectRaw('id,name')->get();
 $cities=City::selectRaw('id,name,city_id')->get();
 
         return $table
-            ->poll(20)
+           // ->poll(20)
             ->columns([
              //  Tables\Columns\SpatieMediaLibraryImageColumn::make('images')->collection('images')->circular()->openUrlInNewTab(),
              /*   PopoverColumn::make('qr_url')
