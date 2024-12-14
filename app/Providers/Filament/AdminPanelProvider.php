@@ -36,7 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
 
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
-                FilamentApexChartsPlugin::make(),
+               // FilamentApexChartsPlugin::make(),
                // ApiServicePlugin::make(),
                 FilamentEditProfilePlugin::make()
                     ->shouldShowDeleteAccountForm(false)
