@@ -57,7 +57,7 @@ class TaskResource extends Resource
         return $table
             ->modifyQueryUsing(fn($query) => $query->where('created_id', auth()->id()))
             ->defaultSort('created_at', 'desc')
-            ->poll(10)
+          //  ->poll(10)
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('التسلسل')->sortable(),
                 Tables\Columns\TextColumn::make('user.name')->label('المستخدم')->searchable()->sortable(),
