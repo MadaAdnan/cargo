@@ -53,7 +53,7 @@ class ExchangeResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            //->poll(10)
+            ->poll(10)
             ->modifyQueryUsing(fn($query) => $query->latest())
             ->columns([
                 //H : Added the id of the exchange request
