@@ -15,7 +15,7 @@ use App\Filament\Admin\Resources\UserResource;
 |
 */
 
-Route::get('/{id?}/{name?}', function ($id=null,$name=null) {
+Route::get('/', function () {
 
 // 7185 - 7293
 return "<p>الموقع متوقف للصيانة</p>". "<a href='https://guba-sy.com'>إنتقل للموقع البديل</a>";
