@@ -7,6 +7,7 @@ use App\Filament\Admin\Widgets\BalanceEmployeeView;
 use App\Filament\Admin\Widgets\BalanceView;
 use App\Filament\Admin\Widgets\OrdersOverview;
 use App\Http\Middleware\RedirectToPanelMiddleware;
+use App\Http\Middleware\StopMiddleware;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -79,6 +80,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                StopMiddleware::class
             ])
             ->authMiddleware([
                 Authenticate::class,

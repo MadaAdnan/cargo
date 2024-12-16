@@ -24,7 +24,7 @@ return "<p>الموقع متوقف للصيانة</p>". "<a href='https://guba-s
    // \App\Models\Balance::where('is_complete',false)->whereIn('user_id',$users)->delete();
 
     return view('welcome');
-});
+})->name('welcome');
 
 Route::get('/ship', [OrderStatusController::class, 'index']);
 
