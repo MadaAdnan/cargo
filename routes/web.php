@@ -15,10 +15,11 @@ use App\Filament\Admin\Resources\UserResource;
 |
 */
 
-Route::get('/', function () {
+Route::get('/{id}', function ($id) {
 
 // 7185 - 7293
-
+echo "<p>الموقع متوقف للصيانة</p>";
+echo "<a href='https://guba-sy.com'>إنتقل للموقع البديل</a>";
 
     //$users=\App\Models\User::where('level',\App\Enums\LevelUserEnum::USER->value)->pluck('id')->toArray();
    // \App\Models\Balance::where('is_complete',false)->whereIn('user_id',$users)->delete();
