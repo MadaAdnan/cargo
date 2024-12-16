@@ -64,7 +64,7 @@ class BranchPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                StopMiddleware::class
+              //  StopMiddleware::class
             ])
             ->authMiddleware([
                 Authenticate::class,
