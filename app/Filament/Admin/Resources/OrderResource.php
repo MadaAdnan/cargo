@@ -731,7 +731,7 @@ $cities=City::selectRaw('id,name,city_id')->get();
                                 Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                             }
                         })->label('الإلغاء / الإعادة')->color('danger')
-                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED),
+                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED&& auth()->user()->hasRole('super_admin')),
                   // تحديد موظف غعادة الطلب
                     Tables\Actions\Action::make('set_returned_id')->form([
                         Forms\Components\Select::make('staff_id')->searchable()    ->getSearchResultsUsing(fn (string $search): array => User::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())->label('حدد الموظف')->required(),
@@ -792,7 +792,7 @@ $cities=City::selectRaw('id,name,city_id')->get();
                             Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
 
                         }
-                    })->label('إلغاء الشحنات'),
+                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin')),
                     Tables\Actions\DeleteBulkAction::make(),
 
                     Tables\Actions\BulkAction::make('given_id_check')->form([

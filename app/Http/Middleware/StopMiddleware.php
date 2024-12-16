@@ -15,7 +15,7 @@ class StopMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        return redirect()->route('welcome');
+       // return redirect()->route('welcome');
         return $next($request);
     }
 }
