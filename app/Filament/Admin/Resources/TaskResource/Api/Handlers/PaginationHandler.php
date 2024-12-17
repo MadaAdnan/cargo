@@ -17,8 +17,8 @@ class PaginationHandler extends Handlers {
             ->allowedFields($this->getAllowedFields() ?? [])
             ->allowedSorts($this->getAllowedSorts() ?? [])
             ->allowedFilters($this->getAllowedFilters() ?? [])
-            ->allowedIncludes($this->getAllowedIncludes() ?? []);
-
+            ->allowedIncludes($this->getAllowedIncludes() ?? [])
+            ->defaultSort('-created_at');
         // Dynamically apply filters based on query parameters
         foreach (request()->query() as $key => $value) {
             // Skip pagination parameters

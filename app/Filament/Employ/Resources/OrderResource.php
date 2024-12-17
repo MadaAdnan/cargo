@@ -193,11 +193,11 @@ public static function canCreate(): bool
         return $table
             ->poll(10)
             ->columns([
-                PopoverColumn::make('qr_url')
+                /*PopoverColumn::make('qr_url')
                     ->trigger('click')
                     ->placement('right')
                     ->content(fn($record) => \LaraZeus\Qr\Facades\Qr::render($record->code))
-                    ->icon('heroicon-o-qr-code'),
+                    ->icon('heroicon-o-qr-code'),*/
 
                 Tables\Columns\TextColumn::make('code')->description(fn($record) => $record->id,'above')->copyable()->searchable(),
 

@@ -360,11 +360,11 @@ class OrderResource extends Resource
             ->poll(10)
             ->columns([
                 //  Tables\Columns\SpatieMediaLibraryImageColumn::make('images')->collection('images')->circular()->openUrlInNewTab(),
-                PopoverColumn::make('qr_url')
+                /*PopoverColumn::make('qr_url')
                     ->trigger('click')
                     ->placement('right')
                     //->content(fn($record) => \LaraZeus\Qr\Facades\Qr::render($record->code))
-                    ->icon('heroicon-o-qr-code'),
+                    ->icon('heroicon-o-qr-code'),*/
 
                 Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->code, 'above')->copyable()->searchable(),
 

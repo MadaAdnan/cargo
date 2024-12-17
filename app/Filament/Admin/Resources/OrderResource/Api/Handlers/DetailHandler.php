@@ -41,6 +41,10 @@ class DetailHandler extends Handlers
         $pick = \App\Models\User::select('name as pick_name')
         ->find($order->pick_id);
 
+        // Fetch additional data for given
+        $given = \App\Models\User::select('name as given_name')
+        ->find($order->given_id);
+
         // Fetch additional data for cities
         $citySource = \App\Models\City::select('name as city_source_name')
             ->find($order->city_source_id);
@@ -87,6 +91,10 @@ class DetailHandler extends Handlers
         // Merge receiver data
         if ($pick) {
             $order->pick_name = $pick->pick_name;
+        }
+        // Merge given data
+        if ($given) {
+            $order->given_name = $given->given_name;
         }
         // Merge city data
         if ($citySource) {
