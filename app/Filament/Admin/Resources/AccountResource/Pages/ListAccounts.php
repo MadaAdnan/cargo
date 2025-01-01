@@ -68,7 +68,7 @@ class ListAccounts extends ListRecords
                     Notification::make('error')->danger()->title('خطأ في العملية')->body($e->getMessage())->send();
                 }
             })->label('سند قيدUSD'),
-            Actions\Action::make('quid_usd')->form([
+            Actions\Action::make('quid_try')->form([
                 Select::make('source_id')->options(User::withoutGlobalScopes()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
                 Select::make('target_id')->options(User::withoutGlobalScopes()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
                 TextInput::make('amount')->required()->numeric()->rules([
