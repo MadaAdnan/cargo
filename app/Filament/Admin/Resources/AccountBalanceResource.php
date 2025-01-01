@@ -16,6 +16,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class AccountBalanceResource extends Resource
 {
@@ -66,6 +68,11 @@ class AccountBalanceResource extends Resource
                 Tables\Columns\TextColumn::make('info')->label('البيان'),
                 Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('التاريخ'),
 
+            ])
+            ->headerActions([
+                ExportAction::make()->exports([
+                    ExcelExport::make()->withChunkSize(100)->fromTable()
+                ])
             ])
             ->filters([
                 Tables\Filters\Filter::make('filter')->form([
