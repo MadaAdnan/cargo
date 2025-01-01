@@ -9,6 +9,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Filament\Models\Contracts\HasAvatar;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -187,6 +188,11 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
     public function scopeAccounts($query)
     {
         return $query->withoutGlobalScope('userOnly')->where('is_account', true);
+    }
+
+    public function scopeHideGlobal( $query)
+    {
+        return $query->whereNotIn('id', [89,76]);
     }
 
     public function currency(): BelongsTo

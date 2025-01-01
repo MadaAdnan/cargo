@@ -23,6 +23,10 @@ class OrderObserver
             $order->status = OrderStatusEnum::PICK;
         }
         $order->created_by=auth()->id();
+        $order->given_id=User::where([
+            'level'=>LevelUserEnum::BRANCH->value,
+            'branch_id'=>$order->branch_target_id
+            ])->first()?->id;
 
     }
 

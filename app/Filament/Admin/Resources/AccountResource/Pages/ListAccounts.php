@@ -22,9 +22,9 @@ class ListAccounts extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
-            Actions\Action::make('quid')->form([
-                Select::make('source_id')->options(User::withoutGlobalScopes()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
-                Select::make('target_id')->options(User::withoutGlobalScopes()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
+            Actions\Action::make('quid_usd')->form([
+                Select::make('source_id')->options(User::withoutGlobalScopes()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
+                Select::make('target_id')->options(User::withoutGlobalScopes()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
                 TextInput::make('amount')->required()->numeric()->rules([
                     fn(): Closure => function (string $attribute, $value, Closure $fail) {
                         if ($value <= 0) {
@@ -67,7 +67,53 @@ class ListAccounts extends ListRecords
                     DB::rollBack();
                     Notification::make('error')->danger()->title('خطأ في العملية')->body($e->getMessage())->send();
                 }
-            })->label('سند قيد')
+            })->label('سند قيدUSD'),
+            Actions\Action::make('quid_usd')->form([
+                Select::make('source_id')->options(User::withoutGlobalScopes()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
+                Select::make('target_id')->options(User::withoutGlobalScopes()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
+                TextInput::make('amount')->required()->numeric()->rules([
+                    fn(): Closure => function (string $attribute, $value, Closure $fail) {
+                        if ($value <= 0) {
+                            $fail('يجب ان تكون القيمة أكبر من 0');
+                        }
+                    },
+                ])->required()->label('القيمة'),
+                TextInput::make('info')->label('ملاحظات')
+            ])->action(function ($data) {
+                DB::beginTransaction();
+                try {
+                    $uuid = \Str::uuid();
+                    Balance::create([
+                        'user_id' => $data['target_id'],
+                        'currency_id' => 2,
+                        'pending' => false,
+                        'is_complete' => true,
+                        'info' => $data['info'],
+                        'uuid' => $uuid,
+                        'type' => BalanceTypeEnum::PUSH->value,
+                        'credit' => $data['amount'],
+                        'debit' => 0
+                    ]);
+
+                    Balance::create([
+                        'user_id' =>  $data['source_id'],
+                        'currency_id' => 2,
+                        'pending' => false,
+                        'is_complete' => true,
+                        'info' => $data['info'],
+                        'uuid' => $uuid,
+                        'type' => BalanceTypeEnum::CATCH->value,
+                        'credit' => 0,
+                        'debit' => $data['amount']
+                    ]);
+
+                    DB::commit();
+                    Notification::make('error')->success()->title('نجاح العملية')->body('تم إضافة السند بنجاح')->send();
+                } catch (\Exception | \Error $e) {
+                    DB::rollBack();
+                    Notification::make('error')->danger()->title('خطأ في العملية')->body($e->getMessage())->send();
+                }
+            })->label('سند قيدTRY'),
         ];
     }
 }

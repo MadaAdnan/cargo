@@ -95,13 +95,15 @@ class AccountBalanceResource extends Resource
                 Tables\Actions\EditAction::make()->visible(fn($record)=>$record->uuid==null),
                 Tables\Actions\Action::make('complete')->action(function($record){
                     try{
-                        $record->update(['is_complete'=>true,'pending'=>false]);
+                        Balance::where('uuid',$record->uuid)->update(['is_complete'=>true,'pending'=>false]);
+                      //  $record->update(['is_complete'=>true,'pending'=>false]);
                         Notification::make('success')->success()->title('نجاح العملية')->body(' تم تأكيد الدفعة بنجاح')->send();
 
                     }catch (\Exception | \Error $e){
                         Notification::make('error')->danger()->title('فشلت العملية')->body($e->getMessage())->send();
                     }
-                })->label('تأكيد دفع المصاريف')->requiresConfirmation()->visible(fn($record)=>$record->uuid!=null && $record->is_complete==false)->button(),
+                })
+                    ->label('تأكيد دفع المصاريف')->requiresConfirmation()->visible(fn($record)=>$record->uuid!=null && $record->is_complete==false)->button(),
 
                 Tables\Actions\Action::make('cancel')->action(function($record){
                     try{

@@ -45,8 +45,8 @@ class ListBalances extends ListRecords
                             'debit' => $data['amount'],
                             'credit'=>0,
                             'currency_id' => 1,
-                            'pending' => false,
-                            'is_complete' => true,
+                            'pending' => true,
+                            'is_complete' => false,
                             'customer_name' => 'حساب مصاريف',
                             'info' => $data['info'],
                         ]);
@@ -76,7 +76,7 @@ class ListBalances extends ListRecords
           Actions\Action::make('create_balance_debit')
                 ->form([
                         Grid::make(3)->schema([
-                            Select::make('user_id')->options(User::get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                            Select::make('user_id')->options(User::hideGlobal()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                                 ->label('المستخدم'),
                             TextInput::make('value')->required()->numeric()->label('القيمة'),
                             TextInput::make('info')->label('بيان'),
@@ -131,7 +131,7 @@ class ListBalances extends ListRecords
             Actions\Action::make('create_balance_credit')
                 ->form([
                     Grid::make(3)->schema([
-                        Select::make('user_id')->options(User::where('level',LevelUserEnum::USER->value)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                        Select::make('user_id')->options(User::hideGlobal()->where('level',LevelUserEnum::USER->value)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                             ->label('المستخدم'),
                         TextInput::make('value')->required()->numeric()->label('القيمة'),
                         TextInput::make('info')->label('بيان'),

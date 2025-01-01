@@ -723,7 +723,14 @@ $cities=City::selectRaw('id,name,city_id')->get();
                         ->action(function ($record, $data) {
                             DB::beginTransaction();
                             try {
-                                $record->update(['status' => $data['status'], 'canceled_info' => $data['canceled_info']]);
+                                $dataUpdate=['status' => $data['status'], 'canceled_info' => $data['canceled_info']];
+                                if($data['status']==OrderStatusEnum::RETURNED->value){
+                                    $dataUpdate['receive_id']=User::where([
+                                        'level'=>LevelUserEnum::BRANCH->value,
+                                        'branch_id' => $record->branch_source_id
+                                    ])->first()?->id;
+                                }
+                                $record->update($dataUpdate);
                                 DB::commit();
                                 Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
                             } catch (\Exception | Error $e) {
