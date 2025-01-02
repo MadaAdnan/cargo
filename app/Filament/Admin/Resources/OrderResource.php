@@ -376,7 +376,11 @@ $cities=City::selectRaw('id,name,city_id')->get();
                     ->content(fn($record) => \LaraZeus\Qr\Facades\Qr::render($record->code))
                     ->icon('heroicon-o-qr-code'),*/
 
-                Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->code,'above')->copyable()->searchable(),
+                Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->code,'above')->copyable()->searchable()->extraCellAttributes(fn (Model $record) => match ($record->color) {
+                    'green' =>['style'=>'background-color:#55FF88;'],
+
+                    default => ['style'=>''],
+                }),
                 Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
 
 
@@ -453,10 +457,15 @@ $cities=City::selectRaw('id,name,city_id')->get();
                     ->searchable()->color('danger'),
                 Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record)=>'موظف الإلتقاط : '.$record->pick?->name)->description(fn($record)=>'موظف التسليم : '.$record->given?->name)->label('التوكيل'),
                 Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
-                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ الشحنة')
+                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ الشحنة')->extraCellAttributes(fn (Model $record) => match ($record->color) {
+                    'green' =>['style'=>'background-color:#55FF88;'],
+
+                    default => ['style'=>''],
+                })
 
 
             ])->defaultSort('created_at', 'desc')
+
             ->filters([
 //
 
@@ -787,7 +796,8 @@ $cities=City::selectRaw('id,name,city_id')->get();
                              }
                          })->label('تأكيد تسليم المرتجع')->color('danger')
 
-                         ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id!=null)
+                         ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id!=null),
+                    Tables\Actions\Action::make('check_green')->action(fn($record)=>$record->update(['color'=>'green']))->label('تعيين باللون الاخضر')->visible(fn($record)=>$record->color==null)
 
                 ])
 
