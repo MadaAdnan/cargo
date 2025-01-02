@@ -209,11 +209,11 @@ class UserResource extends Resource
                 //H: added currency report for users
                 Tables\Columns\TextColumn::make('total_balance')->label('الرصيد USD'),
                 Tables\Columns\TextColumn::make('pending_balance')->label('الرصيد USD قيد التحصيل'),
-                Tables\Columns\TextColumn::make('username')->formatStateUsing(fn($record)=>$record->total_balance??0-$record->pending_balance??0)->label('محصلة USD'),
+                Tables\Columns\TextColumn::make('username')->formatStateUsing(fn($record)=>(double)$record->total_balance+(double)$record->pending_balance)->label('محصلة USD'),
 
                 Tables\Columns\TextColumn::make('total_balance_tr')->label('الرصيد TRY'),
                 Tables\Columns\TextColumn::make('total_balance_tr_pending')->label('الرصيد TRYقيد التحصيل'),
-     Tables\Columns\TextColumn::make('num_id')->formatStateUsing(fn($record)=>$record->total_balance_tr??0-$record->total_balance_tr_pending??0)->label('محصلة TRY'),
+     Tables\Columns\TextColumn::make('num_id')->formatStateUsing(fn($record)=>(double)$record->total_balance_tr+(double)$record->total_balance_tr_pending)->label('محصلة TRY'),
 
             ])->defaultSort('created_at', 'desc')
             ->filters([
