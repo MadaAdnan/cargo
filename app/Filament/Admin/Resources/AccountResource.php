@@ -51,6 +51,7 @@ class AccountResource extends Resource
                 Tables\Columns\TextColumn::make('currency.name')->label('عملة الحساب')->searchable(),
                 Tables\Columns\TextColumn::make('branch.name')->label('الفرع')->searchable(),
                 Tables\Columns\TextColumn::make('total_balance')->label('الرصيد'),
+
             ])
             ->filters([
                 //

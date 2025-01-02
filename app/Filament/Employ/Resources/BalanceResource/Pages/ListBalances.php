@@ -5,6 +5,7 @@ namespace App\Filament\Employ\Resources\BalanceResource\Pages;
 use App\Enums\BalanceTypeEnum;
 use App\Enums\LevelUserEnum;
 use App\Filament\Employ\Resources\BalanceResource;
+use App\Helper\HelperBalance;
 use App\Models\Balance;
 use App\Models\User;
 use Closure;
@@ -156,6 +157,7 @@ class ListBalances extends ListRecords
 
             Actions\Action::make('quid')->form([
                 TextInput::make('amount')->label('القيمة')->required()->numeric(),
+                Select::make('description')->options(HelperBalance::getBalanceTypeArray())->label('نوع المصاريف')->required(),
                 TextInput::make('info')->label('البيان')
             ])
                 //
@@ -179,6 +181,8 @@ class ListBalances extends ListRecords
                         'is_complete' => true,
                         'customer_name' => 'حساب مصاريف',
                         'info' => $data['info'],
+                        'description'=>$data['description']
+
                     ]);
                     Balance::create([
                         'user_id' => 908,
@@ -190,6 +194,7 @@ class ListBalances extends ListRecords
                         'is_complete' => false,
                         'customer_name' => auth()->user()->name,
                         'info' => $data['info'],
+                        'description'=>$data['description']
                     ]);
                     \DB::commit();
                     Notification::make('success')->success()->title('نجاح العملية')->body('تم إضافة المصاريف')->send();
