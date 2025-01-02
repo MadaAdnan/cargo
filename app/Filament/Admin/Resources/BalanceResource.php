@@ -7,6 +7,7 @@ use App\Filament\Admin\Resources\BalanceResource\Pages;
 use App\Filament\Admin\Resources\BalanceResource\RelationManagers;
 use App\Helper\HelperBalance;
 use App\Models\Balance;
+use Filament\Actions\ExportAction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,6 +16,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class BalanceResource extends Resource
 {
@@ -78,6 +80,11 @@ class BalanceResource extends Resource
 
             ])
             ->filters([])
+            ->headerActions([
+                \pxlrbt\FilamentExcel\Actions\Tables\ExportAction::make()->exports([
+                    ExcelExport::make()->withChunkSize(100)->fromTable()
+                ])
+            ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()->visible(fn($record) => $record->type === BalanceTypeEnum::START),

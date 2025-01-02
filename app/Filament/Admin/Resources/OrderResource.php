@@ -41,7 +41,9 @@ use Filament\Forms\Components\Tabs;
 use App\Enums\BayTypeEnum;
 use Filament\Infolists\Infolist;
 use PhpOffice\PhpSpreadsheet\Calculation\LookupRef\Selection;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 
 class OrderResource extends Resource
@@ -450,7 +452,8 @@ $cities=City::selectRaw('id,name,city_id')->get();
                     })->openUrlInNewTab()
                     ->searchable()->color('danger'),
                 Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record)=>'موظف الإلتقاط : '.$record->pick?->name)->description(fn($record)=>'موظف التسليم : '.$record->given?->name)->label('التوكيل'),
-                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary')
+                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
+                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ الشحنة')
 
 
             ])->defaultSort('created_at', 'desc')
@@ -790,6 +793,11 @@ $cities=City::selectRaw('id,name,city_id')->get();
 
 //                Tables\Actions\DeleteAction::make(),
 
+            ])
+            ->headerActions([
+                ExportAction::make()->exports([
+                    ExcelExport::make()->withChunkSize(100)->fromTable()
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
