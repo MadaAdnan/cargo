@@ -363,7 +363,14 @@ class OrderResource extends Resource
                     ->action(function ($record, $data) {
                         DB::beginTransaction();
                         try {
-                            $record->update(['status' => $data['status'], 'canceled_info' => $data['canceled_info']]);
+                            $dataUpdate=['status' => $data['status'], 'canceled_info' => $data['canceled_info']];
+                            if($data['status']==OrderStatusEnum::RETURNED->value){
+                                $dataUpdate['receive_id']=User::where([
+                                    'level'=>LevelUserEnum::BRANCH->value,
+                                    'branch_id' => $record->branch_source_id
+                                ])->first()?->id;
+                            }
+                            $record->update($dataUpdate);
                             DB::commit();
                             Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
                         } catch (\Exception | Error $e) {
@@ -371,7 +378,7 @@ class OrderResource extends Resource
                             Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
                         }
                     })->label('الإلغاء / الإعادة')->button()->color('danger')
-                    ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED&& auth()->user()->hasRole('مدير عام')),
+                    ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED),
 
                 Tables\Actions\Action::make('confirm_returned')
                     ->form(function($record){
