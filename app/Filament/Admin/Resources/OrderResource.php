@@ -766,6 +766,7 @@ $cities=City::selectRaw('id,name,city_id')->get();
 
                         })
                         ->label('تحديد موظف تسليم المرتجع')->visible(fn($record)=>$record->status==OrderStatusEnum::RETURNED ),
+
                      Tables\Actions\Action::make('confirm_returned')
                          ->form(function($record){
                              $list=[];
