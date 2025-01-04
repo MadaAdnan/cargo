@@ -77,7 +77,13 @@ class OrderResource extends Resource
 
     public static function form(Form $form): Form
     {
-
+        $shipping=Order::latest()->first()?->shipping_date;
+$date=now()->format('Y-m-d');
+if($shipping!=null){
+  try{
+      $date=Carbon::parse($shipping)->format('Y-m-d');
+  }catch (\Exception|Error $e){}
+}
         return $form
             ->schema([
 
@@ -278,7 +284,7 @@ class OrderResource extends Resource
                             Forms\Components\TextInput::make('note')->label('ملاحظات')
                         ]),
                         Forms\Components\Grid::make(1)->schema([
-                            Forms\Components\DatePicker::make('shipping_date')->required()->label('تاريخ الشحنة')->default(Order::latest()->first()?->shipping_date?->format('Y-m-d')),
+                            Forms\Components\DatePicker::make('shipping_date')->required()->label('تاريخ الشحنة')->default($date),
                         ]),
                     ]),
                     Forms\Components\Fieldset::make('الأجور')->schema([
