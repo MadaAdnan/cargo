@@ -32,7 +32,7 @@ class ListBalances extends ListRecords
                 ->form([
 
                     Grid::make(3)->schema([
-                        Select::make('user_id')->options(User::get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                        Select::make('user_id')->options(User::active()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                             ->label('المستخدم'),
                         TextInput::make('value')->required()->numeric()->label('القيمة'),
                         TextInput::make('info')->label('البيان'),
@@ -88,7 +88,7 @@ class ListBalances extends ListRecords
             Actions\Action::make('create_balance_debit')
                 ->form([
                     Grid::make(3)->schema([
-                        Select::make('user_id')->options(User::get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                        Select::make('user_id')->options(User::active()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                             ->label('المستخدم'),
                         TextInput::make('value')->required()->numeric()->label('القيمة'),
                         TextInput::make('info')->label('بيان'),
@@ -149,7 +149,7 @@ class ListBalances extends ListRecords
                         Repeater::make('quid')->schema([
 
                             Grid::make(3)->schema([
-                                Select::make('user_id')->options(User::get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                                Select::make('user_id')->options(User::active()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                                     ->label('المستخدم'),
                                 TextInput::make('value')->required()->numeric()->label('القيمة'),
                                 TextInput::make('info')->label('بيان'),
@@ -191,7 +191,7 @@ class ListBalances extends ListRecords
                         Repeater::make('quid')->schema([
 
                             Grid::make()->schema([
-                                Select::make('user_id')->options(User::get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                                Select::make('user_id')->options(User::active()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                                     ->label('المستخدم'),
                                 TextInput::make('value')->required()->numeric()->label('القيمة'),
                                 TextInput::make('info')->label('بيان'),
@@ -236,7 +236,7 @@ class ListBalances extends ListRecords
 
 
                         Grid::make(3)->schema([
-                            Select::make('user_id')->options(User::accounts()->where('currency_id', 1)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                            Select::make('user_id')->options(User::active()->accounts()->where('currency_id', 1)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                                 ->label('المستخدم'),
                             TextInput::make('value')->required()->numeric()->label('القيمة'),
                             TextInput::make('info')->label('بيان'),
@@ -288,7 +288,7 @@ class ListBalances extends ListRecords
                 Actions\Action::make('create_balance_account_debit')
                     ->form([
                         Grid::make()->schema([
-                            Select::make('user_id')->options(User::accounts()->where('currency_id', 1)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                            Select::make('user_id')->options(User::active()->accounts()->where('currency_id', 1)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                                 ->label('المستخدم'),
                             TextInput::make('value')->required()->numeric()->label('القيمة'),
                             TextInput::make('info')->label('بيان'),
