@@ -278,7 +278,7 @@ class OrderResource extends Resource
                             Forms\Components\TextInput::make('note')->label('ملاحظات')
                         ]),
                         Forms\Components\Grid::make(1)->schema([
-                            Forms\Components\DatePicker::make('shipping_date')->required()->label('تاريخ الشحنة'),
+                            Forms\Components\DatePicker::make('shipping_date')->required()->label('تاريخ الشحنة')->default(Order::latest()->first()?->shipping_date->format('Y-m-d')),
                         ]),
                     ]),
                     Forms\Components\Fieldset::make('الأجور')->schema([
