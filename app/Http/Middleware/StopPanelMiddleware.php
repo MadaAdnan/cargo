@@ -15,7 +15,7 @@ class StopPanelMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        abort(404,'');
+      //  abort(404,'');
         return $next($request);
     }
 }
