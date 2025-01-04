@@ -51,7 +51,7 @@ class BalabceTRResource extends Resource
         return $form
             ->schema([
                 Grid::make(3)->schema([
-                    Select::make('user_id')->options(User::get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                    Select::make('user_id')->options(User::active()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                         ->label('المستخدم'),
                     TextInput::make('value')->required()->numeric()->label('القيمة'),
                     TextInput::make('info')->label('البيان'),

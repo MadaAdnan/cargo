@@ -26,8 +26,8 @@ class TaskResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $usersList = User::select('name')->pluck('name')->toArray();
-        $staffList = User::whereIn('level',[
+        $usersList = User::active()->select('name')->pluck('name')->toArray();
+        $staffList = User::active()->whereIn('level',[
             LevelUserEnum::STAFF->value,
             LevelUserEnum::BRANCH->value,
             LevelUserEnum::ADMIN->value,

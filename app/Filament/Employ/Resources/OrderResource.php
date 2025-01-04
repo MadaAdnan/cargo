@@ -70,7 +70,7 @@ class OrderResource extends Resource
                                 ])->label('نوع الطلب')->searchable()
                                     ->default(OrderTypeEnum::BRANCH->getLabel()),
 
-                                Forms\Components\Select::make('sender_id')->relationship('sender', 'name')->label('معرف المرسل')
+                                Forms\Components\Select::make('sender_id')->relationship('sender', 'name',fn($query)=>$query->active())->label('معرف المرسل')
                                     ->afterStateUpdated(function ($state, $set) {
                                         $user = User::find($state);
                                         if ($user) {
@@ -105,7 +105,7 @@ class OrderResource extends Resource
 
                     Forms\Components\Fieldset::make('معلومات المستلم')->schema([
                         Forms\Components\Grid::make()->schema([
-                            Forms\Components\Select::make('receive_id')->relationship('receive', 'name')->label('معرف المستلم')->searchable()->preload()
+                            Forms\Components\Select::make('receive_id')->relationship('receive', 'name',fn($query)=>$query->active())->label('معرف المستلم')->searchable()->preload()
                                 ->afterStateUpdated(function ($state, $set) {
                                     $user = User::find($state);
                                     if ($user) {
@@ -365,7 +365,7 @@ class OrderResource extends Resource
                         try {
                             $dataUpdate=['status' => $data['status'], 'canceled_info' => $data['canceled_info']];
                             if($data['status']==OrderStatusEnum::RETURNED->value){
-                                $dataUpdate['receive_id']=User::where([
+                                $dataUpdate['receive_id']=User::active()->where([
                                     'level'=>LevelUserEnum::BRANCH->value,
                                     'branch_id' => $record->branch_source_id
                                 ])->first()?->id;

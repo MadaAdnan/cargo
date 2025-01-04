@@ -610,7 +610,7 @@ $cities=City::selectRaw('id,name,city_id')->get();
                         Forms\Components\Select::make('given_id')
 
                             ->searchable()
-                            ->getSearchResultsUsing(fn(string $search)=>User::selectRaw('id,name')->whereIn('level',[
+                            ->getSearchResultsUsing(fn(string $search)=>User::active()->selectRaw('id,name')->whereIn('level',[
                                 LevelUserEnum::STAFF->value,
                                 LevelUserEnum::BRANCH->value,
                                 LevelUserEnum::ADMIN->value,

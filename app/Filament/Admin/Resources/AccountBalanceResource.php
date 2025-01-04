@@ -78,7 +78,7 @@ class AccountBalanceResource extends Resource
             ])
             ->filters([
                 Tables\Filters\Filter::make('filter')->form([
-                    Forms\Components\Select::make('user_id')->options(User::accounts()->pluck('name','id'))->label('الحساب'),
+                    Forms\Components\Select::make('user_id')->options(User::accounts()->active()->pluck('name','id'))->label('الحساب'),
                     Forms\Components\DatePicker::make('from')->label('من تاريخ'),
                     Forms\Components\DatePicker::make('to')->label('إلى تاريخ'),
                 ])->query(function($query,$data){
