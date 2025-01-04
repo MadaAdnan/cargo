@@ -104,7 +104,7 @@ if($shipping!=null){
                                     ->reactive(),
 
                                 Forms\Components\Select::make('sender_id')
-                                    ->relationship('sender', 'name')
+                                    ->relationship('sender', 'name',fn($query)=>$query->active())
                                     ->label('معرف المرسل')->required()
                                     ->afterStateUpdated(function ($state, $set) {
                                         $user = User::active()->with('city')->find($state);
