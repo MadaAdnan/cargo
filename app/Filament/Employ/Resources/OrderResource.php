@@ -149,6 +149,9 @@ class OrderResource extends Resource
                                 ->relationship('weight', 'name')
                                 ->label
                                 ('فئة الوزن')->searchable()->preload(),
+                            Forms\Components\Grid::make(1)->schema([
+                                Forms\Components\DatePicker::make('shipping_date')->required()->label('تاريخ الشحنة'),
+                            ]),
                             Forms\Components\TextInput::make('note')->label('ملاحظات')
                         ]),
 
@@ -249,9 +252,10 @@ class OrderResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
+              Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
+              Tables\Columns\TextColumn::make('created_at')->date('y-m-d')->label('تاريخ إنشاء الشحنة'),
 
-
-            ])->defaultSort('created_at', 'desc')
+          ])->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])

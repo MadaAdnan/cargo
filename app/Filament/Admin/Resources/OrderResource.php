@@ -277,6 +277,9 @@ class OrderResource extends Resource
                                 ->relationship('unit', 'name')->label('الوحدة')->required(),
                             Forms\Components\TextInput::make('note')->label('ملاحظات')
                         ]),
+                        Forms\Components\Grid::make(1)->schema([
+                            Forms\Components\DatePicker::make('shipping_date')->required()->label('تاريخ الشحنة'),
+                        ]),
                     ]),
                     Forms\Components\Fieldset::make('الأجور')->schema([
                         Forms\Components\Grid::make(2)->schema([
@@ -457,7 +460,8 @@ $cities=City::selectRaw('id,name,city_id')->get();
                     ->searchable()->color('danger'),
                 Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record)=>'موظف الإلتقاط : '.$record->pick?->name)->description(fn($record)=>'موظف التسليم : '.$record->given?->name)->label('التوكيل'),
                 Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
-                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ الشحنة')->extraCellAttributes(fn (Model $record) => match ($record->color) {
+                Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
+                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ إنشاء الشحنة')->extraCellAttributes(fn (Model $record) => match ($record->color) {
                     'green' =>['style'=>'background-color:#55FF88;'],
 
                     default => ['style'=>''],
