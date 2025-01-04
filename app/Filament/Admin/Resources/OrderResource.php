@@ -101,8 +101,8 @@ class OrderResource extends Resource
                                     ->relationship('sender', 'name')
                                     ->label('معرف المرسل')->required()
                                     ->afterStateUpdated(function ($state, $set) {
-                                        $user = User::with('city')->find($state);
-                                        $branch=User::where(['level'=>LevelUserEnum::BRANCH->value,'branch_id' => $user->branch_id])->first()?->id;
+                                        $user = User::active()->with('city')->find($state);
+                                        $branch=User::active()->where(['level'=>LevelUserEnum::BRANCH->value,'branch_id' => $user->branch_id])->first()?->id;
                                         if ($user) {
                                             $set('sender_phone', $user?->phone);
                                             $set('sender_address', $user?->address);
@@ -230,8 +230,8 @@ class OrderResource extends Resource
 
                     Forms\Components\Fieldset::make('المستلم')->schema([
                         Forms\Components\Grid::make()->schema([
-                            Forms\Components\Select::make('receive_id')->label('معرف المستلم')->default(fn() => User::where('email', 'zab@gmail.com')->first()?->id)
-                                ->options(User::where('level',LevelUserEnum::USER->value)->pluck('name', 'id')->toArray())->searchable()
+                            Forms\Components\Select::make('receive_id')->label('معرف المستلم')->default(fn() => User::active()->where('email', 'zab@gmail.com')->first()?->id)
+                                ->options(User::active()->where('level',LevelUserEnum::USER->value)->pluck('name', 'id')->toArray())->searchable()
                                 ->afterStateUpdated(function ($state, $set) {
                                     $user = User::with('city')->find($state);
                                     if ($user) {
@@ -340,7 +340,7 @@ class OrderResource extends Resource
                         Forms\Components\Repeater::make('agencies')->relationship('agencies')
                             ->schema([
 
-                                Forms\Components\Select::make('user_id')->options(User::where(fn($query) => $query->where('level', LevelUserEnum::STAFF->value)
+                                Forms\Components\Select::make('user_id')->options(User::active()->where(fn($query) => $query->where('level', LevelUserEnum::STAFF->value)
                                 )->pluck('name', 'id'))->label('الموظف')->searchable(),
                                 Forms\Components\Radio::make('status')->options([
                                     TaskAgencyEnum::TASK->value => TaskAgencyEnum::TASK->getLabel(),
@@ -366,7 +366,7 @@ class OrderResource extends Resource
 
     public static function table(Table $table): Table
     {
-$users=User::selectRaw('id,name')->get();
+$users=User::active()->selectRaw('id,name')->get();
 $cities=City::selectRaw('id,name,city_id')->get();
 
         return $table
@@ -827,7 +827,7 @@ $cities=City::selectRaw('id,name,city_id')->get();
 
                     Tables\Actions\BulkAction::make('given_id_check')->form([
                         Forms\Components\Select::make('given_id')
-                            ->options(DB::table('users')->where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->pluck('name','id'))
+                            ->options(User::active()->where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->pluck('name','id'))
                             ->searchable()->label('موظف التسليم')
                     ])
                         ->action(function ($records, $data) {
