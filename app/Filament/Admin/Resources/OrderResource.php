@@ -429,7 +429,7 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('price')->formatStateUsing(fn($state) => $state . ' $ ')->label('التحصيل USD')/*->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ ')*/,
                 Tables\Columns\TextColumn::make('far')->formatStateUsing(fn($state) => $state . ' $ ')->label('الأجور USD')->toggleable(isToggledHiddenByDefault: false),
 
-                Tables\Columns\TextColumn::make('price_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('التحصيل TRY')->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY'),
+                Tables\Columns\TextColumn::make('price_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('التحصيل TRY')/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
                 Tables\Columns\TextColumn::make('far_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('الأجور TRY')->toggleable(isToggledHiddenByDefault: false)/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
 
                 Tables\Columns\TextColumn::make('currency.name')->label('العملة'),
