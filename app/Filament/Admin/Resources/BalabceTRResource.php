@@ -66,8 +66,8 @@ class BalabceTRResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('credit')->label('دائن')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
-                Tables\Columns\TextColumn::make('debit')->label('مدين')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
+                Tables\Columns\TextColumn::make('credit')->label('مدين')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
+                Tables\Columns\TextColumn::make('debit')->label('دائن')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
 
                 Tables\Columns\TextColumn::make('info')->label('الملاحظات'),
                 Tables\Columns\TextColumn::make('customer_name')->label('الطرف المقابل'),
