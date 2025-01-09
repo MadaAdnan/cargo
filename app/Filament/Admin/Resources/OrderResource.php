@@ -841,7 +841,7 @@ class OrderResource extends Resource
                             Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف التسليم بنجاح')->success()->send();
                         })
                         ->label('تحديد موظف التسليم')->color('info'),
-                    Tables\Actions\BulkAction::make('returned_confirm_all')->action(function ($records) {
+                  /*  Tables\Actions\BulkAction::make('returned_confirm_all')->action(function ($records) {
                         DB::beginTransaction();
                         try {
                             foreach ($records as $record) {
@@ -854,7 +854,7 @@ class OrderResource extends Resource
                             DB::rollBack();
                             Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                         }
-                    })->label('تأكيد تسليم المرتجع')->requiresConfirmation() ,
+                    })->label('تأكيد تسليم المرتجع')->requiresConfirmation() ,*/
 //                    ExportBulkAction::make()
 
                 ]),

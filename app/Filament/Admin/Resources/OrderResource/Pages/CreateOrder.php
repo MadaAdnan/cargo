@@ -32,7 +32,7 @@ class CreateOrder extends CreateRecord
        /* $data['given_id']=$target?->id;
         $data['status']=OrderStatusEnum::TRANSFER->value;*/
         $data['code'] = "AWB" . now()->format('YmdHis'); // الطابع الزمني بتنسيق قصير
-        $data['shipping_date'] = now()->format('Y-m-d');
+       // $data['shipping_date'] = now()->format('Y-m-d');
 
         return $data;
 
