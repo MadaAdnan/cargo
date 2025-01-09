@@ -78,8 +78,8 @@ class AccountStatmentResource extends Resource
           //  ->poll(10)
             ->columns([
 
-                Tables\Columns\TextColumn::make('credit')->label('دائن'),
-                Tables\Columns\TextColumn::make('debit')->label('مدين'),
+                Tables\Columns\TextColumn::make('credit')->label('مدين'),
+                Tables\Columns\TextColumn::make('debit')->label('دائن'),
                 Tables\Columns\TextColumn::make('currency.code')->label('العملة'),
 
                 /*Tables\Columns\BadgeColumn::make('process_type')
