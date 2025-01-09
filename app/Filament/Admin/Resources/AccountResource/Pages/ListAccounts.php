@@ -46,7 +46,8 @@ class ListAccounts extends ListRecords
                         'uuid' => $uuid,
                         'type' => BalanceTypeEnum::PUSH->value,
                         'credit' => $data['amount'],
-                        'debit' => 0
+                        'debit' => 0,
+                        'customer_name'=>User::find($data['source_id'])?->name,
                     ]);
 
                     Balance::create([
@@ -58,7 +59,8 @@ class ListAccounts extends ListRecords
                         'uuid' => $uuid,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'credit' => 0,
-                        'debit' => $data['amount']
+                        'debit' => $data['amount'],
+                        'customer_name'=>User::find($data['target_id'])?->name,
                     ]);
 
                     DB::commit();
@@ -93,7 +95,8 @@ class ListAccounts extends ListRecords
                         'uuid' => $uuid,
                         'type' => BalanceTypeEnum::PUSH->value,
                         'credit' => $data['amount'],
-                        'debit' => 0
+                        'debit' => 0,
+                         'customer_name'=>User::find($data['source_id'])?->name,
                     ]);
 
                     Balance::create([
@@ -105,7 +108,8 @@ class ListAccounts extends ListRecords
                         'uuid' => $uuid,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'credit' => 0,
-                        'debit' => $data['amount']
+                        'debit' => $data['amount'],
+                         'customer_name'=>User::find($data['target_id'])?->name,
                     ]);
 
                     DB::commit();
