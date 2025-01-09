@@ -369,10 +369,12 @@ class OrderResource extends Resource
                         try {
                             $dataUpdate=['status' => $data['status'], 'canceled_info' => $data['canceled_info']];
                             if($data['status']==OrderStatusEnum::RETURNED->value){
-                                $dataUpdate['receive_id']=User::active()->where([
+                                $user=User::where([
                                     'level'=>LevelUserEnum::BRANCH->value,
                                     'branch_id' => $record->branch_source_id
                                 ])->first()?->id;
+                                $dataUpdate['given_id']=$user;
+                                $dataUpdate['returned_id']=$record->pick_id;
                             }
                             $record->update($dataUpdate);
                             DB::commit();
