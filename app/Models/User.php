@@ -193,7 +193,7 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
 
     public function scopeActive($query)
     {
-        return $query->withoutGlobalScope('userOnly')->where('status', ActivateStatusEnum::ACTIVE->value);
+        return $query->withoutGlobalScope('userOnly')->whereNot('status', ActivateStatusEnum::BLOCK->value);
     }
 
     public function scopeHideGlobal( $query)
@@ -204,6 +204,10 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
     public function currency(): BelongsTo
     {
         return $this->belongsTo(Currency::class);
+    }
+    public function scopeWithAccount($query)
+    {
+        return $query->withoutGlobalScope('userOnly');
     }
 
 }
