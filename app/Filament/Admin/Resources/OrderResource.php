@@ -733,10 +733,16 @@ class OrderResource extends Resource
 
                     Tables\Actions\Action::make('cancel_order')
                         ->form([
-                            Forms\Components\Radio::make('status')->options([
-                                OrderStatusEnum::CANCELED->value => OrderStatusEnum::CANCELED->getLabel(),
-                                OrderStatusEnum::RETURNED->value => OrderStatusEnum::RETURNED->getLabel(),
-                            ])->label('الحالة')->required()->default(OrderStatusEnum::CANCELED->value),
+                            Forms\Components\Radio::make('status')->options(function(){
+                                $list=[
+
+                                    OrderStatusEnum::RETURNED->value => OrderStatusEnum::RETURNED->getLabel(),
+                                ];
+                                if(auth()->user()->hasRole('مدير عام')){
+                                    $list[OrderStatusEnum::CANCELED->value] = OrderStatusEnum::CANCELED->getLabel();
+                                }
+                                return $list;
+                            })->label('الحالة')->required()->default(OrderStatusEnum::CANCELED->value),
                             Forms\Components\Textarea::make('canceled_info')->label('سبب الإلغاء / الإعادة')
                         ])
                         ->action(function ($record, $data) {
@@ -759,7 +765,7 @@ class OrderResource extends Resource
                                 Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                             }
                         })->label('الإلغاء / الإعادة')->color('danger')
-                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED && auth()->user()->hasRole('مدير عام')),
+                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED ),
                     // تحديد موظف غعادة الطلب
                     Tables\Actions\Action::make('set_returned_id')->form([
                         Forms\Components\Select::make('staff_id')->searchable()->getSearchResultsUsing(fn(string $search): array => User::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())->label('حدد الموظف')->required(),
