@@ -854,7 +854,7 @@ class OrderResource extends Resource
                             DB::rollBack();
                             Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                         }
-                    })->label('تأكيد تسليم المرتجع') ,
+                    })->label('تأكيد تسليم المرتجع')->requiresConfirmation() ,
 //                    ExportBulkAction::make()
 
                 ]),
