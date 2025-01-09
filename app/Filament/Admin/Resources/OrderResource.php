@@ -426,8 +426,11 @@ class OrderResource extends Resource
 
                 Tables\Columns\TextColumn::make('unit.name')->label('نوع الشحنة'),
 
-                Tables\Columns\TextColumn::make('price')->formatStateUsing(fn($state) => $state . ' $ ')->label('التحصيل USD')->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ '),
+                Tables\Columns\TextColumn::make('price')->formatStateUsing(fn($state) => $state . ' $ ')->label('التحصيل USD')/*->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ ')*/,
+                Tables\Columns\TextColumn::make('far')->formatStateUsing(fn($state) => $state . ' $ ')->label('الأجور USD')->toggleable(isToggledHiddenByDefault: false),
+
                 Tables\Columns\TextColumn::make('price_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('التحصيل TRY')->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY'),
+                Tables\Columns\TextColumn::make('far_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('الأجور TRY')->toggleable(isToggledHiddenByDefault: false)/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
 
                 Tables\Columns\TextColumn::make('currency.name')->label('العملة'),
 
@@ -465,7 +468,8 @@ class OrderResource extends Resource
                         return url('https://wa.me/' . ltrim($record?->receive_phone, '+') . '?text=' . $message);
                     })->openUrlInNewTab()
                     ->searchable()->color('danger'),
-                Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record) => 'موظف الإلتقاط : ' . $record->pick?->name)->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل'),
+                Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record) => 'موظف الإلتقاط : ' . $record->pick?->name)
+                    ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل'),
                 Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
                 Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
                 Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ إنشاء الشحنة')->extraCellAttributes(fn(Model $record) => match ($record->color) {
