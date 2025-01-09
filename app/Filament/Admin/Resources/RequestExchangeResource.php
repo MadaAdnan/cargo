@@ -36,7 +36,8 @@ class RequestExchangeResource extends Resource
                     Forms\Components\Radio::make('currency_id')->options([
                         1 => ' من الدولار إلى التركي',
                         2 => 'من التركي إلى الدولار',
-                    ])->label('نوع التحويل')->required()->afterStateUpdated(function ($get,$set) {
+                    ])
+                        ->label('نوع التحويل')->required()->afterStateUpdated(function ($get,$set) {
                         if ($get('currency_id') == 1) {
                             $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
                             $set('result',$result);
