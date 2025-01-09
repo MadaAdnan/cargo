@@ -773,7 +773,8 @@ $cities=City::selectRaw('id,name,city_id')->get();
                             Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف إعادة الطلب بنجاح')->success()->send();
 
                         })
-                        ->label('تحديد موظف تسليم المرتجع')->visible(fn($record)=>$record->status==OrderStatusEnum::RETURNED ),
+                        ->label('تحديد موظف تسليم المرتجع')
+                        ->visible(fn($record)=>$record->status==OrderStatusEnum::RETURNED && $record->returned_id==null ),
 
                      Tables\Actions\Action::make('confirm_returned')
                          ->form(function($record){

@@ -723,6 +723,8 @@ class OrderResource extends Resource
                             Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف التسليم بنجاح')->success()->send();
                         })
                         ->label('تحديد موظف التسليم')->color('info')
+                        ->visible(fn($record)=>$record->status==OrderStatusEnum::RETURNED && $record->returned_id==null ),
+
                 ]),
             ]);
     }
