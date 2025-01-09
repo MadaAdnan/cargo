@@ -69,8 +69,8 @@ class ListAccounts extends ListRecords
                 }
             })->label('سند قيدUSD'),
             Actions\Action::make('quid_try')->form([
-                Select::make('source_id')->options(User::withoutGlobalScopes()->hideGlobal()->active()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
-                Select::make('target_id')->options(User::withoutGlobalScopes()->active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
+                Select::make('source_id')->options(User::withoutGlobalScope('userOnly')->hideGlobal()->active()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
+                Select::make('target_id')->options(User::withoutGlobalScope('userOnly')->active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
                 TextInput::make('amount')->required()->numeric()->rules([
                     fn(): Closure => function (string $attribute, $value, Closure $fail) {
                         if ($value <= 0) {
