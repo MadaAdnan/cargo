@@ -47,7 +47,7 @@ class HelperBalance
                         'debit' => 0,
                         'order_id' => $order->id,
                         'user_id' => $sender->id,
-                        'info' => 'أجور شحن  #' . $order->code,
+                        'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 1,
@@ -58,7 +58,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $sender->id,
 
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 1,
@@ -69,7 +69,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $staff->id,
 
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 1,
@@ -82,7 +82,7 @@ class HelperBalance
                         'debit' => 0,
                         'order_id' => $order->id,
                         'user_id' => $sender->id,
-                        'info' => 'أجور شحن  #' . $order->code,
+                        'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 2,
@@ -93,7 +93,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $sender->id,
 
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 2,
@@ -104,7 +104,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $staff->id,
 
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 2,
@@ -136,7 +136,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $receive->id,
                         'currency_id' => 1,
-                        'info' => 'أجور شحن  #' . $order->code,
+                        'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -147,7 +147,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $receive->id,
                         'currency_id' => 1,
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -158,7 +158,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $staff->id,
                         'currency_id' => 1,
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -171,7 +171,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $receive->id,
                         'currency_id' => 2,
-                        'info' => 'أجور شحن  #' . $order->code,
+                        'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -182,7 +182,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $receive->id,
                         'currency_id' => 2,
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -193,7 +193,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $staff->id,
                         'currency_id' => 2,
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -207,7 +207,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $receive->id,
                     'currency_id' => 1,
-                    'info' => 'أجور تحصيل  #' . $order->code,
+                    'info' => 'أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
@@ -218,7 +218,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $receive->id,
                     'currency_id' => 1,
-                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
@@ -229,7 +229,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $staff->id,
                     'currency_id' => 1,
-                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
@@ -240,7 +240,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $sender->id,
                     'currency_id' => 1,
-                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                     'created_at'=>$order->created_at,
@@ -253,7 +253,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $receive->id,
                     'currency_id' => 2,
-                    'info' => 'أجور تحصيل  #' . $order->code,
+                    'info' => 'أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
@@ -264,7 +264,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $receive->id,
                     'currency_id' => 2,
-                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
@@ -275,7 +275,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $staff->id,
                     'currency_id' => 2,
-                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
@@ -286,7 +286,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $sender->id,
                     'currency_id' => 2,
-                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                     'created_at'=>$order->created_at,
@@ -406,7 +406,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $customer->id,
                         'currency_id' => 1,
-                        'info' => 'أجور شحن  #' . $order->code,
+                        'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -441,7 +441,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $customer->id,
                         'currency_id' => 2,
-                        'info' => 'أجور شحن  #' . $order->code,
+                        'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -478,7 +478,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $customer->id,
                     'currency_id' => 1,
-                    'info' => 'أجور تحصيل  #' . $order->code,
+                    'info' => 'أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
@@ -514,7 +514,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $customer->id,
                     'currency_id' => 2,
-                    'info' => 'أجور تحصيل  #' . $order->code,
+                    'info' => 'أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
