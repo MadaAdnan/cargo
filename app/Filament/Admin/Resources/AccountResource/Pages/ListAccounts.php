@@ -23,8 +23,8 @@ class ListAccounts extends ListRecords
         return [
             Actions\CreateAction::make(),
             Actions\Action::make('quid_usd')->form([
-                Select::make('source_id')->options(User::withoutGlobalScopes()->active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
-                Select::make('target_id')->options(User::withoutGlobalScopes()->active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
+                Select::make('source_id')->options(User::withoutGlobalScope('userOnly')->active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
+                Select::make('target_id')->options(User::withoutGlobalScope('userOnly')->active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
                 TextInput::make('amount')->required()->numeric()->rules([
                     fn(): Closure => function (string $attribute, $value, Closure $fail) {
                         if ($value <= 0) {
@@ -79,7 +79,8 @@ class ListAccounts extends ListRecords
                     },
                 ])->required()->label('القيمة'),
                 TextInput::make('info')->label('ملاحظات')
-            ])->action(function ($data) {
+            ])
+                ->action(function ($data) {
                 DB::beginTransaction();
                 try {
                     $uuid = \Str::uuid();
