@@ -761,6 +761,9 @@ class OrderResource extends Resource
                                     $dataUpdate['given_id'] = $user;
                                     $dataUpdate['returned_id'] = $record->pick_id;
                                 }
+                                /**
+                                 * @var $record Order
+                                 */
                                 $record->update($dataUpdate);
                                 DB::commit();
                                 Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
