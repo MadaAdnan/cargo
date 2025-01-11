@@ -263,7 +263,7 @@ Tables\Actions\Action::make('request')->form([
         } elseif ($get('currency_id') == 2) {
             try{
                 $result=  HelperBalance::formatNumber((double)$get('amount') / (double)$get('exchange'));
-            }catch (\Exception $e){
+            }catch (\Exception| \DivisionByZeroError $e){
                 $result=0;
             }
             $set('result',$result);
