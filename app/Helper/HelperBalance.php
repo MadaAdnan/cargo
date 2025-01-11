@@ -411,7 +411,7 @@ class HelperBalance
                         'is_complete' => true,
                     ]);
 
-                 /*   Balance::create([
+                   Balance::create([
                         'credit' => 0,
                         'debit' => $order->far,
                         'order_id' => $order->id,
@@ -421,7 +421,7 @@ class HelperBalance
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
-
+/*
                     Balance::create([
                         'credit' => $order->far,
                         'debit' => 0,
@@ -446,7 +446,7 @@ class HelperBalance
                         'is_complete' => true,
                     ]);
 
-                 /*   Balance::create([
+                   Balance::create([
                         'credit' => 0,
                         'debit' => $order->far_tr,
                         'order_id' => $order->id,
@@ -456,7 +456,7 @@ class HelperBalance
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
-
+/*
                     Balance::create([
                         'credit' => $order->far_tr,
                         'debit' => 0,
@@ -483,7 +483,7 @@ class HelperBalance
                     'is_complete' => true,
                 ]);
 
-             /*   Balance::create([
+              Balance::create([
                     'credit' => 0,
                     'debit' => $order->price,
                     'order_id' => $order->id,
@@ -493,7 +493,7 @@ class HelperBalance
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
-
+ /*
                 Balance::create([
                     'credit' => $order->price,
                     'debit' => 0,
@@ -519,7 +519,7 @@ class HelperBalance
                     'is_complete' => true,
                 ]);
 
-              /*  Balance::create([
+               Balance::create([
                     'credit' => 0,
                     'debit' => $order->price_tr,
                     'order_id' => $order->id,
@@ -529,7 +529,7 @@ class HelperBalance
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
-
+/*
                 Balance::create([
                     'credit' => $order->price_tr,
                     'debit' => 0,

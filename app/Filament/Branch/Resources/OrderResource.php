@@ -342,11 +342,11 @@ class OrderResource extends Resource
             // ->poll(10)
             ->columns([
 
-                PopoverColumn::make('qr_url')
+              /*  PopoverColumn::make('qr_url')
                     ->trigger('click')
                     ->placement('right')
                     ->content(fn($record) => \LaraZeus\Qr\Facades\Qr::render($record->code))
-                    ->icon('heroicon-o-qr-code'),
+                    ->icon('heroicon-o-qr-code'),*/
 
                 Tables\Columns\TextColumn::make('code')->description(fn($record) => $record->id, 'above')->copyable()->searchable(),
                 Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
@@ -723,7 +723,7 @@ class OrderResource extends Resource
                             Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف التسليم بنجاح')->success()->send();
                         })
                         ->label('تحديد موظف التسليم')->color('info')
-                        ->visible(fn($record)=>$record->status==OrderStatusEnum::RETURNED && $record->returned_id==null ),
+
 
                 ]),
             ]);
