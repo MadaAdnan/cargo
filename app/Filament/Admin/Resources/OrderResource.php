@@ -746,7 +746,7 @@ class OrderResource extends Resource
                                     $list[OrderStatusEnum::CANCELED->value] = OrderStatusEnum::CANCELED->getLabel();
                                 }
                                 return $list;
-                            })->label('الحالة')->required()->default(OrderStatusEnum::CANCELED->value),
+                            })->label('الحالة')->required()->default(!auth()->user()->hasRole('مدير عام')?OrderStatusEnum::RETURNED->value:OrderStatusEnum::CANCELED->value),
                             Forms\Components\Textarea::make('canceled_info')->label('سبب الإلغاء / الإعادة')
                         ])
                         ->action(function ($record, $data) {
