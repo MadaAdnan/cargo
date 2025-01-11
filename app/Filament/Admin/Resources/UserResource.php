@@ -250,7 +250,7 @@ Tables\Actions\Action::make('request')->form([
             } elseif ($get('currency_id') == 2) {
                 try{
                     $result=  HelperBalance::formatNumber((double)$get('amount') / (double)$get('exchange'));
-                }catch (\Exception $e){
+                }catch (\Exception| \DivisionByZeroError $e){
                     $result=0;
                 }
                 $set('result',$result);
@@ -292,7 +292,7 @@ Tables\Actions\Action::make('request')->form([
         $currency=1;
         try{
             $result=  HelperBalance::formatNumber((double)$data['amount'] / (double)$data['exchange']);
-        }catch (\Exception $e){
+        }catch (\Exception| \DivisionByZeroError $e){
             $result=0;
         }
 
