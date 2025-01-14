@@ -589,7 +589,8 @@ class PickOrderResource extends Resource
                 Tables\Actions\EditAction::make(),
 
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('set_given')->form([
+                    Tables\Actions\Action::make('set_given')
+                        ->form([
                         Forms\Components\Select::make('given_id')
                             ->searchable()
                             ->getSearchResultsUsing(fn(string $search) => User::active()->selectRaw('id,name')->whereIn('level', [
@@ -775,7 +776,26 @@ class PickOrderResource extends Resource
 
                         }
                     })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin'))->requiresConfirmation(),
+                    Tables\Actions\BulkAction::make('set_given_id') ->form([
+                        Forms\Components\Select::make('given_id')
+                            ->searchable()
+                            ->getSearchResultsUsing(fn(string $search) => User::active()->selectRaw('id,name')->whereIn('level', [
+                                LevelUserEnum::STAFF->value,
+                                LevelUserEnum::BRANCH->value,
+                                LevelUserEnum::ADMIN->value,
+                            ])->where('name', 'like', "%$search%")->take(10)->pluck('name', 'id'))
+                            ->label('موظف التسليم'),
+                    ])
+                        ->action(function ($records, $data) {
 
+                            foreach ($records as $record) {
+                                $record->update(['given_id' => $data['given_id'], 'status' => OrderStatusEnum::TRANSFER->value]);
+
+                            }
+                            Notification::make('success')->title('نجاح العملية')->body("تم تحديد موظف التسليم بنجاح ")->success()->send();
+
+                        })
+                        ->label('تحديد موظف التسليم')->color('info')->requiresConfirmation(),
 //                    ExportBulkAction::make()
 
                 ]),
