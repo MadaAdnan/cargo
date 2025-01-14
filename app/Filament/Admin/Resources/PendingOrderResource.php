@@ -733,6 +733,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                                 DB::commit();
                                 Notification::make('success')->title('نجاح العملية')->body('تم تأكيد تسليم الطلب')->success()->send();
                             } catch (\Exception | Error $e) {
+                                DB::rollBack();
                                 Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                             }
                         })->label('تأكيد تسليم الشحنة')->color('info')
@@ -851,6 +852,20 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                             Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف التسليم بنجاح')->success()->send();
                         })
                         ->label('تحديد موظف التسليم')->color('info'),
+                    //success Order
+                    Tables\Actions\BulkAction::make('success_order')->action(function ($records) {
+                        foreach ($records as $record) {
+                            DB::beginTransaction();
+                            try {
+                                HelperBalance::completeOrder($record);
+                                $record->update(['status' => OrderStatusEnum::SUCCESS->value]);
+                                DB::commit();
+                            } catch (\Exception | \Error $e) {
+                                DB::rollBack();
+                            }
+                        }
+                        Notification::make('success')->title('نجاح العملية')->body('تم تأكيد تسليم الطلبات')->success()->send();
+                    })->label('تأكيد التسليم')->visible(auth()->user()->hasRole('super_admin')),
                     //cancel Order
                     Tables\Actions\BulkAction::make('cancel_order')->action(function ($records) {
                         foreach ($records as $record) {
@@ -859,6 +874,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
 
                         }
                     })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin')),
+                    //returned Order
                     Tables\Actions\BulkAction::make('returned_order')->action(function ($records) {
                         foreach ($records as $record) {
                             DB::beginTransaction();
