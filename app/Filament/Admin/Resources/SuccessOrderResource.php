@@ -845,17 +845,15 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                     })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin')),
                     Tables\Actions\DeleteBulkAction::make(),*/
 
-                    Tables\Actions\BulkAction::make('given_id_check')->form([
-                        Forms\Components\Select::make('given_id')
-                            ->options(User::active()->where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->orWhere('users.level', LevelUserEnum::ADMIN->value)->pluck('name', 'id'))
-                            ->searchable()->label('موظف التسليم')
-                    ])
-                        ->action(function ($records, $data) {
+                    //cancel Order
+                    Tables\Actions\BulkAction::make('cancel_order')->action(function ($records) {
+                        foreach ($records as $record) {
+                            $record->update(['status' => OrderStatusEnum::CANCELED->value]);
+                            Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
 
-                            DB::table('orders')->whereIn('id', $records->pluck('id')->toArray())->update(['given_id' => $data['given_id'], 'status' => OrderStatusEnum::TRANSFER->value]);
-                            Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف التسليم بنجاح')->success()->send();
-                        })
-                        ->label('تحديد موظف التسليم')->color('info'),
+                        }
+                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin')),
+
 
                     Tables\Actions\BulkAction::make('returned_confirm_all')->action(function ($records) {
                         DB::beginTransaction();
@@ -871,7 +869,7 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                             Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                         }
                     })->label('تأكيد تسليم المرتجع')->requiresConfirmation() ,
-//                    ExportBulkAction::make()
+
 
                 ]),
             ]);

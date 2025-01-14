@@ -855,6 +855,9 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                     //success Order
                     Tables\Actions\BulkAction::make('success_order')->action(function ($records) {
                         foreach ($records as $record) {
+                            if($record->given_id==null || $record->sender_id==null){
+                                continue;
+                            }
                             DB::beginTransaction();
                             try {
                                 HelperBalance::completeOrder($record);
@@ -898,24 +901,6 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                         }
                     })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin')),
 
-
-
-
-/*                    Tables\Actions\BulkAction::make('returned_confirm_all')->action(function ($records) {
-                        DB::beginTransaction();
-                        try {
-                            foreach ($records as $record) {
-                                $record->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value]);
-                                HelperBalance::confirmReturn($record);
-                            }
-                            DB::commit();
-                            Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
-                        } catch (\Exception | Error $e) {
-                            DB::rollBack();
-                            Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
-                        }
-                    })->label('تأكيد تسليم المرتجع')->requiresConfirmation() ,
-*/
 //                    ExportBulkAction::make()
 
                 ]),
