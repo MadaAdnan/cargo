@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use PHPUnit\Exception;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -595,7 +596,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                 Tables\Actions\EditAction::make(),
 
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('set_picker')->form([
+                   /* Tables\Actions\Action::make('set_picker')->form([
                         Forms\Components\Select::make('pick_id')
                             ->options(User::selectRaw('id,name')->whereIn('level', [
                                 LevelUserEnum::STAFF->value,
@@ -621,7 +622,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
 
                         })
                         ->visible(fn($record) => $record->pick_id == null)
-                        ->label('تحديد موظف الإلتقاط')->color('info'),
+                        ->label('تحديد موظف الإلتقاط')->color('info'),*/
 
                     Tables\Actions\Action::make('set_given')->form([
                         Forms\Components\Select::make('given_id')
@@ -643,7 +644,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                         ->visible(fn($record) => $record->given_id == null && ($record->status === OrderStatusEnum::PICK || $record->status === OrderStatusEnum::TRANSFER))
                         ->label('تحديد موظف التسليم')->color('info'),
 
-                    Tables\Actions\Action::make('success_pick')
+                 /*   Tables\Actions\Action::make('success_pick')
                         ->form(function ($record) {
                             $farMessage = 'انت على وشك تأكيد إستلام مبلغ : ';
                             if ($record->far_sender == true && ($record->far > 0 || $record->far_tr > 0)) {
@@ -676,7 +677,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                             }
                         })
                         ->label('تأكيد إلتقاط الشحنة')->color('info')
-                        ->visible(fn($record) => $record->pick_id != null && ($record->status == OrderStatusEnum::AGREE)),
+                        ->visible(fn($record) => $record->pick_id != null && ($record->status == OrderStatusEnum::AGREE)),*/
 
                     Tables\Actions\Action::make('success_given')
                         ->form(function ($record) {
@@ -777,7 +778,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                         })->label('الإلغاء / الإعادة')->color('danger')
                         ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED ),
                     // تحديد موظف غعادة الطلب
-                    Tables\Actions\Action::make('set_returned_id')->form([
+                  /*  Tables\Actions\Action::make('set_returned_id')->form([
                         Forms\Components\Select::make('staff_id')->searchable()->getSearchResultsUsing(fn(string $search): array => User::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())->label('حدد الموظف')->required(),
 
                     ])
@@ -787,7 +788,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
 
                         })
                         ->label('تحديد موظف تسليم المرتجع')
-                        ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id == null),
+                        ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id == null),*/
 
                    /* Tables\Actions\Action::make('confirm_returned')
                         ->form(function ($record) {
@@ -837,13 +838,6 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('cancel_order')->action(function ($records) {
-                        foreach ($records as $record) {
-                            $record->update(['status' => OrderStatusEnum::CANCELED->value]);
-                            Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
-
-                        }
-                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin')),
                     Tables\Actions\DeleteBulkAction::make(),
 
                     Tables\Actions\BulkAction::make('given_id_check')->form([
@@ -857,8 +851,41 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                             Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف التسليم بنجاح')->success()->send();
                         })
                         ->label('تحديد موظف التسليم')->color('info'),
+                    //cancel Order
+                    Tables\Actions\BulkAction::make('cancel_order')->action(function ($records) {
+                        foreach ($records as $record) {
+                            $record->update(['status' => OrderStatusEnum::CANCELED->value]);
+                            Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
 
-                    Tables\Actions\BulkAction::make('returned_confirm_all')->action(function ($records) {
+                        }
+                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin')),
+                    Tables\Actions\BulkAction::make('returned_order')->action(function ($records) {
+                        foreach ($records as $record) {
+                            DB::beginTransaction();
+                            try{
+                                $user = User::where([
+                                    'level' => LevelUserEnum::BRANCH->value,
+                                    'branch_id' => $record->branch_source_id
+                                ])->first()?->id;
+                                $dataUpdate['given_id'] = $user;
+                                $dataUpdate['returned_id'] = $record->pick_id;
+                                $dataUpdate['status'] = OrderStatusEnum::RETURNED->value;
+                                $record->update($dataUpdate);
+
+                                DB::commit();
+                            }catch (Exception|\Error $e){
+                                DB::rollBack();
+                            }
+
+                            Notification::make('success')->title('نجاح')->body('تم تحديد الشحنات كمرتجع بنجاح')->success()->send();
+
+                        }
+                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin')),
+
+
+
+
+/*                    Tables\Actions\BulkAction::make('returned_confirm_all')->action(function ($records) {
                         DB::beginTransaction();
                         try {
                             foreach ($records as $record) {
@@ -872,6 +899,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                             Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                         }
                     })->label('تأكيد تسليم المرتجع')->requiresConfirmation() ,
+*/
 //                    ExportBulkAction::make()
 
                 ]),
