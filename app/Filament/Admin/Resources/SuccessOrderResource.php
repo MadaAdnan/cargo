@@ -43,7 +43,7 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
     protected static ?string $label = 'شحنة';
     protected static ?string $navigationLabel = 'مرتجع بإنتظار التسليم';
     protected static ?string $navigationGroup='الشحنات';
-
+    protected static ?int $navigationSort=5;
     protected static ?string $slug='success-orders';
 
     public static function getPermissionPrefixes(): array

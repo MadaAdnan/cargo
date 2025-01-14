@@ -43,7 +43,7 @@ class PickOrderResource extends Resource
     protected static ?string $label = 'شحنة';
     protected static ?string $navigationLabel = 'شحنات بالإنتظار التسليم';
     protected static ?string $navigationGroup='الشحنات';
-
+    protected static ?int $navigationSort=3;
     protected static ?string $slug='pick-orders';
 
     public static function getPermissionPrefixes(): array

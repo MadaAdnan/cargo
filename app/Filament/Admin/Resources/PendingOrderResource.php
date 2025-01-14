@@ -42,9 +42,9 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
     protected static ?string $pluralModelLabel = 'الطلبات';
 
     protected static ?string $label = 'شحنة';
-    protected static ?string $navigationLabel = 'شحنات بالإنتظار الإلتقاط';
+    protected static ?string $navigationLabel = 'شحنات بالإنتظار ';
     protected static ?string $navigationGroup='الشحنات';
-
+    protected static ?int $navigationSort=2;
     protected static ?string $slug='pending-orders';
 
     public static function getPermissionPrefixes(): array

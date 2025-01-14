@@ -43,7 +43,7 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
     protected static ?string $label = 'شحنة';
     protected static ?string $navigationLabel = 'شحنات منتهية';
     protected static ?string $navigationGroup='الشحنات';
-
+    protected static ?int $navigationSort=4;
     protected static ?string $slug='canceled-orders';
 
     public static function getPermissionPrefixes(): array

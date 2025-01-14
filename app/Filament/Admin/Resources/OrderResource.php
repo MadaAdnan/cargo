@@ -56,7 +56,7 @@ class OrderResource extends Resource
     protected static ?string $navigationGroup='الشحنات';
 
     protected static ?string $navigationIcon = 'heroicon-o-truck';
-
+protected static ?int $navigationSort=1;
     public static function canDelete(Model $record): bool
     {
         return false;
