@@ -3,28 +3,24 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Enums\ActivateStatusEnum;
-use App\Enums\CategoryTypeEnum;
 use App\Enums\FarType;
-use App\Enums\JobUserEnum;
 use App\Enums\LevelUserEnum;
+use App\Enums\OrderStatusEnum;
+use App\Enums\OrderTypeEnum;
 use App\Enums\TaskAgencyEnum;
-use App\Filament\Admin\Resources\OrderResource\Pages;
-use App\Filament\Admin\Resources\OrderResource\RelationManagers;
+use App\Filament\Admin\Resources\SuccessOrderResource\Pages;
+use App\Filament\Admin\Resources\SuccessOrderResource\RelationManagers;
 use App\Helper\HelperBalance;
-use App\Models\Area;
-use App\Models\Branch;
 use App\Models\City;
 use App\Models\Order;
+use App\Models\SuccessOrder;
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Carbon\Carbon;
-use Error;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
-
 use Filament\Forms\Form;
-use Filament\Forms\Set;
-use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -34,29 +30,34 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use LaraZeus\Popover\Tables\PopoverColumn;
-use App\Enums\OrderTypeEnum;
-use App\Enums\OrderStatusEnum;
-use Filament\Forms\Components\Tabs;
-use App\Enums\BayTypeEnum;
-use Filament\Infolists\Infolist;
-use PhpOffice\PhpSpreadsheet\Calculation\LookupRef\Selection;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
-use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
-
-class OrderResource extends Resource
+class SuccessOrderResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Order::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $pluralModelLabel = 'الطلبات';
 
     protected static ?string $label = 'شحنة';
-    protected static ?string $navigationLabel = 'الكل';
+    protected static ?string $navigationLabel = 'مرتجع بإنتظار التسليم';
     protected static ?string $navigationGroup='الشحنات';
 
-    protected static ?string $navigationIcon = 'heroicon-o-truck';
+    protected static ?string $slug='success-orders';
 
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'publish'
+        ];
+    }
     public static function canDelete(Model $record): bool
     {
         return false;
@@ -84,7 +85,7 @@ class OrderResource extends Resource
         if ($shipping != null) {
             try {
                 $date = Carbon::parse($shipping)->format('Y-m-d');
-            } catch (\Exception | Error $e) {
+            } catch (\Exception | \Error $e) {
             }
         }
         return $form
@@ -590,11 +591,11 @@ class OrderResource extends Resource
             ->actions([
 
 
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+               // Tables\Actions\ViewAction::make(),
+              //  Tables\Actions\EditAction::make(),
 
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('set_picker')->form([
+                  /*  Tables\Actions\Action::make('set_picker')->form([
                         Forms\Components\Select::make('pick_id')
                             ->options(User::selectRaw('id,name')->whereIn('level', [
                                 LevelUserEnum::STAFF->value,
@@ -620,9 +621,9 @@ class OrderResource extends Resource
 
                         })
                         ->visible(fn($record) => $record->pick_id == null)
-                        ->label('تحديد موظف الإلتقاط')->color('info'),
+                        ->label('تحديد موظف الإلتقاط')->color('info'),*/
 
-                    Tables\Actions\Action::make('set_given')->form([
+                   /* Tables\Actions\Action::make('set_given')->form([
                         Forms\Components\Select::make('given_id')
                             ->searchable()
                             ->getSearchResultsUsing(fn(string $search) => User::active()->selectRaw('id,name')->whereIn('level', [
@@ -640,9 +641,9 @@ class OrderResource extends Resource
 
                         })
                         ->visible(fn($record) => $record->given_id == null && ($record->status === OrderStatusEnum::PICK || $record->status === OrderStatusEnum::TRANSFER))
-                        ->label('تحديد موظف التسليم')->color('info'),
+                        ->label('تحديد موظف التسليم')->color('info'),*/
 
-                    Tables\Actions\Action::make('success_pick')
+                   /* Tables\Actions\Action::make('success_pick')
                         ->form(function ($record) {
                             $farMessage = 'انت على وشك تأكيد إستلام مبلغ : ';
                             if ($record->far_sender == true && ($record->far > 0 || $record->far_tr > 0)) {
@@ -675,9 +676,9 @@ class OrderResource extends Resource
                             }
                         })
                         ->label('تأكيد إلتقاط الشحنة')->color('info')
-                        ->visible(fn($record) => $record->pick_id != null && ($record->status == OrderStatusEnum::AGREE)),
+                        ->visible(fn($record) => $record->pick_id != null && ($record->status == OrderStatusEnum::AGREE)),*/
 
-                    Tables\Actions\Action::make('success_given')
+                /*    Tables\Actions\Action::make('success_given')
                         ->form(function ($record) {
 
                             $totalPrice = (double)$record->price + (double)$record->far;
@@ -734,10 +735,10 @@ class OrderResource extends Resource
                                 Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                             }
                         })->label('تأكيد تسليم الشحنة')->color('info')
-                        ->visible(fn($record) => $record->given_id != null && ($record->status == OrderStatusEnum::TRANSFER)),
+                        ->visible(fn($record) => $record->given_id != null && ($record->status == OrderStatusEnum::TRANSFER)),*/
 
 
-                    Tables\Actions\Action::make('cancel_order')
+                  /*  Tables\Actions\Action::make('cancel_order')
                         ->form([
                             Forms\Components\Radio::make('status')->options(function(){
                                 $list=[
@@ -763,9 +764,7 @@ class OrderResource extends Resource
                                     $dataUpdate['given_id'] = $user;
                                     $dataUpdate['returned_id'] = $record->pick_id;
                                 }
-                                /**
-                                 * @var $record Order
-                                 */
+
                                 $record->update($dataUpdate);
                                 DB::commit();
                                 Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
@@ -775,8 +774,9 @@ class OrderResource extends Resource
                             }
                         })->label('الإلغاء / الإعادة')->color('danger')
                         ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED ),
+                    */
                     // تحديد موظف غعادة الطلب
-                    Tables\Actions\Action::make('set_returned_id')->form([
+                    /*Tables\Actions\Action::make('set_returned_id')->form([
                         Forms\Components\Select::make('staff_id')->searchable()->getSearchResultsUsing(fn(string $search): array => User::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())->label('حدد الموظف')->required(),
 
                     ])
@@ -786,43 +786,43 @@ class OrderResource extends Resource
 
                         })
                         ->label('تحديد موظف تسليم المرتجع')
-                        ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id == null),
+                        ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id == null),*/
 
-                    Tables\Actions\Action::make('confirm_returned')
-                        ->form(function ($record) {
-                            $list = [];
-                            if ($record->far_sender == false) {
-                                if ($record->far > 0) {
-                                    $list[] = Forms\Components\Placeholder::make('far_usd')->content('سيتم إضافة  ' . $record->far . ' USD  إلى صندوقك  أجور شحن')->label('تحذير');
-                                }
-                                if ($record->far_tr > 0) {
-                                    $list[] = Forms\Components\Placeholder::make('far_try')->content('سيتم إضافة   ' . $record->far_tr . ' TRY  إلى صندوقك  أجور شحن')->label('تحذير');
-                                }
-                            }
-                            if ($record->price > 0) {
-                                $list[] = Forms\Components\Placeholder::make('price_usd')->content('سيتم إضافة  ' . $record->price . ' USD  إلى صندوقك  قيمة تحصيل')->label('تحذير');
+                     Tables\Actions\Action::make('confirm_returned')
+                         ->form(function ($record) {
+                             $list = [];
+                             if ($record->far_sender == false) {
+                                 if ($record->far > 0) {
+                                     $list[] = Forms\Components\Placeholder::make('far_usd')->content('سيتم إضافة  ' . $record->far . ' USD  إلى صندوقك  أجور شحن')->label('تحذير');
+                                 }
+                                 if ($record->far_tr > 0) {
+                                     $list[] = Forms\Components\Placeholder::make('far_try')->content('سيتم إضافة   ' . $record->far_tr . ' TRY  إلى صندوقك  أجور شحن')->label('تحذير');
+                                 }
+                             }
+                             if ($record->price > 0) {
+                                 $list[] = Forms\Components\Placeholder::make('price_usd')->content('سيتم إضافة  ' . $record->price . ' USD  إلى صندوقك  قيمة تحصيل')->label('تحذير');
 
-                            }
-                            if ($record->price_tr > 0) {
-                                $list[] = Forms\Components\Placeholder::make('price_try')->content('سيتم إضافة  ' . $record->price_tr . ' TRY  إلى صندوقك  قيمة تحصيل')->label('تحذير');
+                             }
+                             if ($record->price_tr > 0) {
+                                 $list[] = Forms\Components\Placeholder::make('price_try')->content('سيتم إضافة  ' . $record->price_tr . ' TRY  إلى صندوقك  قيمة تحصيل')->label('تحذير');
 
-                            }
-                            return $list;
-                        })
-                        ->action(function ($record) {
-                            DB::beginTransaction();
-                            try {
-                                $record->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value]);
-                                HelperBalance::confirmReturn($record);
-                                DB::commit();
-                                Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
-                            } catch (\Exception | Error $e) {
-                                DB::rollBack();
-                                Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
-                            }
-                        })->label('تأكيد تسليم المرتجع')->color('danger')
-                        ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id != null),
-                    Tables\Actions\Action::make('check_green')->action(fn($record) => $record->update(['color' => 'green']))->label('تعيين باللون الاخضر')->visible(fn($record) => $record->color == null)
+                             }
+                             return $list;
+                         })
+                         ->action(function ($record) {
+                             DB::beginTransaction();
+                             try {
+                                 $record->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value]);
+                                 HelperBalance::confirmReturn($record);
+                                 DB::commit();
+                                 Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
+                             } catch (\Exception | Error $e) {
+                                 DB::rollBack();
+                                 Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
+                             }
+                         })->label('تأكيد تسليم المرتجع')->color('danger')
+                         ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id != null),
+                    // Tables\Actions\Action::make('check_green')->action(fn($record) => $record->update(['color' => 'green']))->label('تعيين باللون الاخضر')->visible(fn($record) => $record->color == null)
 
                 ])
 
@@ -836,14 +836,14 @@ class OrderResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('cancel_order')->action(function ($records) {
+               /*     Tables\Actions\BulkAction::make('cancel_order')->action(function ($records) {
                         foreach ($records as $record) {
                             $record->update(['status' => OrderStatusEnum::CANCELED->value]);
                             Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
 
                         }
                     })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin')),
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make(),*/
 
                     Tables\Actions\BulkAction::make('given_id_check')->form([
                         Forms\Components\Select::make('given_id')
@@ -856,6 +856,7 @@ class OrderResource extends Resource
                             Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف التسليم بنجاح')->success()->send();
                         })
                         ->label('تحديد موظف التسليم')->color('info'),
+
                     Tables\Actions\BulkAction::make('returned_confirm_all')->action(function ($records) {
                         DB::beginTransaction();
                         try {
@@ -879,21 +880,16 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\AgenciesRelationManager::class,
+            //
         ];
     }
-
-    /*public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }*/
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListOrders::route('/'),
-            'create' => Pages\CreateOrder::route('/create'),
-            'edit' => Pages\EditOrder::route('/{record}/edit'),
+            'index' => Pages\ListSuccessOrders::route('/'),
+            'create' => Pages\CreateSuccessOrder::route('/create'),
+            'edit' => Pages\EditSuccessOrder::route('/{record}/edit'),
         ];
     }
 }
