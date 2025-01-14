@@ -726,7 +726,26 @@ class PickOrderResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
 
+                    Tables\Actions\BulkAction::make('set_given_id') ->form([
+                        Forms\Components\Select::make('given_id')
+                            ->searchable()
+                            ->getSearchResultsUsing(fn(string $search) => User::active()->selectRaw('id,name')->whereIn('level', [
+                                LevelUserEnum::STAFF->value,
+                                LevelUserEnum::BRANCH->value,
+                                LevelUserEnum::ADMIN->value,
+                            ])->where('name', 'like', "%$search%")->take(10)->pluck('name', 'id'))
+                            ->label('موظف التسليم'),
+                    ])
+                        ->action(function ($records, $data) {
 
+                            foreach ($records as $record) {
+                                $record->update(['given_id' => $data['given_id'], 'status' => OrderStatusEnum::TRANSFER->value]);
+
+                            }
+                            Notification::make('success')->title('نجاح العملية')->body("تم تحديد موظف التسليم بنجاح ")->success()->send();
+
+                        })
+                        ->label('تحديد موظف التسليم')->color('info')->requiresConfirmation(),
                     //success Order
                     Tables\Actions\BulkAction::make('success_order')->action(function ($records) {
                         foreach ($records as $record) {
@@ -743,7 +762,7 @@ class PickOrderResource extends Resource
                             }
                         }
                         Notification::make('success')->title('نجاح العملية')->body('تم تأكيد تسليم الطلبات')->success()->send();
-                    })->label('تأكيد التسليم')->requiresConfirmation(),
+                    })->label('تأكيد التسليم')->visible(auth()->user()->hasRole('مدير عام'))->requiresConfirmation(),
                     //cancel Order
                     Tables\Actions\BulkAction::make('cancel_order')->action(function ($records) {
                         foreach ($records as $record) {
@@ -752,7 +771,7 @@ class PickOrderResource extends Resource
                             Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
 
                         }
-                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin'))->requiresConfirmation(),
+                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('مدير عام'))->requiresConfirmation(),
                     //returned Order
                     Tables\Actions\BulkAction::make('returned_order')->action(function ($records) {
                         foreach ($records as $record) {
@@ -775,27 +794,8 @@ class PickOrderResource extends Resource
                             Notification::make('success')->title('نجاح')->body('تم تحديد الشحنات كمرتجع بنجاح')->success()->send();
 
                         }
-                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin'))->requiresConfirmation(),
-                    Tables\Actions\BulkAction::make('set_given_id') ->form([
-                        Forms\Components\Select::make('given_id')
-                            ->searchable()
-                            ->getSearchResultsUsing(fn(string $search) => User::active()->selectRaw('id,name')->whereIn('level', [
-                                LevelUserEnum::STAFF->value,
-                                LevelUserEnum::BRANCH->value,
-                                LevelUserEnum::ADMIN->value,
-                            ])->where('name', 'like', "%$search%")->take(10)->pluck('name', 'id'))
-                            ->label('موظف التسليم'),
-                    ])
-                        ->action(function ($records, $data) {
+                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('مدير عام'))->requiresConfirmation(),
 
-                            foreach ($records as $record) {
-                                $record->update(['given_id' => $data['given_id'], 'status' => OrderStatusEnum::TRANSFER->value]);
-
-                            }
-                            Notification::make('success')->title('نجاح العملية')->body("تم تحديد موظف التسليم بنجاح ")->success()->send();
-
-                        })
-                        ->label('تحديد موظف التسليم')->color('info')->requiresConfirmation(),
 //                    ExportBulkAction::make()
 
                 ]),
