@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Filament\Admin\Resources\SuccessOrderResource\Pages;
+namespace App\Filament\Admin\Resources\PickOrderResource\Pages;
 
 use App\Enums\LevelUserEnum;
-use App\Filament\Admin\Resources\SuccessOrderResource;
+use App\Filament\Admin\Resources\PickOrderResource;
 use App\Models\City;
 use App\Models\User;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
-class CreateSuccessOrder extends CreateRecord
+class CreatePickOrder extends CreateRecord
 {
-    protected static string $resource = SuccessOrderResource::class;
+    protected static string $resource = PickOrderResource::class;
     protected function mutateFormDataBeforeCreate(array $data): array
     {
 
