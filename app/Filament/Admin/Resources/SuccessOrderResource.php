@@ -595,150 +595,8 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
               //  Tables\Actions\EditAction::make(),
 
                 Tables\Actions\ActionGroup::make([
-                  /*  Tables\Actions\Action::make('set_picker')->form([
-                        Forms\Components\Select::make('pick_id')
-                            ->options(User::selectRaw('id,name')->whereIn('level', [
-                                LevelUserEnum::STAFF->value,
-                                LevelUserEnum::BRANCH->value,
-                                LevelUserEnum::ADMIN->value,
-                            ])->pluck('name', 'id'))
-                            ->searchable()->label('موظف الإلتقاط'),
-                    ])
-                        ->action(function ($record, $data) {
-                            DB::beginTransaction();
-                            try {
-                                if ($record->pick_id == null) {
-                                    $record->update(['pick_id' => $data['pick_id'], 'status' => OrderStatusEnum::AGREE->value]);
-                                    HelperBalance::setPickOrder($record);
-                                    Notification::make('success')->title('نجاح العملية')->body("تم تحديد موظف الإلتقاط بنجاح ")->success()->send();
-                                    DB::commit();
-                                }
 
-                            } catch (\Exception $e) {
-                                DB::rollBack();
-                                Notification::make('error')->title('فشل العملية')->body("{$e->getMessage()}")->danger()->send();
-                            }
-
-                        })
-                        ->visible(fn($record) => $record->pick_id == null)
-                        ->label('تحديد موظف الإلتقاط')->color('info'),*/
-
-                   /* Tables\Actions\Action::make('set_given')->form([
-                        Forms\Components\Select::make('given_id')
-                            ->searchable()
-                            ->getSearchResultsUsing(fn(string $search) => User::active()->selectRaw('id,name')->whereIn('level', [
-                                LevelUserEnum::STAFF->value,
-                                LevelUserEnum::BRANCH->value,
-                                LevelUserEnum::ADMIN->value,
-                            ])->where('name', 'like', "%$search%")->take(10)->pluck('name', 'id'))
-                            ->label('موظف التسليم'),
-                    ])
-                        ->action(function ($record, $data) {
-
-                            $record->update(['given_id' => $data['given_id'], 'status' => OrderStatusEnum::TRANSFER->value]);
-                            Notification::make('success')->title('نجاح العملية')->body("تم تحديد موظف التسليم بنجاح ")->success()->send();
-
-
-                        })
-                        ->visible(fn($record) => $record->given_id == null && ($record->status === OrderStatusEnum::PICK || $record->status === OrderStatusEnum::TRANSFER))
-                        ->label('تحديد موظف التسليم')->color('info'),*/
-
-                   /* Tables\Actions\Action::make('success_pick')
-                        ->form(function ($record) {
-                            $farMessage = 'انت على وشك تأكيد إستلام مبلغ : ';
-                            if ($record->far_sender == true && ($record->far > 0 || $record->far_tr > 0)) {
-
-                                if ($record->far_tr > 0) {
-
-                                    $farMessage .= $record->far_tr . ' TRY ';
-                                }
-                                if ($record->far > 0) {
-                                    $farMessage .= ' و' . $record->far . ' USD ';
-                                }
-                                $farMessage .= 'أجور شحن';
-                                return [
-                                    Forms\Components\Placeholder::make('msg')->content($farMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
-                                ];
-                            }
-                            return [
-                                Forms\Components\Placeholder::make('msg')->content("أنت على وشك تأكيد إلتقاط الطلب ")->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
-                            ];
-                        })
-                        ->action(function ($record, $data) {
-                            DB::beginTransaction();
-                            try {
-                                HelperBalance::completePicker($record);
-                                $record->update(['status' => OrderStatusEnum::PICK->value]);
-                                DB::commit();
-                                Notification::make('success')->title('نجاح العملية')->body('تم تأكيد إلتقاط الطلب')->success()->send();
-                            } catch (\Exception | Error $e) {
-                                Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
-                            }
-                        })
-                        ->label('تأكيد إلتقاط الشحنة')->color('info')
-                        ->visible(fn($record) => $record->pick_id != null && ($record->status == OrderStatusEnum::AGREE)),*/
-
-                /*    Tables\Actions\Action::make('success_given')
-                        ->form(function ($record) {
-
-                            $totalPrice = (double)$record->price + (double)$record->far;
-                            if ($totalPrice == 0) {
-                                $totalPrice = (double)$record->price_tr + (double)$record->far_tr;
-                            }
-                            $priceMessage = 'انت تأكد إستلامك مبلغ : ';
-
-
-                            if ($record->price_tr > 0) {
-                                $priceMessage .= $record->price_tr . ' TRY ';
-                            }
-                            if ($record->price > 0) {
-                                $priceMessage .= ' و ' . $record->price . ' USD ';
-                            }
-                            $priceMessage .= 'قيمة تحصيل الطلب';
-
-
-                            $farMessage = '';
-
-                            if ($record->far_sender == false) {
-                                $farMessage = 'انت تأكد إستلامك مبلغ : ';
-                                if ($record->far_tr > 0) {
-                                    $farMessage .= $record->far_tr . ' TRY ';
-                                }
-                                if ($record->far > 0) {
-                                    $farMessage .= ' و ' . $record->far . ' USD ';
-                                }
-                                $farMessage .= 'أجور شحن الطلب';
-
-                            }
-
-                            if ($totalPrice > 0) {
-                                $form = [
-                                    Forms\Components\Placeholder::make('msg')->content($priceMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه'),
-                                    Forms\Components\Placeholder::make('msg_2')->content($farMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
-                                ];
-                            } else {
-                                $form = [
-                                    Forms\Components\Placeholder::make('msg')->content("أنت على وشك تأكيد تسليم الطلب ")->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
-                                ];
-                            }
-                            return $form;
-
-                        })
-                        ->action(function ($record, $data) {
-                            DB::beginTransaction();
-                            try {
-                                HelperBalance::completeOrder($record);
-                                $record->update(['status' => OrderStatusEnum::SUCCESS->value]);
-                                DB::commit();
-                                Notification::make('success')->title('نجاح العملية')->body('تم تأكيد تسليم الطلب')->success()->send();
-                            } catch (\Exception | Error $e) {
-                                Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
-                            }
-                        })->label('تأكيد تسليم الشحنة')->color('info')
-                        ->visible(fn($record) => $record->given_id != null && ($record->status == OrderStatusEnum::TRANSFER)),*/
-
-
-                  /*  Tables\Actions\Action::make('cancel_order')
+                    Tables\Actions\Action::make('cancel_order')
                         ->form([
                             Forms\Components\Radio::make('status')->options(function(){
                                 $list=[
@@ -764,7 +622,9 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                                     $dataUpdate['given_id'] = $user;
                                     $dataUpdate['returned_id'] = $record->pick_id;
                                 }
-
+                                /**
+                                 * @var $record Order
+                                 */
                                 $record->update($dataUpdate);
                                 DB::commit();
                                 Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
@@ -774,19 +634,9 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                             }
                         })->label('الإلغاء / الإعادة')->color('danger')
                         ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED ),
-                    */
-                    // تحديد موظف غعادة الطلب
-                    /*Tables\Actions\Action::make('set_returned_id')->form([
-                        Forms\Components\Select::make('staff_id')->searchable()->getSearchResultsUsing(fn(string $search): array => User::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())->label('حدد الموظف')->required(),
 
-                    ])
-                        ->action(function ($record, $data) {
-                            $record->update(['returned_id' => $data['staff_id']]);
-                            Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف إعادة الطلب بنجاح')->success()->send();
 
-                        })
-                        ->label('تحديد موظف تسليم المرتجع')
-                        ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id == null),*/
+
 
                      Tables\Actions\Action::make('confirm_returned')
                          ->form(function ($record) {
@@ -822,7 +672,7 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                              }
                          })->label('تأكيد تسليم المرتجع')->color('danger')
                          ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id != null),
-                    // Tables\Actions\Action::make('check_green')->action(fn($record) => $record->update(['color' => 'green']))->label('تعيين باللون الاخضر')->visible(fn($record) => $record->color == null)
+                     Tables\Actions\Action::make('check_green')->action(fn($record) => $record->update(['color' => 'green']))->label('تعيين باللون الاخضر')->visible(fn($record) => $record->color == null)
 
                 ])
 
@@ -836,19 +686,11 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-               /*     Tables\Actions\BulkAction::make('cancel_order')->action(function ($records) {
-                        foreach ($records as $record) {
-                            $record->update(['status' => OrderStatusEnum::CANCELED->value]);
-                            Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
-
-                        }
-                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin')),
-                    Tables\Actions\DeleteBulkAction::make(),*/
-
                     //cancel Order
                     Tables\Actions\BulkAction::make('cancel_order')->action(function ($records) {
                         foreach ($records as $record) {
                             $record->update(['status' => OrderStatusEnum::CANCELED->value]);
+                            $record->balances()->delete();
                             Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
 
                         }
