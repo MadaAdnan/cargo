@@ -757,7 +757,7 @@ class PickOrderResource extends Resource
                                     LevelUserEnum::BRANCH->value,
                                     LevelUserEnum::ADMIN->value,
                                 ])->where('name', 'like', "%$search%")->take(10)->pluck('name', 'id'))
-                                ->label('موظف التسليم'),
+                                ->label('موظف التسليم')->required(),
                         ])
                         ->action(function ($records,$data) {
                         foreach ($records as $record) {

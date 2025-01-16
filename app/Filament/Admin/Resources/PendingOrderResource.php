@@ -862,6 +862,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                                     LevelUserEnum::BRANCH->value,
                                     LevelUserEnum::ADMIN->value,
                                 ])->where('name', 'like', "%$search%")->take(10)->pluck('name', 'id'))
+                                ->required()
                                 ->label('موظف التسليم'),
                         ])
                         ->action(function ($records,$data) {
