@@ -9,7 +9,7 @@
         "barryvdh/laravel-debugbar": "^3.14",
         "bezhansalleh/filament-shield": "^3.2",
         "dotswan/filament-map-picker": "^1.2",
-        "filament/filament": "3.2",
+        "filament/filament": "^3.2",
         "filament/notifications": "3.2",
         "filament/spatie-laravel-media-library-plugin": "^3.2",
         "guzzlehttp/guzzle": "^7.2",
