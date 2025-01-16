@@ -15,6 +15,7 @@ use App\Models\City;
 use App\Models\Order;
 use App\Models\PickOrder;
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
@@ -794,7 +795,7 @@ class PickOrderResource extends Resource
                             Notification::make('success')->title('نجاح')->body('تم تحديد الشحنات كمرتجع بنجاح')->success()->send();
 
                         }
-                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('مدير عام'))->requiresConfirmation(),
+                    })->label('مرتجع الشحنات')->visible(auth()->user()->hasRole('مدير عام'))->requiresConfirmation(),
 
 //                    ExportBulkAction::make()
 
