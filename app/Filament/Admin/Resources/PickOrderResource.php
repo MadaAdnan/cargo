@@ -727,7 +727,7 @@ class PickOrderResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
 
-                    Tables\Actions\BulkAction::make('set_given_id') ->form([
+                   /* Tables\Actions\BulkAction::make('set_given_id') ->form([
                         Forms\Components\Select::make('given_id')
                             ->searchable()
                             ->getSearchResultsUsing(fn(string $search) => User::active()->selectRaw('id,name')->whereIn('level', [
@@ -746,17 +746,27 @@ class PickOrderResource extends Resource
                             Notification::make('success')->title('نجاح العملية')->body("تم تحديد موظف التسليم بنجاح ")->success()->send();
 
                         })
-                        ->label('تحديد موظف التسليم')->color('info')->requiresConfirmation(),
+                        ->label('تحديد موظف التسليم')->color('info')->requiresConfirmation(),*/
                     //success Order
-                    Tables\Actions\BulkAction::make('success_order')->action(function ($records) {
+                    Tables\Actions\BulkAction::make('success_order')
+                        ->form([
+                            Forms\Components\Select::make('given_id')
+                                ->searchable()
+                                ->getSearchResultsUsing(fn(string $search) => User::active()->selectRaw('id,name')->whereIn('level', [
+                                    LevelUserEnum::STAFF->value,
+                                    LevelUserEnum::BRANCH->value,
+                                    LevelUserEnum::ADMIN->value,
+                                ])->where('name', 'like', "%$search%")->take(10)->pluck('name', 'id'))
+                                ->label('موظف التسليم'),
+                        ])
+                        ->action(function ($records,$data) {
                         foreach ($records as $record) {
-                            if($record->given_id==null || $record->sender_id==null){
-                                continue;
-                            }
+
                             DB::beginTransaction();
                             try {
+                                $record->update(['given_id' => $data['given_id'],'status' => OrderStatusEnum::SUCCESS->value]);
                                 HelperBalance::completeOrder($record);
-                                $record->update(['status' => OrderStatusEnum::SUCCESS->value]);
+
                                 DB::commit();
                             } catch (\Exception | \Error $e) {
                                 DB::rollBack();

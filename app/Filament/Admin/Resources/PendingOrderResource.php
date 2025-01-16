@@ -841,7 +841,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
 
-                    Tables\Actions\BulkAction::make('given_id_check')->form([
+                  /*  Tables\Actions\BulkAction::make('given_id_check')->form([
                         Forms\Components\Select::make('given_id')
                             ->options(User::active()->where('users.level', LevelUserEnum::STAFF->value)->orWhere('users.level', LevelUserEnum::BRANCH->value)->orWhere('users.level', LevelUserEnum::ADMIN->value)->pluck('name', 'id'))
                             ->searchable()->label('موظف التسليم')
@@ -851,24 +851,35 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                             DB::table('orders')->whereIn('id', $records->pluck('id')->toArray())->update(['given_id' => $data['given_id'], 'status' => OrderStatusEnum::TRANSFER->value]);
                             Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف التسليم بنجاح')->success()->send();
                         })
-                        ->label('تحديد موظف التسليم')->color('info')->requiresConfirmation(),
+                        ->label('تحديد موظف التسليم')->color('info')->requiresConfirmation(),*/
                     //success Order
-                    Tables\Actions\BulkAction::make('success_order')->action(function ($records) {
-                        foreach ($records as $record) {
-                            if($record->given_id==null || $record->sender_id==null){
-                                continue;
+                    Tables\Actions\BulkAction::make('success_order')
+                        ->form([
+                            Forms\Components\Select::make('given_id')
+                                ->searchable()
+                                ->getSearchResultsUsing(fn(string $search) => User::active()->selectRaw('id,name')->whereIn('level', [
+                                    LevelUserEnum::STAFF->value,
+                                    LevelUserEnum::BRANCH->value,
+                                    LevelUserEnum::ADMIN->value,
+                                ])->where('name', 'like', "%$search%")->take(10)->pluck('name', 'id'))
+                                ->label('موظف التسليم'),
+                        ])
+                        ->action(function ($records,$data) {
+                            foreach ($records as $record) {
+
+                                DB::beginTransaction();
+                                try {
+                                    $record->update(['given_id' => $data['given_id'],'status' => OrderStatusEnum::SUCCESS->value]);
+                                    HelperBalance::completeOrder($record);
+
+                                    DB::commit();
+                                } catch (\Exception | \Error $e) {
+                                    DB::rollBack();
+                                }
                             }
-                            DB::beginTransaction();
-                            try {
-                                HelperBalance::completeOrder($record);
-                                $record->update(['status' => OrderStatusEnum::SUCCESS->value]);
-                                DB::commit();
-                            } catch (\Exception | \Error $e) {
-                                DB::rollBack();
-                            }
-                        }
-                        Notification::make('success')->title('نجاح العملية')->body('تم تأكيد تسليم الطلبات')->success()->send();
-                    })->label('تأكيد التسليم')->visible(auth()->user()->hasRole('super_admin'))->requiresConfirmation(),
+                            Notification::make('success')->title('نجاح العملية')->body('تم تأكيد تسليم الطلبات')->success()->send();
+                        })->label('تأكيد التسليم')->visible(auth()->user()->hasRole('مدير عام'))->requiresConfirmation(),
+
                     //cancel Order
                     Tables\Actions\BulkAction::make('cancel_order')->action(function ($records) {
                         foreach ($records as $record) {
