@@ -889,7 +889,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                             Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
 
                         }
-                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin'))->requiresConfirmation(),
+                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('مدير عام'))->requiresConfirmation(),
                     //returned Order
                     Tables\Actions\BulkAction::make('returned_order')->action(function ($records) {
                         foreach ($records as $record) {
@@ -912,7 +912,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                             Notification::make('success')->title('نجاح')->body('تم تحديد الشحنات كمرتجع بنجاح')->success()->send();
 
                         }
-                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin'))->requiresConfirmation(),
+                    })->label('مرتجع الشحنات')->requiresConfirmation(),
 
 //                    ExportBulkAction::make()
 
