@@ -879,7 +879,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                                 }
                             }
                             Notification::make('success')->title('نجاح العملية')->body('تم تأكيد تسليم الطلبات')->success()->send();
-                        })->label('تأكيد التسليم')->visible(auth()->user()->hasRole('مدير عام'))->requiresConfirmation(),
+                        })->label('تأكيد التسليم')->requiresConfirmation(),
 
                     //cancel Order
                     Tables\Actions\BulkAction::make('cancel_order')->action(function ($records) {
