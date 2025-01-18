@@ -243,7 +243,7 @@ Tables\Actions\Action::make('request')->form([
         1 => ' من الدولار إلى التركي',
         2 => 'من التركي إلى الدولار',
     ])
-        ->label('نوع التحويل')->required()->afterStateUpdated(function ($get,$set) {
+        ->label('نوع التحويل')->default(1)->required()->afterStateUpdated(function ($get,$set) {
             if ($get('currency_id') == 1) {
                 $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
                 $set('result',$result);
@@ -256,7 +256,7 @@ Tables\Actions\Action::make('request')->form([
                 $set('result',$result);
             }
         })->live()->debounce(1000),
-    Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required()->afterStateUpdated(function ($get,$set) {
+    Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required()->default(1)->afterStateUpdated(function ($get,$set) {
         if ($get('currency_id') == 1) {
             $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
             $set('result',$result);
@@ -269,7 +269,7 @@ Tables\Actions\Action::make('request')->form([
             $set('result',$result);
         }
     })->live()->debounce(1000),
-    Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->numeric()->required()->afterStateUpdated(function ($get,$set) {
+    Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->numeric()->default(1)->required()->afterStateUpdated(function ($get,$set) {
         if ($get('currency_id') == 1) {
             $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
             $set('result',$result);
