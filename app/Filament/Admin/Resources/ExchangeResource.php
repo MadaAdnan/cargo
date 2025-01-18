@@ -42,9 +42,9 @@ class ExchangeResource extends Resource
                     Forms\Components\Radio::make('currency_id')->options([
                         1 => ' من الدولار إلى التركي',
                         2 => 'من التركي إلى الدولار',
-                    ])->label('نوع التحويل')->required(),
-                    Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required(),
-                    Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->numeric()->required(),
+                    ])->label('نوع التحويل')->required()->default(1)->live(),
+                    Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required()->default(1)->live(),
+                    Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->numeric()->required()->default(1)->live(),
                 ])
 
             ]);
