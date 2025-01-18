@@ -288,7 +288,7 @@ Tables\Actions\Action::make('request')->form([
         $currency=2;
         $result= HelperBalance::formatNumber((double)$data['amount'] * (double)$data['exchange']);
 
-    } elseif ($get('currency_id') == 2) {
+    } elseif ($data['currency_id'] == 2) {
         $currency=1;
         try{
             $result=  HelperBalance::formatNumber((double)$data['amount'] / (double)$data['exchange']);
