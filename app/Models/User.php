@@ -85,6 +85,7 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
         'level' => LevelUserEnum::class,
         'status' => ActivateStatusEnum::class,
         'job' => JobUserEnum::class,
+        'location' => 'array'
 
     ];
 
