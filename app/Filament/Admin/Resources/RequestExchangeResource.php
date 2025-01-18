@@ -49,7 +49,7 @@ class RequestExchangeResource extends Resource
                             }
                             $set('result',$result);
                         }
-                    })->live()->debounce(1000),
+                    })->live()->default(1)->debounce(1000),
                     Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required()->afterStateUpdated(function ($get,$set) {
                         if ($get('currency_id') == 1) {
                             $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
