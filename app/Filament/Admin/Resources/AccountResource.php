@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Enums\TypeAccountEnum;
 use App\Filament\Admin\Resources\AccountResource\Pages;
 use App\Filament\Admin\Resources\AccountResource\RelationManagers;
 use App\Helper\HelperBalance;
@@ -76,6 +77,19 @@ class AccountResource extends Resource implements HasShieldPermissions
                     Forms\Components\TextInput::make('name')->label('اسم الحساب')->required(),
 
                     Forms\Components\TextInput::make('iban')->label('كود الحساب')->required()->unique(ignoreRecord: true)->dehydrated(fn($context) => $context === 'create')->default(HelperBalance::getMaxCodeAccount()),
+                    Forms\Components\Select::make('type_account')
+                        ->options([
+                            TypeAccountEnum::OIL->value=>TypeAccountEnum::OIL->getLabel(),
+                            TypeAccountEnum::OFFICE->value=>TypeAccountEnum::OFFICE->getLabel(),
+                            TypeAccountEnum::SENDER->value=>TypeAccountEnum::SENDER->getLabel(),
+                            TypeAccountEnum::TOOL->value=>TypeAccountEnum::TOOL->getLabel(),
+                            TypeAccountEnum::TRANSFER->value=>TypeAccountEnum::TRANSFER->getLabel(),
+                            TypeAccountEnum::ANY->value=>TypeAccountEnum::ANY->getLabel(),
+                            TypeAccountEnum::STAFF->value=>TypeAccountEnum::STAFF->getLabel(),
+                            TypeAccountEnum::BALANCE->value=>TypeAccountEnum::BALANCE->getLabel(),
+                            TypeAccountEnum::WITHDRAW->value=>TypeAccountEnum::WITHDRAW->getLabel(),
+                        ])
+                        ->label('نوع الحساب')->required()->unique(ignoreRecord: true)->dehydrated(fn($context) => $context === 'create')->default(HelperBalance::getMaxCodeAccount()),
                     Forms\Components\Select::make('currency_id')->relationship('currency', 'name')->required()->label('عملة الحساب')->dehydrated(fn($context) => $context == 'create'),
                     Forms\Components\Select::make('branch_id')->options(Branch::pluck('name', 'id'))->label('الفرع'),
                 ]),
@@ -89,6 +103,7 @@ class AccountResource extends Resource implements HasShieldPermissions
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('اسم الحساب')->searchable(),
                 Tables\Columns\TextColumn::make('iban')->label('كود الحساب')->searchable(),
+                Tables\Columns\TextColumn::make('type_account')->label('نوع الحساب'),
                 Tables\Columns\TextColumn::make('currency.name')->label('عملة الحساب')->searchable(),
                 Tables\Columns\TextColumn::make('branch.name')->label('الفرع')->searchable(),
                 Tables\Columns\TextColumn::make('total_balance')->label('الرصيد'),
