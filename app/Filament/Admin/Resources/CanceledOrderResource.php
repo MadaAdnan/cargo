@@ -40,7 +40,7 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $pluralModelLabel = 'الطلبات';
 
-    protected static ?string $label = 'شحنة';
+    protected static ?string $label = 'شحنة منتهية';
     protected static ?string $navigationLabel = 'شحنات منتهية';
     protected static ?string $navigationGroup='الشحنات';
     protected static ?int $navigationSort=4;
