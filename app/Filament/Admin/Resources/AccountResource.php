@@ -131,7 +131,7 @@ class AccountResource extends Resource implements HasShieldPermissions
 
                 ])->fillForm(fn($record) => ['name' => $record->name, 'branch_id' => $record->branch_id])
                     ->action(function ($record, $data) {
-                        $record->update(['name' => $data['name'], 'branch_id' => $data['branch_id']]);
+                        $record->update(['name' => $data['name'], 'branch_id' => $data['branch_id'],'type_account'=>$data['type_account']]);
                         Notification::make('success')->title('نجاح العملية')->body('تم التعديل بنجاح')->success()->send();
                     })->label('تعديل'),
 
