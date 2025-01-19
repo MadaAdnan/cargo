@@ -11,6 +11,7 @@ class BalanceEmployeeView extends BaseWidget
 {
     protected static ?string $pollingInterval = '10s';
     protected int|string|array $columnSpan =4;
+    protected ?string $heading= "أرصدة الموظفين USD";
     public static function canView(): bool
     {
         ;

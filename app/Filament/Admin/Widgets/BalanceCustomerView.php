@@ -10,7 +10,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 class BalanceCustomerView extends BaseWidget
 {
     protected static ?string $pollingInterval = '10s';
-    protected ?string $heading='إجمالي الأرصدة';
+    protected ?string $heading='أرصدة الزبائن USD';
     protected int|string|array $columnSpan =4;
     public static function canView(): bool
     {
