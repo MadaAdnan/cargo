@@ -41,7 +41,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $pluralModelLabel = 'الطلبات';
 
-    protected static ?string $label = 'شحنة';
+    protected static ?string $label = 'شحنة بالإنتظار';
     protected static ?string $navigationLabel = 'شحنات بالإنتظار ';
     protected static ?string $navigationGroup='الشحنات';
     protected static ?int $navigationSort=2;
