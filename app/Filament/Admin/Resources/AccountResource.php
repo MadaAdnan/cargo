@@ -88,8 +88,7 @@ class AccountResource extends Resource implements HasShieldPermissions
                             TypeAccountEnum::STAFF->value=>TypeAccountEnum::STAFF->getLabel(),
                             TypeAccountEnum::BALANCE->value=>TypeAccountEnum::BALANCE->getLabel(),
                             TypeAccountEnum::WITHDRAW->value=>TypeAccountEnum::WITHDRAW->getLabel(),
-                        ])
-                        ->label('نوع الحساب')->required()->unique(ignoreRecord: true)->dehydrated(fn($context) => $context === 'create')->default(HelperBalance::getMaxCodeAccount()),
+                        ])->label('نوع الحساب')->required(),
                     Forms\Components\Select::make('currency_id')->relationship('currency', 'name')->required()->label('عملة الحساب')->dehydrated(fn($context) => $context == 'create'),
                     Forms\Components\Select::make('branch_id')->options(Branch::pluck('name', 'id'))->label('الفرع'),
                 ]),
@@ -117,7 +116,18 @@ class AccountResource extends Resource implements HasShieldPermissions
                 Tables\Actions\Action::make('edit_record')->form([
                     Forms\Components\TextInput::make('name')->label('اسم الحساب')->required(),
                     Forms\Components\Select::make('branch_id')->options(Branch::pluck('name', 'id'))->label('الفرع')->searchable(),
-                    Tables\Columns\TextColumn::make('type_account')->label('نوع الحساب'),
+                    Forms\Components\Select::make('type_account')
+                        ->options([
+                            TypeAccountEnum::OIL->value=>TypeAccountEnum::OIL->getLabel(),
+                            TypeAccountEnum::OFFICE->value=>TypeAccountEnum::OFFICE->getLabel(),
+                            TypeAccountEnum::SENDER->value=>TypeAccountEnum::SENDER->getLabel(),
+                            TypeAccountEnum::TOOL->value=>TypeAccountEnum::TOOL->getLabel(),
+                            TypeAccountEnum::TRANSFER->value=>TypeAccountEnum::TRANSFER->getLabel(),
+                            TypeAccountEnum::ANY->value=>TypeAccountEnum::ANY->getLabel(),
+                            TypeAccountEnum::STAFF->value=>TypeAccountEnum::STAFF->getLabel(),
+                            TypeAccountEnum::BALANCE->value=>TypeAccountEnum::BALANCE->getLabel(),
+                            TypeAccountEnum::WITHDRAW->value=>TypeAccountEnum::WITHDRAW->getLabel(),
+                        ])->label('نوع الحساب')->required(),
 
                 ])->fillForm(fn($record) => ['name' => $record->name, 'branch_id' => $record->branch_id])
                     ->action(function ($record, $data) {
