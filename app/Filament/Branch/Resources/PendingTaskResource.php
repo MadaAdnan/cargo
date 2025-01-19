@@ -28,7 +28,7 @@ class PendingTaskResource extends Resource
     protected static ?string $pluralLabel = 'مهامي بالإنتظار';
     protected static ?string $navigationGroup = 'مهامي';
 
-    public static function getPermissionPrefixes(): array
+   /* public static function getPermissionPrefixes(): array
     {
         return [
             'view',
@@ -65,7 +65,7 @@ class PendingTaskResource extends Resource
     public static function canDeleteAny(): bool
     {
         return auth()->user()->hasPermissionTo('delete_pending::task');
-    }
+    }*/
 
     public static function form(Form $form): Form
     {

@@ -24,7 +24,7 @@ class CompletTaskResource extends Resource implements HasShieldPermissions
     protected static ?string $label='مهامي المكتملة';
     protected static ?string $pluralLabel='مهامي المكتملة';
     protected static ?string $navigationGroup='مهامي';
-    public static function getPermissionPrefixes(): array
+   /* public static function getPermissionPrefixes(): array
     {
         return [
             'view',
@@ -61,7 +61,7 @@ class CompletTaskResource extends Resource implements HasShieldPermissions
     public static function canDeleteAny(): bool
     {
         return auth()->user()->hasPermissionTo('delete_complet::task');
-    }
+    }*/
 
     public static function form(Form $form): Form
     {
