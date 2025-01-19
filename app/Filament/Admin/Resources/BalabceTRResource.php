@@ -44,7 +44,7 @@ class BalabceTRResource extends Resource implements HasShieldPermissions
     protected static ?string $label = 'الرصيد TRY';
     protected static ?string $navigationLabel = 'الرصيد TRY';
 
-    public static function canAccess(): bool
+  /*  public static function canAccess(): bool
     {
         return auth()->user()->hasPermissionTo('view_balance::t::r');
 
@@ -68,7 +68,7 @@ class BalabceTRResource extends Resource implements HasShieldPermissions
     public static function canDeleteAny(): bool
     {
         return auth()->user()->hasPermissionTo('delete_balance::t::r');
-    }
+    }*/
 
     public static function form(Form $form): Form
     {
