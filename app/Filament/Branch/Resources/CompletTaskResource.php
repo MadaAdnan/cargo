@@ -24,7 +24,7 @@ class CompletTaskResource extends Resource implements HasShieldPermissions
     protected static ?string $label='مهامي المكتملة';
     protected static ?string $pluralLabel='مهامي المكتملة';
     protected static ?string $navigationGroup='مهامي';
-   /* public static function getPermissionPrefixes(): array
+    public static function getPermissionPrefixes(): array
     {
         return [
             'view',
@@ -36,7 +36,7 @@ class CompletTaskResource extends Resource implements HasShieldPermissions
             'publish'
         ];
     }
-
+/*
     public static function canAccess(): bool
     {
         return auth()->user()->hasPermissionTo('view_complet::task');

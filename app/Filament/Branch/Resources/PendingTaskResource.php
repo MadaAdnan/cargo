@@ -28,7 +28,7 @@ class PendingTaskResource extends Resource
     protected static ?string $pluralLabel = 'مهامي بالإنتظار';
     protected static ?string $navigationGroup = 'مهامي';
 
-   /* public static function getPermissionPrefixes(): array
+    public static function getPermissionPrefixes(): array
     {
         return [
             'view',
@@ -40,7 +40,7 @@ class PendingTaskResource extends Resource
             'publish'
         ];
     }
-
+/*
     public static function canAccess(): bool
     {
         return auth()->user()->hasPermissionTo('view_pending::task');
