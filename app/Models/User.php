@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\TypeAccountEnum;
 use App\Helper\HelperBalance;
 use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
 use Filament\Models\Contracts\FilamentUser;
@@ -85,6 +86,7 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
         'level' => LevelUserEnum::class,
         'status' => ActivateStatusEnum::class,
         'job' => JobUserEnum::class,
+        'type_account' => TypeAccountEnum::class,
         'location' => 'array'
 
     ];
