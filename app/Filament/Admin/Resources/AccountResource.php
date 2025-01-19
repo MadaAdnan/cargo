@@ -117,6 +117,8 @@ class AccountResource extends Resource implements HasShieldPermissions
                 Tables\Actions\Action::make('edit_record')->form([
                     Forms\Components\TextInput::make('name')->label('اسم الحساب')->required(),
                     Forms\Components\Select::make('branch_id')->options(Branch::pluck('name', 'id'))->label('الفرع')->searchable(),
+                    Tables\Columns\TextColumn::make('type_account')->label('نوع الحساب'),
+
                 ])->fillForm(fn($record) => ['name' => $record->name, 'branch_id' => $record->branch_id])
                     ->action(function ($record, $data) {
                         $record->update(['name' => $data['name'], 'branch_id' => $data['branch_id']]);
