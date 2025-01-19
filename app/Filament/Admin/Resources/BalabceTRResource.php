@@ -9,6 +9,7 @@ use App\Helper\HelperBalance;
 use App\Models\BalabceTR;
 use App\Models\Balance;
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
@@ -21,8 +22,20 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class BalabceTRResource extends Resource
+class BalabceTRResource extends Resource implements HasShieldPermissions
 {
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'publish'
+        ];
+    }
 
     protected static ?string $model = Balance::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -116,7 +129,7 @@ class BalabceTRResource extends Resource
             'index' => Pages\ListBalabceTRS::route('/'),
             'create' => Pages\CreateBalabceTR::route('/create'),
             'edit' => Pages\EditBalabceTR::route('/{record}/edit'),
-          'view'=>Pages\ViewBalanceTR::route('/{record}')
+            'view' => Pages\ViewBalanceTR::route('/{record}')
         ];
     }
 }

@@ -7,6 +7,7 @@ use App\Filament\Admin\Resources\AccountBalanceResource\RelationManagers;
 use App\Models\AccountBalance;
 use App\Models\Balance;
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -19,8 +20,21 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
-class AccountBalanceResource extends Resource
+class AccountBalanceResource extends Resource implements HasShieldPermissions
 {
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'publish'
+        ];
+    }
+
     protected static ?string $model = Balance::class;
     protected static ?string $navigationGroup = 'الحسابات المالية';
     protected static ?string $label = 'حركة الحسابات المالية';
@@ -58,7 +72,7 @@ class AccountBalanceResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn($query)=>$query->whereHas('account')->latest())
+            ->modifyQueryUsing(fn($query) => $query->whereHas('account')->latest())
             ->columns([
                 Tables\Columns\TextColumn::make('debit')->label('المدفوعات'),
                 Tables\Columns\TextColumn::make('credit')->label('المقبوضات'),
@@ -78,11 +92,11 @@ class AccountBalanceResource extends Resource
             ])
             ->filters([
                 Tables\Filters\Filter::make('filter')->form([
-                    Forms\Components\Select::make('user_id')->options(User::accounts()->active()->pluck('name','id'))->label('الحساب'),
+                    Forms\Components\Select::make('user_id')->options(User::accounts()->active()->pluck('name', 'id'))->label('الحساب'),
                     Forms\Components\DatePicker::make('from')->label('من تاريخ'),
                     Forms\Components\DatePicker::make('to')->label('إلى تاريخ'),
-                ])->query(function($query,$data){
-                    return $query->when($data['user_id'],fn($query,$date)=>$query->where('user_id',$date))
+                ])->query(function ($query, $data) {
+                    return $query->when($data['user_id'], fn($query, $date) => $query->where('user_id', $date))
                         ->when(
                             $data['from'],
                             fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
@@ -94,28 +108,28 @@ class AccountBalanceResource extends Resource
                 })
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->visible(fn($record)=>$record->uuid==null),
-                Tables\Actions\Action::make('complete')->action(function($record){
-                    try{
-                        Balance::where('uuid',$record->uuid)->update(['is_complete'=>true,'pending'=>false]);
-                      //  $record->update(['is_complete'=>true,'pending'=>false]);
+                Tables\Actions\EditAction::make()->visible(fn($record) => $record->uuid == null),
+                Tables\Actions\Action::make('complete')->action(function ($record) {
+                    try {
+                        Balance::where('uuid', $record->uuid)->update(['is_complete' => true, 'pending' => false]);
+                        //  $record->update(['is_complete'=>true,'pending'=>false]);
                         Notification::make('success')->success()->title('نجاح العملية')->body(' تم تأكيد الدفعة بنجاح')->send();
 
-                    }catch (\Exception | \Error $e){
+                    } catch (\Exception | \Error $e) {
                         Notification::make('error')->danger()->title('فشلت العملية')->body($e->getMessage())->send();
                     }
                 })
-                    ->label('تأكيد دفع المصاريف')->requiresConfirmation()->visible(fn($record)=>$record->uuid!=null && $record->is_complete==false)->button(),
+                    ->label('تأكيد دفع المصاريف')->requiresConfirmation()->visible(fn($record) => $record->uuid != null && $record->is_complete == false)->button(),
 
-                Tables\Actions\Action::make('cancel')->action(function($record){
-                    try{
-                        Balance::where('uuid',$record->uuid)->delete();
+                Tables\Actions\Action::make('cancel')->action(function ($record) {
+                    try {
+                        Balance::where('uuid', $record->uuid)->delete();
                         Notification::make('success')->success()->title('نجاح العملية')->body(' تم إلغاء الدفعة بنجاح')->send();
-                    }catch (\Exception | \Error $e){
+                    } catch (\Exception | \Error $e) {
                         Notification::make('error')->danger()->title('فشلت العملية')->body($e->getMessage())->send();
                     }
                 })->label('إلغاء الدفعة')->requiresConfirmation()
-                    ->visible(fn($record)=>$record->uuid!=null && $record->is_complete==false)->button(),
+                    ->visible(fn($record) => $record->uuid != null && $record->is_complete == false)->button(),
 
             ])
             ->bulkActions([

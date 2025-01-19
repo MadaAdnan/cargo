@@ -8,6 +8,7 @@ use App\Filament\Admin\Resources\AccountStatmentStaffResource\RelationManagers;
 use App\Models\AccountStatmentStaff;
 use App\Models\Balance;
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -20,10 +21,21 @@ use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
-class AccountStatmentStaffResource extends Resource
+class AccountStatmentStaffResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Balance::class;
-
+  public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'publish'
+        ];
+    }
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup = 'التقارير';
 

@@ -8,6 +8,7 @@ use App\Filament\Admin\Resources\RequestExchangeResource\RelationManagers;
 use App\Helper\HelperBalance;
 use App\Models\Exchange;
 use App\Models\RequestExchange;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -16,12 +17,23 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class RequestExchangeResource extends Resource
+class RequestExchangeResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Exchange::class;
     protected static ?string $slug = 'request-exchange';
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+  public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'publish'
+        ];
+    }
     protected static ?string $pluralModelLabel = 'تصريف العملة';
     protected static ?string $navigationGroup = 'الرصيد';
 

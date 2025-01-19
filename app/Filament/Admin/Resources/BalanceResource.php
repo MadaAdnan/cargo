@@ -7,6 +7,7 @@ use App\Filament\Admin\Resources\BalanceResource\Pages;
 use App\Filament\Admin\Resources\BalanceResource\RelationManagers;
 use App\Helper\HelperBalance;
 use App\Models\Balance;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Actions\ExportAction;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -18,10 +19,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
-class BalanceResource extends Resource
+class BalanceResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Balance::class;
-
+  public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'publish'
+        ];
+    }
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $pluralModelLabel = 'الرصيد USD';
     protected static ?string $navigationGroup = 'الرصيد';

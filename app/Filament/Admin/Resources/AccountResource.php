@@ -9,6 +9,7 @@ use App\Models\Account;
 use App\Models\Balance;
 use App\Models\Branch;
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -18,8 +19,21 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class AccountResource extends Resource
+class AccountResource extends Resource implements HasShieldPermissions
 {
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'publish'
+        ];
+    }
+
     protected static ?string $model = User::class;
     protected static ?string $slug = 'accounts';
     protected static ?string $navigationGroup = 'الحسابات المالية';
@@ -35,7 +49,7 @@ class AccountResource extends Resource
                     Forms\Components\TextInput::make('name')->label('اسم الحساب')->required(),
 
                     Forms\Components\TextInput::make('iban')->label('كود الحساب')->required()->unique(ignoreRecord: true)->dehydrated(fn($context) => $context === 'create')->default(HelperBalance::getMaxCodeAccount()),
-                   Forms\Components\Select::make('currency_id')->relationship('currency','name')->required()->label('عملة الحساب')->dehydrated(fn($context)=>$context=='create'),
+                    Forms\Components\Select::make('currency_id')->relationship('currency', 'name')->required()->label('عملة الحساب')->dehydrated(fn($context) => $context == 'create'),
                     Forms\Components\Select::make('branch_id')->options(Branch::pluck('name', 'id'))->label('الفرع'),
                 ]),
             ]);
@@ -62,10 +76,10 @@ class AccountResource extends Resource
                     Forms\Components\TextInput::make('name')->label('اسم الحساب')->required(),
                     Forms\Components\Select::make('branch_id')->options(Branch::pluck('name', 'id'))->label('الفرع')->searchable(),
                 ])->fillForm(fn($record) => ['name' => $record->name, 'branch_id' => $record->branch_id])
-                    ->action(function($record, $data){
+                    ->action(function ($record, $data) {
                         $record->update(['name' => $data['name'], 'branch_id' => $data['branch_id']]);
                         Notification::make('success')->title('نجاح العملية')->body('تم التعديل بنجاح')->success()->send();
-                })->label('تعديل'),
+                    })->label('تعديل'),
 
             ])
             ->bulkActions([
