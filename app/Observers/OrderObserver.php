@@ -51,13 +51,10 @@ class OrderObserver
                     HelperBalance::completePickerToRecive($order);
                 }
 
-                info('complete success order');
+
                 \DB::commit();
             } catch (\Exception | \Error $e) {
                 \DB::rollBack();
-                info("Error Observe in created function");
-                info('Message:' . $e->getMessage());
-                info('File:' . $e->getFile() . ' Line:' . $e->getLine());
             }
 
         }
