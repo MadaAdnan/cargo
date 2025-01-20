@@ -129,7 +129,7 @@ class ListAccounts extends ListRecords
                ]),*/
                 Repeater::make('balances')->schema([
                     Grid::make(4)->schema([
-                        Select::make('user_id')->options(User::withAccount()->pluck('name', 'id'))->searchable()->required(),
+                        Select::make('user_id')->options(User::withAccount()->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
                         TextInput::make('info')->label('البيان'),
                         TextInput::make('credit')->label('مدين')->default(0)->numeric(),
                         TextInput::make('debit')->label('دائن')->default(0)->numeric(),
@@ -180,13 +180,13 @@ class ListAccounts extends ListRecords
                     DB::rollBack();
                 }
             })->label('سند تركي متعدد'),
-            Actions\Action::make('multi_Tr')->form([
+            Actions\Action::make('multi_Usd')->form([
                 /*Grid::make()->schema([
                     DatePicker::make('date'),
                 ]),*/
                 Repeater::make('balances')->schema([
                     Grid::make(4)->schema([
-                        Select::make('user_id')->options(User::withAccount()->pluck('name', 'id'))->searchable()->required(),
+                        Select::make('user_id')->options(User::withAccount()->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
                         TextInput::make('info')->label('البيان'),
                         TextInput::make('credit')->label('مدين')->default(0)->numeric(),
                         TextInput::make('debit')->label('دائن')->default(0)->numeric(),
