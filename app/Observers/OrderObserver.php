@@ -42,7 +42,7 @@ class OrderObserver
     public function created(Order $order): void
     {
 
-        if ($order->receive_id != null && $order->far_sender==true) {
+        if ($order->receive_id != null) {
             \DB::beginTransaction();
             try {
                 HelperBalance::completePicker($order);
