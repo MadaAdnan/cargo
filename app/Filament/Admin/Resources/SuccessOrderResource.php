@@ -694,9 +694,13 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     //cancel Order
-                    Tables\Actions\BulkAction::make('cancel_order')->action(function ($records) {
+                    Tables\Actions\BulkAction::make('cancel_order')
+                        ->form([
+                            Forms\Components\TextInput::make('msg')->label('الملاحظات')
+                        ])
+                        ->action(function ($records,$data) {
                         foreach ($records as $record) {
-                            $record->update(['status' => OrderStatusEnum::CANCELED->value]);
+                            $record->update(['status' => OrderStatusEnum::CANCELED->value,'canceled_info'=>$data['msg']]);
                             $record->balances()->delete();
                             Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
 
