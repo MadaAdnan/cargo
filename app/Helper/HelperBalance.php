@@ -52,7 +52,7 @@ class HelperBalance
                         'is_complete' => true,
                         'currency_id' => 1,
                     ]);
-                    Balance::create([
+                  /*  Balance::create([
                         'credit' => 0,
                         'debit' => $order->far,
                         'order_id' => $order->id,
@@ -73,7 +73,7 @@ class HelperBalance
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 1,
-                    ]);
+                    ]);*/
                 }
 
                 if ($order->far_tr > 0) {
@@ -87,7 +87,7 @@ class HelperBalance
                         'is_complete' => true,
                         'currency_id' => 2,
                     ]);
-                    Balance::create([
+                  /*  Balance::create([
                         'credit' => 0,
                         'debit' => $order->far_tr,
                         'order_id' => $order->id,
@@ -108,7 +108,7 @@ class HelperBalance
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 2,
-                    ]);
+                    ]);*/
                 }
 
 
