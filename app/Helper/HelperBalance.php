@@ -37,7 +37,7 @@ class HelperBalance
     public static function completePicker(Order $order)
     {
         $sender = User::find($order->sender_id);
-        $staff = User::find($order->pick_id);
+        $staff = User::find($order->receive_id);
 
         try {
             if ($order->far_sender == true) {
