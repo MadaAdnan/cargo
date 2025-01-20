@@ -123,10 +123,8 @@ class ListAccounts extends ListRecords
                         Notification::make('error')->danger()->title('خطأ في العملية')->body($e->getMessage())->send();
                     }
                 })->label('سند قيدTRY'),
-            Actions\Action::make('multi_Tr')->form([
-               /*Grid::make()->schema([
-                   DatePicker::make('date'),
-               ]),*/
+           /* Actions\Action::make('multi_Tr')->form([
+
                 Repeater::make('balances')->schema([
                     Grid::make(3)->schema([
                         Select::make('credit_id')->options(User::withAccount()->pluck('name', 'id'))->searchable()->required()->label('الحساب مدين'),
@@ -206,9 +204,7 @@ class ListAccounts extends ListRecords
             })->label('سند تركي متعدد'),
             Actions\Action::make('multi_Usd')
                 ->form([
-                    /*Grid::make()->schema([
-                        DatePicker::make('date'),
-                    ]),*/
+
                     Repeater::make('balances')->schema([
                         Grid::make(3)->schema([
                             Select::make('credit_id')->options(User::withAccount()->pluck('name', 'id'))->searchable()->required()->label('الحساب مدين'),
@@ -284,6 +280,119 @@ class ListAccounts extends ListRecords
 
                         DB::rollBack();
 
+                    }
+                })->label('سند دولار متعدد'),*/
+
+            Actions\Action::make('multi_Tr')->form([
+                Repeater::make('balances')->schema([
+                    Grid::make(4)->schema([
+                        Select::make('user_id')->options(User::withAccount()->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
+                        TextInput::make('info')->label('البيان'),
+                        TextInput::make('credit')->label('مدين')->default(0)->numeric(),
+                        TextInput::make('debit')->label('دائن')->default(0)->numeric(),
+
+                    ]),
+
+                ])->defaultItems(10)->label('قيد متعدد TR')
+                    ->rules([
+                        fn(): Closure => function (string $attribute, $value, Closure $fail) {
+                            $credit = 0;
+                            $debit = 0;
+                            foreach ($value as $item) {
+
+
+                                $debit += $item['debit'];
+                                $credit += $item['credit'];
+
+                            }
+                            if ($credit != $debit) {
+                                $fail(" القيد غير متوازن");
+                            }
+                        }
+
+                    ])
+            ])
+                ->action(function ($data) {
+                    \DB::beginTransaction();
+                    try{
+                        $uuid=\Str::uuid();
+                        $currency=2;//TR
+                        foreach ($data['balances'] as $item){
+                            if($item['credit']==0 && $item['debit']==0){
+                                continue;
+                            }
+                            Balance::create([
+                                'uuid'=>$uuid,
+                                'currency_id'=>$currency,
+                                'debit'=>$item['debit'],
+                                'credit'=>$item['credit'],
+                                'info'=>$item['info'],
+                                'user_id'=>$item['user_id'],
+                                'pending'=>false,
+                                'is_complete'=>true,
+                            ]);
+                        }
+
+                        DB::commit();
+                    }catch (\Exception|\Error $e){
+                        DB::rollBack();
+                    }
+                })->label('سند تركي متعدد'),
+            Actions\Action::make('multi_Usd')->form([
+                /*Grid::make()->schema([
+                    DatePicker::make('date'),
+                ]),*/
+                Repeater::make('balances')->schema([
+                    Grid::make(4)->schema([
+                        Select::make('user_id')->options(User::withAccount()->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
+                        TextInput::make('info')->label('البيان'),
+                        TextInput::make('credit')->label('مدين')->default(0)->numeric(),
+                        TextInput::make('debit')->label('دائن')->default(0)->numeric(),
+
+                    ])
+                ])->defaultItems(10)->label('قيد متعدد USD')
+                    ->rules([
+                        fn(): Closure => function (string $attribute, $value, Closure $fail) {
+                            $credit = 0;
+                            $debit = 0;
+                            foreach ($value as $item) {
+
+
+                                $debit += $item['debit'];
+                                $credit += $item['credit'];
+
+                            }
+                            if ($credit != $debit) {
+                                $fail(" القيد غير متوازن");
+                            }
+                        }
+
+                    ])
+            ])
+                ->action(function ($data) {
+                    \DB::beginTransaction();
+                    try{
+                        $uuid=\Str::uuid();
+                        $currency=1;//USD
+                        foreach ($data['balances'] as $item){
+                            if($item['credit']==0 && $item['debit']==0){
+                                continue;
+                            }
+                            Balance::create([
+                                'uuid'=>$uuid,
+                                'currency_id'=>$currency,
+                                'debit'=>$item['debit'],
+                                'credit'=>$item['credit'],
+                                'info'=>$item['info'],
+                                'user_id'=>$item['user_id'],
+                                'pending'=>false,
+                                'is_complete'=>true,
+                            ]);
+                        }
+
+                        DB::commit();
+                    }catch (\Exception|\Error $e){
+                        DB::rollBack();
                     }
                 })->label('سند دولار متعدد'),
         ];
