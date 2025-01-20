@@ -128,31 +128,37 @@ class ListAccounts extends ListRecords
                    DatePicker::make('date'),
                ]),*/
                 Repeater::make('balances')->schema([
-                    Grid::make(4)->schema([
-                        Select::make('user_id')->options(User::withAccount()->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
-                        TextInput::make('info')->label('البيان'),
+                    Grid::make(3)->schema([
+                        Select::make('credit_id')->options(User::withAccount()->pluck('name', 'id'))->searchable()->required()->label('الحساب مدين'),
+                        TextInput::make('credit_info')->label('البيان'),
                         TextInput::make('credit')->label('مدين')->default(0)->numeric(),
-                        TextInput::make('debit')->label('دائن')->default(0)->numeric(),
 
+
+                    ]),
+                    Grid::make(3)->schema([
+                        Select::make('debit_id')->options(User::withAccount()->pluck('name', 'id'))->searchable()->required()->label('الحساب دائن'),
+                        TextInput::make('debit_info')->label('البيان'),
+                        TextInput::make('debit')->label('دائن')->default(0)->numeric(),
                     ])
                 ])->label('قيد متعدد TR')
-                    /*->rules([
+                    ->rules([
                     fn(): Closure => function (string $attribute, $value, Closure $fail) {
                         $credit = 0;
                         $debit = 0;
                         foreach ($value as $item) {
 
 
-                            $debit += $item['debit'];
-                            $credit += $item['credit'];
+                            $debit = $item['debit'];
+                            $credit = $item['credit'];
+                            if ($credit != $debit) {
+                                $fail(" القيد غير متوازن");
+                                break;
+                            }
+                        }
 
-                        }
-                        if ($credit != $debit) {
-                            $fail(" القيد غير متوازن");
-                        }
                     }
 
-                ])*/
+                ])
             ])
                 ->action(function ($data) {
                 \DB::beginTransaction();
@@ -163,21 +169,39 @@ class ListAccounts extends ListRecords
                         if($item['credit']==0 && $item['debit']==0){
                             continue;
                         }
+                        $creditUser=User::find($item['credit_id']);
+                        $debitUser=User::find($item['debit_id']);
+                        Balance::create([
+                            'uuid'=>$uuid,
+                            'currency_id'=>$currency,
+                            'debit'=>0,
+                            'credit'=>$item['credit'],
+                            'customer_name'=>$debitUser->name,
+                            'info'=>$item['credit_info'],
+                            'user_id'=>$creditUser->id,
+                            'pending'=>false,
+                            'is_complete'=>true,
+                        ]);
+
                         Balance::create([
                             'uuid'=>$uuid,
                             'currency_id'=>$currency,
                             'debit'=>$item['debit'],
-                            'credit'=>$item['credit'],
-                            'info'=>$item['info'],
-                            'user_id'=>$item['user_id'],
+                            'credit'=>0,
+                            'customer_name'=>$creditUser->name,
+                            'info'=>$item['credit_info'],
+                            'user_id'=>$debitUser->id,
                             'pending'=>false,
                             'is_complete'=>true,
                         ]);
                     }
 
                     DB::commit();
+                    Notification::make()->success()->title('نجاح العملية')->body('تم إضافة السند بنجاح')->send();
                 }catch (\Exception|\Error $e){
+
                     DB::rollBack();
+
                 }
             })->label('سند تركي متعدد'),
             Actions\Action::make('multi_Usd')->form([
