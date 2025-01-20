@@ -686,7 +686,7 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
 
             ])
             ->headerActions([
-                CreateAction::make(),
+
                 ExportAction::make()->exports([
                     ExcelExport::make()->withChunkSize(100)->fromTable()
                 ])

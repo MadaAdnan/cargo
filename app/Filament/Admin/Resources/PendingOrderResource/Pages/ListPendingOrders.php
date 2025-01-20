@@ -17,7 +17,7 @@ class ListPendingOrders extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-           // Actions\CreateAction::make(),
+            Actions\CreateAction::make(),
            // Actions\Action::make('export')->url(route('export-order'),true)->label('تصدير إلى Excel'),
         ];
     }
