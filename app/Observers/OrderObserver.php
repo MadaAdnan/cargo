@@ -45,11 +45,9 @@ class OrderObserver
         if ($order->receive_id != null) {
             \DB::beginTransaction();
             try {
-                if($order->far_sender==false){
+
                     HelperBalance::completePicker($order);
-                }else{
-                    HelperBalance::completePickerToRecive($order);
-                }
+
 
 
                 \DB::commit();
