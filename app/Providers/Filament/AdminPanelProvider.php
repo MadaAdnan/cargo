@@ -6,6 +6,7 @@ use App\Filament\Admin\Widgets\BalanceCustomerView;
 use App\Filament\Admin\Widgets\BalanceEmployeeView;
 use App\Filament\Admin\Widgets\BalanceView;
 use App\Filament\Admin\Widgets\OrdersOverview;
+use App\Http\Middleware\IsBlockedUserMiddleware;
 use App\Http\Middleware\RedirectToPanelMiddleware;
 use App\Http\Middleware\StopMiddleware;
 use App\Http\Middleware\StopPanelMiddleware;
@@ -86,6 +87,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+IsBlockedUserMiddleware::class
 //                RedirectToPanelMiddleware::class
             ]);
     }

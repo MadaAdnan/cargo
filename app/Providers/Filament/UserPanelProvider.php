@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\User\Auth\CustomLogin;
 use App\Filament\User\Auth\CustomReg;
+use App\Http\Middleware\IsBlockedUserMiddleware;
 use App\Http\Middleware\RedirectToUserMiddleware;
 use App\Http\Middleware\StopMiddleware;
 use App\Http\Middleware\StopPanelMiddleware;
@@ -75,6 +76,7 @@ class UserPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                IsBlockedUserMiddleware::class,
 //                RedirectToUserMiddleware::class
             ])
             ->databaseNotifications();

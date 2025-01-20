@@ -6,6 +6,7 @@ use App\Filament\Employ\Widgets\AgencyWidget;
 use App\Filament\Employ\Widgets\BalanceView;
 use App\Filament\Employ\Widgets\TaskCompleteWidget;
 use App\Filament\Employ\Widgets\TaskWidget;
+use App\Http\Middleware\IsBlockedUserMiddleware;
 use App\Http\Middleware\IsBranchMiddleware;
 use App\Http\Middleware\RedirectToEmployMiddleware;
 use App\Http\Middleware\RedirectToPanelMiddleware;
@@ -78,7 +79,8 @@ class EmployPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                IsBranchMiddleware::class,
+                //IsBranchMiddleware::class,
+                IsBlockedUserMiddleware::class,
 //                RedirectToEmployMiddleware::class
 
             ]);
