@@ -192,7 +192,7 @@ class ListAccounts extends ListRecords
                         TextInput::make('debit')->label('دائن')->default(0)->numeric(),
 
                     ])
-                ])->label('قيد متعدد TR')
+                ])->label('قيد متعدد USD')
                 /*->rules([
                 fn(): Closure => function (string $attribute, $value, Closure $fail) {
                     $credit = 0;
