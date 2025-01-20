@@ -27,11 +27,11 @@ class TaskResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $usersList = User::select('name')->pluck('name')->toArray();
+        $usersList = User::active()->select('name')->pluck('name')->toArray();
         return $form
             ->schema([
                 Forms\Components\Section::make('مهام')->schema([
-                    Forms\Components\Select::make('user_id')->relationship('user', 'name',fn($query)=>$query->whereIn('level',[LevelUserEnum::STAFF->value,
+                    Forms\Components\Select::make('user_id')->relationship('user', 'name',fn($query)=>$query->active()->whereIn('level',[LevelUserEnum::STAFF->value,
                         LevelUserEnum::BRANCH->value,
                         LevelUserEnum::ADMIN->value,
                     ] ))->label('المستخدم')->searchable()->required(),
@@ -57,7 +57,7 @@ class TaskResource extends Resource
         return $table
             ->modifyQueryUsing(fn($query) => $query->where('created_id', auth()->id()))
             ->defaultSort('created_at', 'desc')
-            ->poll(10)
+          //  ->poll(10)
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('التسلسل')->sortable(),
                 Tables\Columns\TextColumn::make('user.name')->label('المستخدم')->searchable()->sortable(),

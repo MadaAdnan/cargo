@@ -37,7 +37,7 @@ class HelperBalance
     public static function completePicker(Order $order)
     {
         $sender = User::find($order->sender_id);
-        $staff = User::find($order->pick_id);
+        $staff = User::find($order->receive_id);
 
         try {
             if ($order->far_sender == true) {
@@ -47,18 +47,18 @@ class HelperBalance
                         'debit' => 0,
                         'order_id' => $order->id,
                         'user_id' => $sender->id,
-                        'info' => 'أجور شحن  #' . $order->code,
+                        'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 1,
                     ]);
-                    Balance::create([
+                  /*  Balance::create([
                         'credit' => 0,
                         'debit' => $order->far,
                         'order_id' => $order->id,
                         'user_id' => $sender->id,
 
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 1,
@@ -69,7 +69,92 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $staff->id,
 
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
+                        'type' => BalanceTypeEnum::CATCH->value,
+                        'is_complete' => true,
+                        'currency_id' => 1,
+                    ]);*/
+                }
+
+                if ($order->far_tr > 0) {
+                    Balance::create([
+                        'credit' => $order->far_tr,
+                        'debit' => 0,
+                        'order_id' => $order->id,
+                        'user_id' => $sender->id,
+                        'info' => 'أجور شحن  #' . $order->id,
+                        'type' => BalanceTypeEnum::CATCH->value,
+                        'is_complete' => true,
+                        'currency_id' => 2,
+                    ]);
+                  /*  Balance::create([
+                        'credit' => 0,
+                        'debit' => $order->far_tr,
+                        'order_id' => $order->id,
+                        'user_id' => $sender->id,
+
+                        'info' => 'دفع أجور شحن  #' . $order->id,
+                        'type' => BalanceTypeEnum::CATCH->value,
+                        'is_complete' => true,
+                        'currency_id' => 2,
+                    ]);
+                    Balance::create([
+                        'credit' => $order->far_tr,
+                        'debit' => 0,
+                        'order_id' => $order->id,
+                        'user_id' => $staff->id,
+
+                        'info' => 'دفع أجور شحن  #' . $order->id,
+                        'type' => BalanceTypeEnum::CATCH->value,
+                        'is_complete' => true,
+                        'currency_id' => 2,
+                    ]);*/
+                }
+
+
+            }
+            self:: pendingBalancePick($order);
+        } catch (\Exception | \Error $e) {
+
+            throw new \Exception($e->getMessage());
+        }
+    }
+    public static function completePickerToRecive(Order $order)
+    {
+        $sender = User::find($order->sender_id);
+        $staff = User::find($order->receive_id);
+
+        try {
+            if ($order->far_sender == true) {
+                if ($order->far > 0) {
+                    Balance::create([
+                        'credit' => $order->far,
+                        'debit' => 0,
+                        'order_id' => $order->id,
+                        'user_id' => $sender->id,
+                        'info' => 'أجور شحن  #' . $order->id,
+                        'type' => BalanceTypeEnum::CATCH->value,
+                        'is_complete' => true,
+                        'currency_id' => 1,
+                    ]);
+                    Balance::create([
+                        'credit' => 0,
+                        'debit' => $order->far,
+                        'order_id' => $order->id,
+                        'user_id' => $sender->id,
+
+                        'info' => 'دفع أجور شحن  #' . $order->id,
+                        'type' => BalanceTypeEnum::CATCH->value,
+                        'is_complete' => true,
+                        'currency_id' => 1,
+                    ]);
+                    Balance::create([
+                        'credit' => $order->far,
+                        'debit' => 0,
+                        'order_id' => $order->id,
+                        'user_id' => $staff->id,
+
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 1,
@@ -82,7 +167,7 @@ class HelperBalance
                         'debit' => 0,
                         'order_id' => $order->id,
                         'user_id' => $sender->id,
-                        'info' => 'أجور شحن  #' . $order->code,
+                        'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 2,
@@ -93,7 +178,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $sender->id,
 
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 2,
@@ -104,7 +189,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $staff->id,
 
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'currency_id' => 2,
@@ -136,7 +221,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $receive->id,
                         'currency_id' => 1,
-                        'info' => 'أجور شحن  #' . $order->code,
+                        'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -147,7 +232,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $receive->id,
                         'currency_id' => 1,
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -158,7 +243,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $staff->id,
                         'currency_id' => 1,
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -171,7 +256,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $receive->id,
                         'currency_id' => 2,
-                        'info' => 'أجور شحن  #' . $order->code,
+                        'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -182,7 +267,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $receive->id,
                         'currency_id' => 2,
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -193,7 +278,7 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $staff->id,
                         'currency_id' => 2,
-                        'info' => 'دفع أجور شحن  #' . $order->code,
+                        'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
@@ -207,7 +292,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $receive->id,
                     'currency_id' => 1,
-                    'info' => 'أجور تحصيل  #' . $order->code,
+                    'info' => 'أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
@@ -218,7 +303,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $receive->id,
                     'currency_id' => 1,
-                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
@@ -229,7 +314,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $staff->id,
                     'currency_id' => 1,
-                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
@@ -240,7 +325,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $sender->id,
                     'currency_id' => 1,
-                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                     'created_at'=>$order->created_at,
@@ -253,7 +338,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $receive->id,
                     'currency_id' => 2,
-                    'info' => 'أجور تحصيل  #' . $order->code,
+                    'info' => 'أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
@@ -264,7 +349,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $receive->id,
                     'currency_id' => 2,
-                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
@@ -275,7 +360,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $staff->id,
                     'currency_id' => 2,
-                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
@@ -286,7 +371,7 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $sender->id,
                     'currency_id' => 2,
-                    'info' => 'دفع أجور تحصيل  #' . $order->code,
+                    'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                     'created_at'=>$order->created_at,
@@ -406,32 +491,32 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $customer->id,
                         'currency_id' => 1,
-                        'info' => 'أجور شحن  #' . $order->code,
+                        'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
+                    /*
+                                       Balance::create([
+                                            'credit' => 0,
+                                            'debit' => $order->far,
+                                            'order_id' => $order->id,
+                                            'user_id' => $customer->id,
+                                            'currency_id' => 1,
+                                            'info' => 'دفع أجور شحن  #' . $order->co,
+                                            'type' => BalanceTypeEnum::CATCH->value,
+                                            'is_complete' => true,
+                                        ]);
 
-                    Balance::create([
-                        'credit' => 0,
-                        'debit' => $order->far,
-                        'order_id' => $order->id,
-                        'user_id' => $customer->id,
-                        'currency_id' => 1,
-                        'info' => 'دفع أجور شحن  #' . $order->code,
-                        'type' => BalanceTypeEnum::CATCH->value,
-                        'is_complete' => true,
-                    ]);
-
-                    Balance::create([
-                        'credit' => $order->far,
-                        'debit' => 0,
-                        'order_id' => $order->id,
-                        'user_id' => $staff->id,
-                        'currency_id' => 1,
-                        'info' => 'دفع أجور شحن  #' . $order->code,
-                        'type' => BalanceTypeEnum::CATCH->value,
-                        'is_complete' => true,
-                    ]);
+                                        Balance::create([
+                                            'credit' => $order->far,
+                                            'debit' => 0,
+                                            'order_id' => $order->id,
+                                            'user_id' => $customer->id,
+                                            'currency_id' => 1,
+                                            'info' => 'دفع أجور شحن  #' . $order->code,
+                                            'type' => BalanceTypeEnum::CATCH->value,
+                                            'is_complete' => true,
+                                        ]);*/
                 }
 //
                 if ($order->far_tr > 0) {
@@ -441,32 +526,32 @@ class HelperBalance
                         'order_id' => $order->id,
                         'user_id' => $customer->id,
                         'currency_id' => 2,
-                        'info' => 'أجور شحن  #' . $order->code,
+                        'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                     ]);
+                    /*
+                                       Balance::create([
+                                            'credit' => 0,
+                                            'debit' => $order->far_tr,
+                                            'order_id' => $order->id,
+                                            'user_id' => $customer->id,
+                                            'currency_id' => 2,
+                                            'info' => 'دفع أجور شحن  #' . $order->co,
+                                            'type' => BalanceTypeEnum::CATCH->value,
+                                            'is_complete' => true,
+                                        ]);
 
-                    Balance::create([
-                        'credit' => 0,
-                        'debit' => $order->far_tr,
-                        'order_id' => $order->id,
-                        'user_id' => $customer->id,
-                        'currency_id' => 2,
-                        'info' => 'دفع أجور شحن  #' . $order->code,
-                        'type' => BalanceTypeEnum::CATCH->value,
-                        'is_complete' => true,
-                    ]);
-
-                    Balance::create([
-                        'credit' => $order->far_tr,
-                        'debit' => 0,
-                        'order_id' => $order->id,
-                        'user_id' => $staff->id,
-                        'currency_id' => 2,
-                        'info' => 'دفع أجور شحن  #' . $order->code,
-                        'type' => BalanceTypeEnum::CATCH->value,
-                        'is_complete' => true,
-                    ]);
+                                        Balance::create([
+                                            'credit' => $order->far_tr,
+                                            'debit' => 0,
+                                            'order_id' => $order->id,
+                                            'user_id' => $customer->id,
+                                            'currency_id' => 2,
+                                            'info' => 'دفع أجور شحن  #' . $order->code,
+                                            'type' => BalanceTypeEnum::CATCH->value,
+                                            'is_complete' => true,
+                                        ]);*/
                 }
 //
             }
@@ -478,12 +563,12 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $customer->id,
                     'currency_id' => 1,
-                    'info' => 'أجور تحصيل  #' . $order->code,
+                    'info' => 'أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
 
-                Balance::create([
+              Balance::create([
                     'credit' => 0,
                     'debit' => $order->price,
                     'order_id' => $order->id,
@@ -493,7 +578,7 @@ class HelperBalance
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
-
+ /*
                 Balance::create([
                     'credit' => $order->price,
                     'debit' => 0,
@@ -503,7 +588,7 @@ class HelperBalance
                     'info' => 'دفع أجور تحصيل  #' . $order->code,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
-                ]);
+                ]);*/
 
 
             }
@@ -514,12 +599,12 @@ class HelperBalance
                     'order_id' => $order->id,
                     'user_id' => $customer->id,
                     'currency_id' => 2,
-                    'info' => 'أجور تحصيل  #' . $order->code,
+                    'info' => 'أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
 
-                Balance::create([
+               Balance::create([
                     'credit' => 0,
                     'debit' => $order->price_tr,
                     'order_id' => $order->id,
@@ -529,7 +614,7 @@ class HelperBalance
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                 ]);
-
+/*
                 Balance::create([
                     'credit' => $order->price_tr,
                     'debit' => 0,
@@ -539,7 +624,7 @@ class HelperBalance
                     'info' => 'دفع أجور تحصيل  #' . $order->code,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
-                ]);
+                ]);*/
 
 
             }
@@ -548,6 +633,18 @@ class HelperBalance
         } catch (\Exception | \Error $e) {
             throw new \Exception($e->getMessage());
         }
+    }
+
+    public static function getBalanceTypeArray(){
+        return [
+            'ارساليات'=>'ارساليات',
+            'محروقات'=>'محروقات',
+            'اصلاح الية '=>'اصلاح الية ',
+            'آجارات وعقارات'=>'آجارات وعقارات',
+            'انترنت واتصال'=>'انترنت واتصال',
+            'مصاريف مكتب'=>'مصاريف مكتب',
+
+        ];
     }
 
 }

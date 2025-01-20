@@ -70,7 +70,7 @@ class OrderResource extends Resource
                                 ])->label('نوع الطلب')->searchable()
                                     ->default(OrderTypeEnum::BRANCH->getLabel()),
 
-                                Forms\Components\Select::make('sender_id')->relationship('sender', 'name')->label('معرف المرسل')
+                                Forms\Components\Select::make('sender_id')->relationship('sender', 'name',fn($query)=>$query->active())->label('معرف المرسل')
                                     ->afterStateUpdated(function ($state, $set) {
                                         $user = User::find($state);
                                         if ($user) {
@@ -105,7 +105,7 @@ class OrderResource extends Resource
 
                     Forms\Components\Fieldset::make('معلومات المستلم')->schema([
                         Forms\Components\Grid::make()->schema([
-                            Forms\Components\Select::make('receive_id')->relationship('receive', 'name')->label('معرف المستلم')->searchable()->preload()
+                            Forms\Components\Select::make('receive_id')->relationship('receive', 'name',fn($query)=>$query->active())->label('معرف المستلم')->searchable()->preload()
                                 ->afterStateUpdated(function ($state, $set) {
                                     $user = User::find($state);
                                     if ($user) {
@@ -149,6 +149,9 @@ class OrderResource extends Resource
                                 ->relationship('weight', 'name')
                                 ->label
                                 ('فئة الوزن')->searchable()->preload(),
+                            Forms\Components\Grid::make(1)->schema([
+                                Forms\Components\DatePicker::make('shipping_date')->required()->label('تاريخ الشحنة'),
+                            ]),
                             Forms\Components\TextInput::make('note')->label('ملاحظات')
                         ]),
 
@@ -192,7 +195,7 @@ class OrderResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->poll(10)
+          //  ->poll(10)
             ->columns([
                 PopoverColumn::make('qr_url')
                     ->trigger('click')
@@ -249,9 +252,10 @@ class OrderResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
+              Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
+              Tables\Columns\TextColumn::make('created_at')->date('y-m-d')->label('تاريخ إنشاء الشحنة'),
 
-
-            ])->defaultSort('created_at', 'desc')
+          ])->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])
@@ -357,13 +361,22 @@ class OrderResource extends Resource
                         Forms\Components\Radio::make('status')->options([
                             //OrderStatusEnum::CANCELED->value => OrderStatusEnum::CANCELED->getLabel(),
                             OrderStatusEnum::RETURNED->value => OrderStatusEnum::RETURNED->getLabel(),
-                        ])->label('الحالة')->required()->default(OrderStatusEnum::CANCELED->value),
+                        ])->label('الحالة')->required()->default(OrderStatusEnum::RETURNED->value),
                         Forms\Components\Textarea::make('canceled_info')->label('سبب الإلغاء / الإعادة')
                     ])
                     ->action(function ($record, $data) {
                         DB::beginTransaction();
                         try {
-                            $record->update(['status' => $data['status'], 'canceled_info' => $data['canceled_info']]);
+                            $dataUpdate=['status' => $data['status'], 'canceled_info' => $data['canceled_info']];
+                            if($data['status']==OrderStatusEnum::RETURNED->value){
+                                $user=User::where([
+                                    'level'=>LevelUserEnum::BRANCH->value,
+                                    'branch_id' => $record->branch_source_id
+                                ])->first()?->id;
+                                $dataUpdate['given_id']=$user;
+                                $dataUpdate['returned_id']=$record->pick_id;
+                            }
+                            $record->update($dataUpdate);
                             DB::commit();
                             Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
                         } catch (\Exception | Error $e) {

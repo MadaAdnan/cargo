@@ -4,7 +4,10 @@ namespace App\Providers\Filament;
 
 use App\Filament\Branch\Widgets\TaskCompleteWidget;
 use App\Filament\Branch\Widgets\TaskWidget;
+use App\Http\Middleware\IsBlockedUserMiddleware;
 use App\Http\Middleware\RedirectToBranchMiddleware;
+use App\Http\Middleware\StopMiddleware;
+use App\Http\Middleware\StopPanelMiddleware;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -63,10 +66,14 @@ class BranchPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                StopMiddleware::class,
+             //StopPanelMiddleware::class
             ])
             ->authMiddleware([
                 Authenticate::class,
+                IsBlockedUserMiddleware::class,
 //                RedirectToBranchMiddleware::class
+
             ]);
     }
 }

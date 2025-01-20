@@ -4,7 +4,10 @@ namespace App\Providers\Filament;
 
 use App\Filament\User\Auth\CustomLogin;
 use App\Filament\User\Auth\CustomReg;
+use App\Http\Middleware\IsBlockedUserMiddleware;
 use App\Http\Middleware\RedirectToUserMiddleware;
+use App\Http\Middleware\StopMiddleware;
+use App\Http\Middleware\StopPanelMiddleware;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -69,9 +72,11 @@ class UserPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                StopPanelMiddleware::class
             ])
             ->authMiddleware([
                 Authenticate::class,
+                IsBlockedUserMiddleware::class,
 //                RedirectToUserMiddleware::class
             ])
             ->databaseNotifications();

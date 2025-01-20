@@ -6,7 +6,10 @@ use App\Filament\Admin\Widgets\BalanceCustomerView;
 use App\Filament\Admin\Widgets\BalanceEmployeeView;
 use App\Filament\Admin\Widgets\BalanceView;
 use App\Filament\Admin\Widgets\OrdersOverview;
+use App\Http\Middleware\IsBlockedUserMiddleware;
 use App\Http\Middleware\RedirectToPanelMiddleware;
+use App\Http\Middleware\StopMiddleware;
+use App\Http\Middleware\StopPanelMiddleware;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -23,7 +26,9 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
+
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
+
 use Rupadana\ApiService\ApiServicePlugin;
 class AdminPanelProvider extends PanelProvider
 {
@@ -34,10 +39,12 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->plugins([
+
                 
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
                 FilamentApexChartsPlugin::make(),
                 ApiServicePlugin::make(),
+
                 FilamentEditProfilePlugin::make()
                     ->shouldShowDeleteAccountForm(false)
                     ->shouldShowAvatarForm()
@@ -79,9 +86,12 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+               //  StopPanelMiddleware::class
+
             ])
             ->authMiddleware([
                 Authenticate::class,
+IsBlockedUserMiddleware::class
 //                RedirectToPanelMiddleware::class
             ]);
     }

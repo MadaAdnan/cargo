@@ -23,6 +23,7 @@ use Filament\Tables\Table;
 
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Exception;
 
@@ -147,12 +148,14 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')->label('الرقم التسلسلي')->searchable()->sortable(),
+
                 Tables\Columns\TextColumn::make('name')->label('الاسم')->searchable(),
                 Tables\Columns\SelectColumn::make('status')->label('حالة المستخدم')
                     ->options([
-                        ActivateStatusEnum::ACTIVE->value=>ActivateStatusEnum::ACTIVE->getLabel(),
-                        ActivateStatusEnum::PENDING->value=>ActivateStatusEnum::PENDING->getLabel(),
-                        ActivateStatusEnum::BLOCK->value=>ActivateStatusEnum::BLOCK->getLabel()
+                        ActivateStatusEnum::ACTIVE->value => ActivateStatusEnum::ACTIVE->getLabel(),
+                        ActivateStatusEnum::PENDING->value => ActivateStatusEnum::PENDING->getLabel(),
+                        ActivateStatusEnum::BLOCK->value => ActivateStatusEnum::BLOCK->getLabel()
 
                     ]),
                 Tables\Columns\TextColumn::make('level')->badge()
@@ -163,6 +166,11 @@ class UserResource extends Resource
 
                 Tables\Columns\TextColumn::make('branch.name')->label('فرع')->sortable(),
                 Tables\Columns\TextColumn::make('city.name')->label('المدينة')->sortable(),
+                //H: added currency report for users
+                Tables\Columns\TextColumn::make('total_balance')->label('الرصيد USD'),
+                Tables\Columns\TextColumn::make('pending_balance')->label('الرصيد USD قيد التحصيل'),
+                Tables\Columns\TextColumn::make('total_balance_tr')->label('الرصيد TRY'),
+                Tables\Columns\TextColumn::make('total_balance_tr_pending')->label('الرصيد TRYقيد التحصيل')
 
 
             ])->defaultSort('created_at', 'desc')
@@ -170,7 +178,13 @@ class UserResource extends Resource
 
             ])
             ->actions([
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('balance_usd')->url(fn($record) => UserResource::getUrl('balanceUsd', ['record' => $record]))->label('كشف حساب دولار'),
+                    Tables\Actions\Action::make('balance_tr')->url(fn($record) => UserResource::getUrl('balanceTr', ['record' => $record]))->label('كشف حساب تركي'),
+                    Tables\Actions\Action::make('balance_usd_pending')->url(fn($record) => UserResource::getUrl('balancePendingUsd', ['record' => $record, 'currency' => 1,'pending'=>1]))->label('كشف حساب دولار قيد التحصيل'),
+                    Tables\Actions\Action::make('balance_tr_pending')->url(fn($record) => UserResource::getUrl('balancePendingTR', ['record' => $record, 'currency' => 2,'pending'=>1]))->label('كشف حساب تركي قيد التحصيل'),
 
+                ])->label('كشف حساب'),
                 Tables\Actions\ViewAction::make(),
 
                 Tables\Actions\EditAction::make(),
@@ -184,7 +198,7 @@ class UserResource extends Resource
                 ])->action(function ($record, $data) {
 
                     if ($data['credit'] > 0) {
-                        \DB::beginTransaction();
+                        DB::beginTransaction();
                         try {
                             Balance::create([
                                 'user_id' => $record->id,
@@ -204,11 +218,11 @@ class UserResource extends Resource
                                 'type' => BalanceTypeEnum::CATCH->value,
                                 'total' => auth()->user()->total_balance - $data['credit'],
                             ]);
-                            \DB::commit();
+                            DB::commit();
                             Notification::make('success')->success()->title('نجاح العملية')->body("تم إضافة رصيد إلى المستخدم {$record->full_name}")->send();
 
                         } catch (Exception | \Error $e) {
-                            \DB::rollBack();
+                            DB::rollBack();
                             Notification::make('success')->danger()->title('فشل العملية')->body($e->getMessage())->send();
 
                         }
@@ -242,6 +256,10 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
+            'balanceTr' => Pages\BalancesTr::route('/{record}/balancesTr'),
+           'balanceUsd' => Pages\BalancesUsd::route('/{record}/balancesUsd'),
+            'balancePendingUsd' => Pages\BalancesUsd::route('/{record}/balancesPendingUsd'),
+            'balancePendingTR' => Pages\BalancesPendingTr::route('/{record}/balancesPendingTr'),
         ];
     }
 }

@@ -16,15 +16,15 @@ use App\Filament\Admin\Resources\UserResource;
 */
 
 Route::get('/', function () {
-
+    return view('welcome');
 // 7185 - 7293
-
+return "<p>الموقع متوقف للصيانة</p>". "<a href='https://guba-sy.com'>إنتقل للموقع البديل</a>";
 
     //$users=\App\Models\User::where('level',\App\Enums\LevelUserEnum::USER->value)->pluck('id')->toArray();
    // \App\Models\Balance::where('is_complete',false)->whereIn('user_id',$users)->delete();
 
-    return view('welcome');
-});
+
+})->name('welcome');
 
 Route::get('/ship', [OrderStatusController::class, 'index']);
 

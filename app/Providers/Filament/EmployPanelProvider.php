@@ -6,9 +6,12 @@ use App\Filament\Employ\Widgets\AgencyWidget;
 use App\Filament\Employ\Widgets\BalanceView;
 use App\Filament\Employ\Widgets\TaskCompleteWidget;
 use App\Filament\Employ\Widgets\TaskWidget;
+use App\Http\Middleware\IsBlockedUserMiddleware;
 use App\Http\Middleware\IsBranchMiddleware;
 use App\Http\Middleware\RedirectToEmployMiddleware;
 use App\Http\Middleware\RedirectToPanelMiddleware;
+use App\Http\Middleware\StopMiddleware;
+use App\Http\Middleware\StopPanelMiddleware;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -71,10 +74,13 @@ class EmployPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                StopMiddleware::class,
+                StopPanelMiddleware::class
             ])
             ->authMiddleware([
                 Authenticate::class,
-                IsBranchMiddleware::class,
+                //IsBranchMiddleware::class,
+                IsBlockedUserMiddleware::class,
 //                RedirectToEmployMiddleware::class
 
             ]);

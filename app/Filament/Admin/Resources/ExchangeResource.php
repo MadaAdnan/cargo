@@ -42,9 +42,9 @@ class ExchangeResource extends Resource
                     Forms\Components\Radio::make('currency_id')->options([
                         1 => ' من الدولار إلى التركي',
                         2 => 'من التركي إلى الدولار',
-                    ])->label('نوع التحويل')->required(),
-                    Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required(),
-                    Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->numeric()->required(),
+                    ])->label('نوع التحويل')->required()->default(1)->live(),
+                    Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required()->default(1)->live(),
+                    Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->numeric()->required()->default(1)->live(),
                 ])
 
             ]);
@@ -80,9 +80,10 @@ class ExchangeResource extends Resource
                     )->label('الحالة')
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->visible(fn($record) => $record->status === 'pending'),
+                Tables\Actions\EditAction::make()->visible(fn($record) => $record->status === 'pending' && auth()->id()==62),
 
-                Tables\Actions\Action::make('exchange')->action(function ($record) {
+                Tables\Actions\Action::make('exchange')
+                    ->action(function ($record) {
                     \DB::beginTransaction();
                     try {
                         $amountTarget = 0;
@@ -130,8 +131,9 @@ class ExchangeResource extends Resource
                     }
 
                 })->label('قبول التحويل')
-                    ->requiresConfirmation()->visible(fn($record) => $record->status === 'pending')->button(),
-                Tables\Actions\DeleteAction::make()->visible(fn($record) => $record->status === 'pending'),
+                    ->requiresConfirmation()
+                    ->visible(fn($record) => $record->status === 'pending'&& auth()->id()==62)->button(),
+                Tables\Actions\DeleteAction::make()->visible(fn($record) => $record->status === 'pending' && auth()->id()==62),
 
 
             ])

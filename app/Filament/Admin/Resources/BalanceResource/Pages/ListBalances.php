@@ -14,6 +14,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class ListBalances extends ListRecords
 {
@@ -31,7 +32,7 @@ class ListBalances extends ListRecords
                 ->form([
 
                     Grid::make(3)->schema([
-                        Select::make('user_id')->options(User::get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                        Select::make('user_id')->options(User::active()->hideGlobal()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                             ->label('المستخدم'),
                         TextInput::make('value')->required()->numeric()->label('القيمة'),
                         TextInput::make('info')->label('البيان'),
@@ -43,7 +44,7 @@ class ListBalances extends ListRecords
                         Notification::make('error')->title('فشل العملية')->body('يرجى إدخال قيمة صالحة')->danger()->send();
                         return;
                     }
-                    \DB::beginTransaction();
+                    DB::beginTransaction();
                     $user = User::find($data['user_id']);
                     if($user?->id ==auth()->id()){
                         Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
@@ -71,11 +72,11 @@ class ListBalances extends ListRecords
                             'is_complete' => true,
                             'customer_name' => $user?->name??$user?->id,
                         ]);
-                        \DB::commit();
+                        DB::commit();
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
                         $this->redirect(BalanceResource::getUrl('view',['record'=>$balance->id]));
                     } catch (\Exception | \Error $e) {
-                        \DB::rollBack();
+                        DB::rollBack();
                         Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
                     }
 
@@ -87,7 +88,7 @@ class ListBalances extends ListRecords
             Actions\Action::make('create_balance_debit')
                 ->form([
                     Grid::make(3)->schema([
-                        Select::make('user_id')->options(User::get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                        Select::make('user_id')->options(User::active()->hideGlobal()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                             ->label('المستخدم'),
                         TextInput::make('value')->required()->numeric()->label('القيمة'),
                         TextInput::make('info')->label('بيان'),
@@ -95,7 +96,7 @@ class ListBalances extends ListRecords
                 ])
                 //
                 ->action(function ($data) {
-                    \DB::beginTransaction();
+                    DB::beginTransaction();
                     if ($data['value'] <= 0) {
                         Notification::make('error')->title('فشل العملية')->body('يرجى إدخال قيمة صالحة')->danger()->send();
                         return;
@@ -127,11 +128,11 @@ class ListBalances extends ListRecords
                             'customer_name' => $user?->name??$user?->id,
                         ]);
 
-                        \DB::commit();
+                        DB::commit();
                         Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
                         $this->redirect(BalanceResource::getUrl('view',['record'=>$balance->id]));
                     } catch (\Exception | \Error $e) {
-                        \DB::rollBack();
+                        DB::rollBack();
                         Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
                     }
 
@@ -148,7 +149,7 @@ class ListBalances extends ListRecords
                         Repeater::make('quid')->schema([
 
                             Grid::make(3)->schema([
-                                Select::make('user_id')->options(User::get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                                Select::make('user_id')->options(User::active()->hideGlobal()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                                     ->label('المستخدم'),
                                 TextInput::make('value')->required()->numeric()->label('القيمة'),
                                 TextInput::make('info')->label('بيان'),
@@ -158,7 +159,7 @@ class ListBalances extends ListRecords
                     //
                     ->action(function ($data) {
 
-                        \DB::beginTransaction();
+                        DB::beginTransaction();
                         try {
                             foreach ($data['quid'] as $user) {
                                 Balance::create([
@@ -172,10 +173,10 @@ class ListBalances extends ListRecords
                                     'customer_name' => 'بداية المدة'
                                 ]);
                             }
-                            \DB::commit();
+                            DB::commit();
                             Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
                         } catch (\Exception | \Error $e) {
-                            \DB::rollBack();
+                            DB::rollBack();
                             Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
                         }
 
@@ -190,7 +191,7 @@ class ListBalances extends ListRecords
                         Repeater::make('quid')->schema([
 
                             Grid::make()->schema([
-                                Select::make('user_id')->options(User::get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                                Select::make('user_id')->options(User::active()->hideGlobal()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                                     ->label('المستخدم'),
                                 TextInput::make('value')->required()->numeric()->label('القيمة'),
                                 TextInput::make('info')->label('بيان'),
@@ -199,7 +200,7 @@ class ListBalances extends ListRecords
                     ])
                     //
                     ->action(function ($data) {
-                        \DB::beginTransaction();
+                        DB::beginTransaction();
                         try {
                             foreach ($data['quid'] as $user) {
                                 Balance::create([
@@ -213,10 +214,10 @@ class ListBalances extends ListRecords
                                     'customer_name' => 'بداية المدة'
                                 ]);
                             }
-                            \DB::commit();
+                            DB::commit();
                             Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
                         } catch (\Exception | \Error $e) {
-                            \DB::rollBack();
+                            DB::rollBack();
                             Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
                         }
 
@@ -235,7 +236,7 @@ class ListBalances extends ListRecords
 
 
                         Grid::make(3)->schema([
-                            Select::make('user_id')->options(User::accounts()->where('currency_id', 1)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                            Select::make('user_id')->options(User::active()->hideGlobal()->accounts()->where('currency_id', 1)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                                 ->label('المستخدم'),
                             TextInput::make('value')->required()->numeric()->label('القيمة'),
                             TextInput::make('info')->label('بيان'),
@@ -244,7 +245,7 @@ class ListBalances extends ListRecords
                     ])
                     //
                     ->action(function ($data) {
-                        \DB::beginTransaction();
+                        DB::beginTransaction();
                         try {
                             $user = User::find($data['user_id']);
                             if($user?->id ==auth()->id()){
@@ -272,10 +273,10 @@ class ListBalances extends ListRecords
                                 'customer_name' => $user?->name??$user->id,
                             ]);
 
-                            \DB::commit();
+                            DB::commit();
                             Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
                         } catch (\Exception | \Error $e) {
-                            \DB::rollBack();
+                            DB::rollBack();
                             Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
                         }
 
@@ -287,7 +288,7 @@ class ListBalances extends ListRecords
                 Actions\Action::make('create_balance_account_debit')
                     ->form([
                         Grid::make()->schema([
-                            Select::make('user_id')->options(User::accounts()->where('currency_id', 1)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+                            Select::make('user_id')->options(User::active()->hideGlobal()->accounts()->where('currency_id', 1)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
                                 ->label('المستخدم'),
                             TextInput::make('value')->required()->numeric()->label('القيمة'),
                             TextInput::make('info')->label('بيان'),
@@ -296,7 +297,7 @@ class ListBalances extends ListRecords
                     ])
                     //
                     ->action(function ($data) {
-                        \DB::beginTransaction();
+                        DB::beginTransaction();
                         try {
                             if (auth()->user()->total_balance < $data['value'] && !auth()->user()->hasRole('super_admin')) {
                                 Notification::make('error')->title('فشل العملية')->body('لا تملك رصيد كافي')->danger()->send();
@@ -329,10 +330,10 @@ class ListBalances extends ListRecords
                                 'customer_name' => $user?->name??$user?->id,
                             ]);
 
-                            \DB::commit();
+                            DB::commit();
                             Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
                         } catch (\Exception | \Error $e) {
-                            \DB::rollBack();
+                            DB::rollBack();
                             Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
                         }
 

@@ -11,6 +11,7 @@ use App\Filament\Admin\Resources\UserResource\Pages;
 use App\Filament\Admin\Resources\UserResource\RelationManagers;
 use App\Enums\JobUserEnum;
 use App\Enums\LevelUserEnum;
+use App\Helper\HelperBalance;
 use App\Models\Balance;
 use App\Models\Branch;
 use App\Enums\ActivateStatusEnum;
@@ -209,8 +210,11 @@ class UserResource extends Resource
                 //H: added currency report for users
                 Tables\Columns\TextColumn::make('total_balance')->label('الرصيد USD'),
                 Tables\Columns\TextColumn::make('pending_balance')->label('الرصيد USD قيد التحصيل'),
+                Tables\Columns\TextColumn::make('username')->formatStateUsing(fn($record)=>(double)$record->total_balance+(double)$record->pending_balance)->label('محصلة USD'),
+
                 Tables\Columns\TextColumn::make('total_balance_tr')->label('الرصيد TRY'),
-                Tables\Columns\TextColumn::make('total_balance_tr_pending')->label('الرصيد TRYقيد التحصيل')
+                Tables\Columns\TextColumn::make('total_balance_tr_pending')->label('الرصيد TRYقيد التحصيل'),
+     Tables\Columns\TextColumn::make('num_id')->formatStateUsing(fn($record)=>(double)$record->total_balance_tr+(double)$record->total_balance_tr_pending)->label('محصلة TRY'),
 
             ])->defaultSort('created_at', 'desc')
             ->filters([
@@ -234,7 +238,97 @@ class UserResource extends Resource
                     Tables\Actions\Action::make('balance_tr')->url(fn($record) => UserResource::getUrl('balanceTr', ['record' => $record]))->label('كشف حساب تركي'),
                     Tables\Actions\Action::make('balance_usd_pending')->url(fn($record) => UserResource::getUrl('balancePendingUsd', ['record' => $record, 'currency' => 1,'pending'=>1]))->label('كشف حساب دولار قيد التحصيل'),
                     Tables\Actions\Action::make('balance_tr_pending')->url(fn($record) => UserResource::getUrl('balancePendingTR', ['record' => $record, 'currency' => 2,'pending'=>1]))->label('كشف حساب تركي قيد التحصيل'),
+Tables\Actions\Action::make('request')->form([
+    Forms\Components\Radio::make('currency_id')->options([
+        1 => ' من الدولار إلى التركي',
+        2 => 'من التركي إلى الدولار',
+    ])
+        ->label('نوع التحويل')->default(1)->required()->afterStateUpdated(function ($get,$set) {
+            if ($get('currency_id') == 1) {
+                $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
+                $set('result',$result);
+            } elseif ($get('currency_id') == 2) {
+                try{
+                    $result=  HelperBalance::formatNumber((double)$get('amount') / (double)$get('exchange'));
+                }catch (\Exception| \DivisionByZeroError $e){
+                    $result=0;
+                }
+                $set('result',$result);
+            }
+        })->live()->debounce(1000),
+    Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required()->default(1)->afterStateUpdated(function ($get,$set) {
+        if ($get('currency_id') == 1) {
+            $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
+            $set('result',$result);
+        } elseif ($get('currency_id') == 2) {
+            try{
+                $result=  HelperBalance::formatNumber((double)$get('amount') / (double)$get('exchange'));
+            }catch (\Exception| \DivisionByZeroError $e){
+                $result=0;
+            }
+            $set('result',$result);
+        }
+    })->live()->debounce(1000),
+    Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->numeric()->default(1)->required()->afterStateUpdated(function ($get,$set) {
+        if ($get('currency_id') == 1) {
+            $result= HelperBalance::formatNumber((double)$get('amount') * (double)$get('exchange'));
+            $set('result',$result);
+        } elseif ($get('currency_id') == 2) {
+            try{
+                $result=  HelperBalance::formatNumber((double)$get('amount') / (double)$get('exchange'));
+            }catch (\Exception $e){
+                $result=0;
+            }
+            $set('result',$result);
+        }
+    })->live()->debounce(1000),
+    Forms\Components\TextInput::make('result')->dehydrated(false)->label('الإجمالي')->numeric()->required(),
+])->action(function($record,$data){
+    if ($data['currency_id'] == 1) {
+        $currency=2;
+        $result= HelperBalance::formatNumber((double)$data['amount'] * (double)$data['exchange']);
 
+    } elseif ($data['currency_id'] == 2) {
+        $currency=1;
+        try{
+            $result=  HelperBalance::formatNumber((double)$data['amount'] / (double)$data['exchange']);
+        }catch (\Exception| \DivisionByZeroError $e){
+            $result=0;
+        }
+
+    }
+    $uuid=\Str::uuid();
+  \DB::beginTransaction();
+  try{
+      Balance::create([
+          'user_id'=>$record->id,
+          'debit'=>$data['amount'],
+          'currency_id'=>$data['currency_id'],
+          'credit'=>0,
+          'is_complete'=>true,
+          'pending'=>false,
+          'uuid'=>$uuid,
+          'info'=>'تصريف عملة من قبل المدير'
+
+      ]);
+      Balance::create([
+          'user_id'=>$record->id,
+          'credit'=>$result,
+          'currency_id'=>$currency,
+          'debit'=>0,
+          'is_complete'=>true,
+          'pending'=>false,
+          'uuid'=>$uuid,
+          'info'=>'تصريف عملة من قبل المدير'
+
+      ]);
+      \DB::commit();
+      Notification::make('success')->success()->title('نجاح العملية')->body('تم تصريف العملة بنجاح')->send();
+  }catch (\Exception |\Error $e){
+      \DB::rollBack();
+      Notification::make('success')->danger()->title('فشل العملية')->body($e->getMessage())->send();
+  }
+})->label('تصريف عملة')
                 ])->label('كشف حساب'),
                 Tables\Actions\ViewAction::make(),
 

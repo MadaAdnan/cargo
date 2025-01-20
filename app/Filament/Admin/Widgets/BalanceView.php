@@ -12,7 +12,7 @@ class BalanceView extends BaseWidget
     protected static ?string $pollingInterval = '10s';
     protected int|string|array $columnSpan = 4;
 
-
+protected ?string $heading='رصيد صندوق ' ;
 
 
     protected function getStats(): array
