@@ -17,6 +17,7 @@ use App\Models\SuccessOrder;
 use App\Models\User;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Carbon\Carbon;
+use Filament\Actions\CreateAction;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -685,6 +686,7 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
 
             ])
             ->headerActions([
+                CreateAction::make(),
                 ExportAction::make()->exports([
                     ExcelExport::make()->withChunkSize(100)->fromTable()
                 ])
