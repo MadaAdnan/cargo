@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\TernaryFilter;
@@ -80,6 +81,17 @@ class TaskResource extends Resource
 
             ])
             ->actions([
+                Tables\Actions\Action::make('complete')->label('إتمام')->button()->requiresConfirmation()->action(fn($record) => $record->update(['is_pending' => true]))
+                    ->visible(fn($record)=>$record->user_id===auth()->id() || $record->delegate_id==auth()->id()),
+                Tables\Actions\Action::make('transfer')->label('توكيل موظف')->button()
+                    ->form([
+                        Forms\Components\Select::make('delegate_id')->options(User::where('level', LevelUserEnum::STAFF->value)->orWhere('level', LevelUserEnum::BRANCH->value)->pluck('name', 'id'))->label('الموظف') ->searchable(),
+                    ])
+                    ->action(function($record, $data) {
+                        $record->update(['delegate_id' => $data['delegate_id']]);
+                        Notification::make('success')->title('نجاح العملية')->body('تم توكيل الموظف بنجاح')->success()->send();
+
+                    })->visible(fn($record)=>$record->delegate_id===null && $record->user_id==auth()->id()),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

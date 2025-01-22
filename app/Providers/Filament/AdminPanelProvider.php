@@ -30,6 +30,7 @@ use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 
 use Rupadana\ApiService\ApiServicePlugin;
+
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -40,10 +41,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->plugins([
 
-                
+
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
                 FilamentApexChartsPlugin::make(),
-                ApiServicePlugin::make(),
+
 
                 FilamentEditProfilePlugin::make()
                     ->shouldShowDeleteAccountForm(false)
@@ -75,7 +76,7 @@ class AdminPanelProvider extends PanelProvider
                 BalanceCustomerView::class
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
-           ->databaseNotifications()
+            ->databaseNotifications()
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -86,12 +87,12 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-               //  StopPanelMiddleware::class
+                //  StopPanelMiddleware::class
 
             ])
             ->authMiddleware([
                 Authenticate::class,
-IsBlockedUserMiddleware::class
+                IsBlockedUserMiddleware::class
 //                RedirectToPanelMiddleware::class
             ]);
     }
