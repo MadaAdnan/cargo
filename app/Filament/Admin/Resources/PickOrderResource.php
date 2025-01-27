@@ -396,6 +396,12 @@ public static function shouldRegisterNavigation(): bool
 
                     default => ['style' => ''],
                 }),
+                Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
+                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ إنشاء الشحنة')->extraCellAttributes(fn(Model $record) => match ($record->color) {
+                    'green' => ['style' => 'background-color:#55FF88;'],
+
+                    default => ['style' => ''],
+                }),
                 Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
 
 
@@ -476,12 +482,6 @@ public static function shouldRegisterNavigation(): bool
                 Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record) => 'موظف الإلتقاط : ' . $record->pick?->name)
                     ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل'),
                 Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
-                Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
-                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ إنشاء الشحنة')->extraCellAttributes(fn(Model $record) => match ($record->color) {
-                    'green' => ['style' => 'background-color:#55FF88;'],
-
-                    default => ['style' => ''],
-                })
 
 
             ])->defaultSort('created_at', 'desc')
