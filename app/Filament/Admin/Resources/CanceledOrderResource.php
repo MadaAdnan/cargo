@@ -28,6 +28,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
@@ -623,5 +624,12 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
             'create' => Pages\CreateCanceledOrder::route('/create'),
             'edit' => Pages\EditCanceledOrder::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return Cache::remember('navigation_badge_count_canceled_order', now()->addDay(), function () {
+            return static::getModel()::where('status', OrderStatusEnum::CANCELED)->count();
+        });
     }
 }
