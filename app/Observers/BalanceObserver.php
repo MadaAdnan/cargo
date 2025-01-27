@@ -3,6 +3,8 @@
 namespace App\Observers;
 
 use App\Models\Balance;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class BalanceObserver
 {
@@ -33,6 +35,9 @@ class BalanceObserver
                         ->where('balances.currency_id',$balance->currency_id)
                         ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0 - $balance->credit + $balance->debit;
             }
+        }
+        if (Schema::hasColumn('balances', 'created_by')) {
+            $balance->created_by = Auth::user()->id;
         }
         $balance->save();
     }

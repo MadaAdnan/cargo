@@ -120,6 +120,7 @@ public static function canAccess(): bool
                 Tables\Columns\TextColumn::make('order.id')->description(fn($record)=>$record->order?->code)->label('الطلب')->searchable(),
                 Tables\Columns\TextColumn::make('order.sender.name')->label('المرسل')->description(fn($record) => $record->order?->general_sender_name != null ? "{$record->order->general_sender_name}" : "")->searchable(),
                 Tables\Columns\TextColumn::make('order.receive.name')->label('المستلم')->description(fn($record) => $record->order?->global_name != null ? " {$record->order->global_name}" : ""),
+                Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
                 Tables\Columns\TextColumn::make('order.cityTarget.name')->label('المدينة'),
                 Tables\Columns\TextColumn::make('pending')->label('النوع')->formatStateUsing(fn($record) => $record->pending==true?"قيد التحصيل" : "")->color('danger'),
 
