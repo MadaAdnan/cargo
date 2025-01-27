@@ -329,6 +329,10 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                         ])->visible(fn($context) => $context === 'create'),
                     ])->columns(4),
 
+                    Forms\Components\Fieldset::make('كود الشحنة')->schema([
+                        Forms\Components\TextInput::make('qr_code')->label('الكود')
+                    ])->columns(1)
+
 
                 ])->collapsible(true)->collapsed(false),
 

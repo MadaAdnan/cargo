@@ -43,9 +43,9 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
 
     protected static ?string $label = 'شحنة منتهية';
     protected static ?string $navigationLabel = 'شحنات منتهية';
-    protected static ?string $navigationGroup='الشحنات';
-    protected static ?int $navigationSort=4;
-    protected static ?string $slug='canceled-orders';
+    protected static ?string $navigationGroup = 'الشحنات';
+    protected static ?int $navigationSort = 4;
+    protected static ?string $slug = 'canceled-orders';
 
     public static function getPermissionPrefixes(): array
     {
@@ -80,7 +80,8 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
     }
 
     public static function canDeleteAny(): bool
-    {return auth()->user()->hasPermissionTo('delete_canceled::order');
+    {
+        return auth()->user()->hasPermissionTo('delete_canceled::order');
     }
 
     public static function form(Form $form): Form
@@ -98,7 +99,7 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
 
 
                 Forms\Components\Section::make('معلومات الطلب')->schema([
-//                    SpatieMediaLibraryFileUpload::make('images')->collection('images')->label('أرفق صور')->imageEditor(),
+                    //                    SpatieMediaLibraryFileUpload::make('images')->collection('images')->label('أرفق صور')->imageEditor(),
                     Forms\Components\Fieldset::make('المرسل')->schema([
                         Forms\Components\Grid::make(2)
                             ->schema([
@@ -123,102 +124,99 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
                                             $set('sender_address', $user?->address);
                                             $set('city_source_id', $user?->city_id);
                                             $set('pick_id', $branch);
-
-
                                         }
                                     })->live()->visible(fn($context) => $context === 'create')
                                     ->searchable()
                                     ->noSearchResultsMessage('الاسم غير موجود')
-                                    ->suffixAction(Action::make('copyCostToPrice')->label('إضافة مستخدم جديد')
-                                        ->icon('fas-user-plus')
-                                        ->form(function () {
-                                            $max = User::max('id') + 1;
+                                    ->suffixAction(
+                                        Action::make('copyCostToPrice')->label('إضافة مستخدم جديد')
+                                            ->icon('fas-user-plus')
+                                            ->form(function () {
+                                                $max = User::max('id') + 1;
 
-                                            return [
-                                                Forms\Components\Grid::make()->schema([
-                                                    Forms\Components\TextInput::make('name')->label('الاسم')->required(),
-                                                    Forms\Components\TextInput::make('email')->label('البريد الالكتروني')->email()->required()->unique(table: 'users', column: 'email')->default('user' . $max . '@gmail.com'),
-                                                ]),
-                                                Forms\Components\Grid::make()->schema([
-                                                    Forms\Components\TextInput::make('username')->label('username')
-                                                        ->unique(table: 'users', column: 'username')->required()->default('user' . $max),
-                                                    Forms\Components\TextInput::make('password')->password()->dehydrateStateUsing(fn($state) => Hash::make($state))
-                                                        ->label('كلمة المرور')->revealable()->required()->default(12345),
+                                                return [
+                                                    Forms\Components\Grid::make()->schema([
+                                                        Forms\Components\TextInput::make('name')->label('الاسم')->required(),
+                                                        Forms\Components\TextInput::make('email')->label('البريد الالكتروني')->email()->required()->unique(table: 'users', column: 'email')->default('user' . $max . '@gmail.com'),
+                                                    ]),
+                                                    Forms\Components\Grid::make()->schema([
+                                                        Forms\Components\TextInput::make('username')->label('username')
+                                                            ->unique(table: 'users', column: 'username')->required()->default('user' . $max),
+                                                        Forms\Components\TextInput::make('password')->password()->dehydrateStateUsing(fn($state) => Hash::make($state))
+                                                            ->label('كلمة المرور')->revealable()->required()->default(12345),
 
-                                                ]),
+                                                    ]),
 
-                                                Forms\Components\Grid::make(2) // تقسيم الحقول إلى صفين
-                                                ->schema([
-                                                    Forms\Components\TextInput::make('phone_number')
-                                                        ->label('رقم الهاتف')
-                                                        ->placeholder('1234567890')
-                                                        ->numeric() // التأكد أن الحقل يقبل الأرقام فقط
-                                                        ->maxLength(15)
-                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
-                                                        ->tel()
-                                                        ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),// تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-                                                    //H: Made phone number not required to complete account registration while creating an order
-                                                    //->required(),
+                                                    Forms\Components\Grid::make(2) // تقسيم الحقول إلى صفين
+                                                        ->schema([
+                                                            Forms\Components\TextInput::make('phone_number')
+                                                                ->label('رقم الهاتف')
+                                                                ->placeholder('1234567890')
+                                                                ->numeric() // التأكد أن الحقل يقبل الأرقام فقط
+                                                                ->maxLength(15)
+                                                                ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
+                                                                ->tel()
+                                                                ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                                            //H: Made phone number not required to complete account registration while creating an order
+                                                            //->required(),
 
-                                                    Forms\Components\TextInput::make('country_code')
-                                                        ->label('رمز الدولة')
-                                                        ->placeholder('963')
-                                                        ->prefix('+')
-                                                        ->maxLength(3)
-                                                        ->numeric()
-                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-                                                    // تحديد الحد الأقصى للأرقام (بما في ذلك +)
-                                                    //H: Made phone number not required to complete account registration while creating an order
-                                                    //->required(),
-                                                ]),
-                                                Forms\Components\Grid::make()->schema([
-                                                    Forms\Components\Textarea::make('address')->label('العنوان التفصيلي'),
-                                                    Forms\Components\Select::make('city_id')->options(City::where('is_main', false)->pluck
-                                                    ('name', 'id'))->required()
-                                                        ->label('البلدة/البلدة')
-                                                        ->searchable(),
+                                                            Forms\Components\TextInput::make('country_code')
+                                                                ->label('رمز الدولة')
+                                                                ->placeholder('963')
+                                                                ->prefix('+')
+                                                                ->maxLength(3)
+                                                                ->numeric()
+                                                                ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                                            // تحديد الحد الأقصى للأرقام (بما في ذلك +)
+                                                            //H: Made phone number not required to complete account registration while creating an order
+                                                            //->required(),
+                                                        ]),
+                                                    Forms\Components\Grid::make()->schema([
+                                                        Forms\Components\Textarea::make('address')->label('العنوان التفصيلي'),
+                                                        Forms\Components\Select::make('city_id')->options(City::where('is_main', false)->pluck('name', 'id'))->required()
+                                                            ->label('البلدة/البلدة')
+                                                            ->searchable(),
 
-                                                ]),
+                                                    ]),
 
-                                                Forms\Components\Grid::make()->schema([
-                                                    Forms\Components\TextInput::make('full_name')->label('الاسم الكامل'),
-                                                    Forms\Components\DatePicker::make('birth_date')->label('تاريخ الميلاد')
-                                                        ->format('Y-m-d')->default(now()),
+                                                    Forms\Components\Grid::make()->schema([
+                                                        Forms\Components\TextInput::make('full_name')->label('الاسم الكامل'),
+                                                        Forms\Components\DatePicker::make('birth_date')->label('تاريخ الميلاد')
+                                                            ->format('Y-m-d')->default(now()),
 
-                                                ]),
+                                                    ]),
 
 
-                                            ];
-                                        })
-                                        ->action(function ($set, $data) {
-                                            try {
-                                                $data['level'] = LevelUserEnum::USER->value;
-                                                $data['branch_id'] = City::find($data['city_id'])?->branch_id;
-                                                $data['status'] = ActivateStatusEnum::ACTIVE->value;
-                                                $data['phone'] = '+' . $data['country_code'] . $data['phone_number'];
-                                                unset($data['country_code'], $data['phone_number']);
-                                                while (true) {
-                                                    $code = \Str::random(8);
+                                                ];
+                                            })
+                                            ->action(function ($set, $data) {
+                                                try {
+                                                    $data['level'] = LevelUserEnum::USER->value;
+                                                    $data['branch_id'] = City::find($data['city_id'])?->branch_id;
+                                                    $data['status'] = ActivateStatusEnum::ACTIVE->value;
+                                                    $data['phone'] = '+' . $data['country_code'] . $data['phone_number'];
+                                                    unset($data['country_code'], $data['phone_number']);
+                                                    while (true) {
+                                                        $code = \Str::random(8);
 
-                                                    $user = User::where('num_id', $code)->first();
-                                                    if (!$user) {
-                                                        $data['num_id'] = $code;
-                                                        break;
+                                                        $user = User::where('num_id', $code)->first();
+                                                        if (!$user) {
+                                                            $data['num_id'] = $code;
+                                                            break;
+                                                        }
                                                     }
+
+                                                    $userNew = User::create($data);
+                                                    $set('sender_id', $userNew->id);
+                                                    $set('sender_name', $userNew->name);
+                                                    $set('sender_address', $userNew->address);
+                                                    $set('sender_phone', $userNew->phone);
+                                                    Notification::make('success')->title('نجاح العملية')->body("تم إضافة المستخدم بنجاح IBAN:{$userNew->iban}")->success()->send();
+                                                } catch (\Exception | \Error $e) {
+                                                    Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
                                                 }
-
-                                                $userNew = User::create($data);
-                                                $set('sender_id', $userNew->id);
-                                                $set('sender_name', $userNew->name);
-                                                $set('sender_address', $userNew->address);
-                                                $set('sender_phone', $userNew->phone);
-                                                Notification::make('success')->title('نجاح العملية')->body("تم إضافة المستخدم بنجاح IBAN:{$userNew->iban}")->success()->send();
-                                            } catch (\Exception | \Error $e) {
-                                                Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
-                                            }
-
-                                        })
-                                    //
+                                            })
+                                        //
                                     ),
 
                             ]),
@@ -278,13 +276,11 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
                         Forms\Components\Grid::make()->schema([
                             Forms\Components\Select::make('weight_id')
                                 ->relationship('weight', 'name')
-                                ->label
-                                ('الوزن')->searchable()->preload(),
+                                ->label('الوزن')->searchable()->preload(),
 
                             Forms\Components\Select::make('size_id')
                                 ->relationship('size', 'name')
-                                ->label
-                                ('الحجم')->searchable()->preload(),
+                                ->label('الحجم')->searchable()->preload(),
                         ]),
 
                         Forms\Components\Grid::make()->schema([
@@ -327,7 +323,9 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
                         ])->visible(fn($context) => $context === 'create'),
                     ])->columns(4),
 
-
+                    Forms\Components\Fieldset::make('كود الشحنة')->schema([
+                        Forms\Components\TextInput::make('qr_code')->label('الكود')
+                    ])->columns(1),
                 ])->collapsible(true)->collapsed(false),
 
 
@@ -355,7 +353,8 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
                         Forms\Components\Repeater::make('agencies')->relationship('agencies')
                             ->schema([
 
-                                Forms\Components\Select::make('user_id')->options(User::active()->where(fn($query) => $query->where('level', LevelUserEnum::STAFF->value)
+                                Forms\Components\Select::make('user_id')->options(User::active()->where(
+                                    fn($query) => $query->where('level', LevelUserEnum::STAFF->value)
                                 )->pluck('name', 'id'))->label('الموظف')->searchable(),
                                 Forms\Components\Radio::make('status')->options([
                                     TaskAgencyEnum::TASK->value => TaskAgencyEnum::TASK->getLabel(),
@@ -376,7 +375,6 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
 
 
             ]);
-
     }
 
     public static function table(Table $table): Table
@@ -385,7 +383,7 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
         $cities = City::selectRaw('id,name,city_id')->get();
 
         return $table
-//            ->poll(10)
+            //            ->poll(10)
             ->columns([
                 //  Tables\Columns\SpatieMediaLibraryImageColumn::make('images')->collection('images')->circular()->openUrlInNewTab(),
                 /*   PopoverColumn::make('qr_url')
@@ -399,6 +397,8 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
 
                     default => ['style' => ''],
                 }),
+                Tables\Columns\TextColumn::make('qr_code')->label('الكود'),
+
                 Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
                 Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ إنشاء الشحنة')->extraCellAttributes(fn(Model $record) => match ($record->color) {
                     'green' => ['style' => 'background-color:#55FF88;'],
@@ -489,7 +489,7 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
 
             ])->defaultSort('created_at', 'desc')
             ->filters([
-//
+                //
 
                 Tables\Filters\Filter::make('created_at')
                     ->form([
@@ -597,7 +597,7 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
 
 
 
-//                Tables\Actions\DeleteAction::make(),
+                //                Tables\Actions\DeleteAction::make(),
 
             ])
             ->headerActions([
@@ -605,9 +605,7 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
                     ExcelExport::make()->withChunkSize(100)->fromTable()
                 ])
             ])
-            ->bulkActions([
-
-            ]);
+            ->bulkActions([]);
     }
 
     public static function getRelations(): array

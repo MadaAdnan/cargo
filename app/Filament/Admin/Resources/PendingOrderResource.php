@@ -329,6 +329,9 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                         ])->visible(fn($context) => $context === 'create'),
                     ])->columns(4),
 
+                    Forms\Components\Fieldset::make('كود الشحنة')->schema([
+                        Forms\Components\TextInput::make('qr_code')->label('الكود')
+                    ])->columns(1)
 
                 ])->collapsible(true)->collapsed(false),
 
@@ -401,6 +404,8 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
 
                     default => ['style' => ''],
                 }),
+                
+                Tables\Columns\TextColumn::make('qr_code')->label('الكود'),
                 Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
                 Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ إنشاء الشحنة')->extraCellAttributes(fn(Model $record) => match ($record->color) {
                     'green' => ['style' => 'background-color:#55FF88;'],
