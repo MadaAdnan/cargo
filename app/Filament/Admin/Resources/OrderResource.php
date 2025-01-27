@@ -214,7 +214,8 @@ protected static ?int $navigationSort=1;
 
                                         })
                                     //
-                                    ),
+                                    )
+                                    ->preload(),
 
                             ]),
 
