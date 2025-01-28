@@ -44,6 +44,11 @@ class Order extends Model implements HasMedia
         return $this->belongsTo(City::class, 'city_target_id');
     }
 
+    public function regionSource(): BelongsTo
+    {
+        return $this->belongsTo(City::class, 'city_source_id');
+    }
+
     public function branchSource(): BelongsTo
     {
         return $this->belongsTo(Branch::class, 'branch_source_id');
@@ -124,5 +129,8 @@ class Order extends Model implements HasMedia
     {
         return $this->belongsTo(User::class,'created_by');
     }
-
+    public function updatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class,'updated_by');
+    }
 }

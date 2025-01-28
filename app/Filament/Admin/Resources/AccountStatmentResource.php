@@ -83,7 +83,7 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
         return $table
             //  ->poll(10)
             ->columns([
-
+                Tables\Columns\TextColumn::make('id')->label('رقم  الفاتورة'),
                 Tables\Columns\TextColumn::make('credit')->label('مدين'),
                 Tables\Columns\TextColumn::make('debit')->label('دائن'),
                 Tables\Columns\TextColumn::make('currency.code')->label('العملة'),

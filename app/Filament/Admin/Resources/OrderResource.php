@@ -252,7 +252,7 @@ class OrderResource extends Resource
                                 })->live()->visible(fn($context) => $context === 'create'),
                             Forms\Components\Select::make('city_target_id')
                                 ->relationship('cityTarget', 'name')
-                                ->label('الى بلدة')->required()->searchable(),
+                                ->label('الى بلدة')->required()->searchable()->preload(),
 
                         ]),
                         Forms\Components\Grid::make()->schema([
@@ -318,9 +318,23 @@ class OrderResource extends Resource
                         ])->visible(fn($context) => $context === 'create'),
                     ])->columns(4),
 
-                    Forms\Components\Fieldset::make('كود الشحنة')->schema([
-                        Forms\Components\TextInput::make('qr_code')->label('الكود')
-                    ])->columns(1),
+                    Forms\Components\Fieldset::make('كود الشحنة')
+                        ->schema([
+                            Forms\Components\Toggle::make('allow_duplicates')
+                                ->label('الشحنة مكودة')
+                                ->default(true)
+                                ->reactive()
+                                ->dehydrated(false),
+                            Forms\Components\TextInput::make('qr_code')
+                                ->label('الكود')
+                                ->rules(function (callable $get) {
+
+                                    return $get('allow_duplicates')
+                                        ? ['required', 'string', 'max:255', 'unique:orders,qr_code']
+                                        : ['nullable', 'string', 'max:255'];
+                                }),
+                        ])
+                        ->columns(1)
 
                 ])->collapsible(true)->collapsed(false),
 
@@ -387,23 +401,27 @@ class OrderResource extends Resource
                        ->content(fn($record) => \LaraZeus\Qr\Facades\Qr::render($record->code))
                        ->icon('heroicon-o-qr-code'),*/
 
-                Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->code, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
+                Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->qr_code, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
                     'green' => ['style' => 'background-color:#55FF88;'],
 
                     default => ['style' => ''],
                 }),
-                Tables\Columns\TextColumn::make('qr_code')->label('الكود'),
 
-                Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
-                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ إنشاء الشحنة')->extraCellAttributes(fn(Model $record) => match ($record->color) {
+                Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة')->description(fn($record) => $record->created_at, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
                     'green' => ['style' => 'background-color:#55FF88;'],
 
                     default => ['style' => ''],
                 }),
-                Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
+                Tables\Columns\TextColumn::make('createdBy.name')->label('الموظفون')
+                ->formatStateUsing(fn($state) => 'المنشأ : ' . $state)
+                ->description(fn($record) => 'المعدل : ' . $record?->updatedBy?->name, 'bottom'),
 
 
-                Tables\Columns\TextColumn::make('type')->label('نوع الطلب')
+                Tables\Columns\TextColumn::make('far_sender')
+                    ->formatStateUsing(fn($state) => FarType::tryFrom($state)?->getLabel())
+                    ->color(fn($state) => FarType::tryFrom($state)?->getColor())
+                    ->icon(fn($state) => FarType::tryFrom($state)?->getIcon())
+                    ->label('حالة الدفع')
                     ->description(fn($record) => $record->status?->getLabel())
                     ->extraCellAttributes(function ($record) {
                         $list = [];
@@ -426,32 +444,32 @@ class OrderResource extends Resource
                         }
                         return $list;
                     }),
-                Tables\Columns\TextColumn::make('far_sender')->formatStateUsing(fn($state) => FarType::tryFrom($state)?->getLabel())
-                    ->color(fn($state) => FarType::tryFrom($state)?->getColor())
-                    ->icon(fn($state) => FarType::tryFrom($state)?->getIcon())
-                    ->label('حالة الدفع')
-                    ->description(fn($record) => $record->created_at->diffForHumans())
-                    ->searchable(),
+                // Tables\Columns\TextColumn::make('far_sender')->formatStateUsing(fn($state) => FarType::tryFrom($state)?->getLabel())
+                //     ->color(fn($state) => FarType::tryFrom($state)?->getColor())
+                //     ->icon(fn($state) => FarType::tryFrom($state)?->getIcon())
+                //     ->label('حالة الدفع')
+                //     ->description(fn($record) => $record->created_at->diffForHumans())
+                //     ->searchable(),
 
-                Tables\Columns\TextColumn::make('unit.name')->label('نوع الشحنة')->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('unit.name')->label('نوع الشحنة')->toggleable(isToggledHiddenByDefault: false),
 
-                Tables\Columns\TextColumn::make('price')->formatStateUsing(fn($state) => $state . ' $ ')->label('التحصيل USD')->toggleable(isToggledHiddenByDefault: true)/*->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ ')*/,
-                Tables\Columns\TextColumn::make('far')->formatStateUsing(fn($state) => $state . ' $ ')->label('الأجور USD')->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('far')->formatStateUsing(fn($state) => 'الاجور : ' . $state)->label('USD')
+                ->description(fn($record) => 'التحصيل : ' . $record->price, 'above')
+                ->toggleable(isToggledHiddenByDefault: false)/*->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ ')*/,
 
-                Tables\Columns\TextColumn::make('price_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('التحصيل TRY')->toggleable(isToggledHiddenByDefault: true)/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
-                Tables\Columns\TextColumn::make('far_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('الأجور TRY')->toggleable(isToggledHiddenByDefault: false)/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
-
-                Tables\Columns\TextColumn::make('currency.name')->label('العملة')->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('sender.name')->label('اسم المرسل')->description(fn($record) => $record->general_sender_name)->searchable()->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('citySource.name')->label('من بلدة')->description(fn($record) => " {$record->citySource?->city?->name}")->searchable()->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('cityTarget.name')->label('إلى بلدة')->description(fn($record) => " {$record->cityTarget?->city?->name}")->searchable()->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('branchSource.name')->label('من فرع')->description(fn($record) => "إلى فرع  {$record->branchTarget?->name}")->searchable()->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('far_tr')->formatStateUsing(fn($state) => 'الاجور : ' . $state)->label('TRY')
+                ->description(fn($record) => 'التحصيل : ' . $record->price_tr, 'above')
+                ->toggleable(isToggledHiddenByDefault: false),
 
 
-                Tables\Columns\TextColumn::make('global_name')->label('معرف المستلم ')->description(fn($record) => $record->receive?->name)->searchable()->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('receive_phone')->toggleable(isToggledHiddenByDefault: true)
+                Tables\Columns\TextColumn::make('currency.name')->label('العملة')->toggleable(isToggledHiddenByDefault: false),
+
+                Tables\Columns\TextColumn::make('sender.name')->label('المرسل / المستلم')->formatStateUsing(fn($state) => 'المرسل : ' . $state)->description(fn($record) => 'المستلم : ' . $record->global_name)->searchable()->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('citySource')->label('بلدة')->formatStateUsing(fn($state) => 'من : ' . $state?->name . ' ( ' .$state?->city?->name .' )')->description(fn($record) => "إلى : {$record->cityTarget?->name} ( {$record->cityTarget?->city?->name} )")->searchable()->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('branchSource.name')->label('فرع')->formatStateUsing(fn($state) => 'من : ' . $state)->description(fn($record) => "إلى : {$record->branchTarget?->name}")->searchable()->toggleable(isToggledHiddenByDefault: false),
+
+
+                Tables\Columns\TextColumn::make('receive_phone')->toggleable(isToggledHiddenByDefault: false)
                     ->formatStateUsing(fn($record) => (string)$record->receive_address . ' - ' . (string)$record->receive_phone)->label('هاتف المستلم ')
                     /*->description(fn($record) =>  ltrim($record?->receive_phone, '+'))*/
                     ->url(function ($record) {
@@ -478,8 +496,8 @@ class OrderResource extends Resource
                     })->openUrlInNewTab()
                     ->searchable()->color('danger'),
                 Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record) => 'موظف الإلتقاط : ' . $record->pick?->name)
-                    ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل')->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary')->toggleable(isToggledHiddenByDefault: true),
+                    ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل')->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary')->toggleable(isToggledHiddenByDefault: false),
 
 
 
