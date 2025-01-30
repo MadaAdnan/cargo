@@ -240,12 +240,12 @@ class FastOrder extends CreateRecord
                                 ->dehydrated(false),
                             Forms\Components\TextInput::make('qr_code')
                                 ->label('الكود')
-                                ->rules(function (callable $get) {
-
-                                    return $get('allow_duplicates')
+                                ->rule(
+                                    fn(callable $get) => $get('allow_duplicates')
                                         ? ['required', 'string', 'max:255', 'unique:orders,qr_code']
-                                        : ['nullable', 'string', 'max:255'];
-                                }),
+                                        : ['nullable', 'string', 'max:255']
+                                )
+                                ->columnSpan(1),
                         ])
                         ->columns(1)
 

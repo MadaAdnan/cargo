@@ -327,12 +327,12 @@ class OrderResource extends Resource
                                 ->dehydrated(false),
                             Forms\Components\TextInput::make('qr_code')
                                 ->label('الكود')
-                                ->rules(function (callable $get) {
-
-                                    return $get('allow_duplicates')
+                                ->rule(
+                                    fn(callable $get) => $get('allow_duplicates')
                                         ? ['required', 'string', 'max:255', 'unique:orders,qr_code']
-                                        : ['nullable', 'string', 'max:255'];
-                                }),
+                                        : ['nullable', 'string', 'max:255']
+                                )
+                                ->columnSpan(1),
                         ])
                         ->columns(1)
 
@@ -413,8 +413,8 @@ class OrderResource extends Resource
                     default => ['style' => ''],
                 }),
                 Tables\Columns\TextColumn::make('createdBy.name')->label('الموظفون')
-                ->formatStateUsing(fn($state) => 'المنشأ : ' . $state)
-                ->description(fn($record) => 'المعدل : ' . $record?->updatedBy?->name, 'bottom'),
+                    ->formatStateUsing(fn($state) => 'المنشأ : ' . $state)
+                    ->description(fn($record) => 'المعدل : ' . $record?->updatedBy?->name, 'bottom'),
 
 
                 Tables\Columns\TextColumn::make('far_sender')
@@ -454,18 +454,18 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('unit.name')->label('نوع الشحنة')->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('far')->formatStateUsing(fn($state) => 'الاجور : ' . $state)->label('USD')
-                ->description(fn($record) => 'التحصيل : ' . $record->price, 'above')
-                ->toggleable(isToggledHiddenByDefault: false)/*->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ ')*/,
+                    ->description(fn($record) => 'التحصيل : ' . $record->price, 'above')
+                    ->toggleable(isToggledHiddenByDefault: false)/*->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ ')*/,
 
                 Tables\Columns\TextColumn::make('far_tr')->formatStateUsing(fn($state) => 'الاجور : ' . $state)->label('TRY')
-                ->description(fn($record) => 'التحصيل : ' . $record->price_tr, 'above')
-                ->toggleable(isToggledHiddenByDefault: false),
+                    ->description(fn($record) => 'التحصيل : ' . $record->price_tr, 'above')
+                    ->toggleable(isToggledHiddenByDefault: false),
 
 
                 Tables\Columns\TextColumn::make('currency.name')->label('العملة')->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('sender.name')->label('المرسل / المستلم')->formatStateUsing(fn($state) => 'المرسل : ' . $state)->description(fn($record) => 'المستلم : ' . $record->global_name)->searchable()->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('citySource')->label('بلدة')->formatStateUsing(fn($state) => 'من : ' . $state?->name . ' ( ' .$state?->city?->name .' )')->description(fn($record) => "إلى : {$record->cityTarget?->name} ( {$record->cityTarget?->city?->name} )")->searchable()->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('citySource')->label('بلدة')->formatStateUsing(fn($state) => 'من : ' . $state?->name . ' ( ' . $state?->city?->name . ' )')->description(fn($record) => "إلى : {$record->cityTarget?->name} ( {$record->cityTarget?->city?->name} )")->searchable()->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('branchSource.name')->label('فرع')->formatStateUsing(fn($state) => 'من : ' . $state)->description(fn($record) => "إلى : {$record->branchTarget?->name}")->searchable()->toggleable(isToggledHiddenByDefault: false),
 
 
