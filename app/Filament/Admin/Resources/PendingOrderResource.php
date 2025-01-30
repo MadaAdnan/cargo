@@ -19,7 +19,9 @@ use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -933,7 +935,14 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                     })->label('مرتجع الشحنات')->requiresConfirmation(),
 
                     //                    ExportBulkAction::make()
-
+                    Tables\Actions\BulkAction::make('generateReport')
+                        ->label('تقرير الشحنات')
+                        ->requiresConfirmation()
+                        ->modalHeading('تقرير الشحنات')
+                        ->modalDescription('عرض تقرير الشحنات.')
+                        ->modalSubmitActionLabel('إغلاق')
+                        ->form(fn($records) => static::getReportForm($records))
+                        ->action(fn($records) => static::generateReport($records)),
                 ]),
             ]);
     }
@@ -959,5 +968,35 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
         return Cache::remember('navigation_badge_count_pending_order', now()->addDay(), function () {
             return static::getModel()::where('status', OrderStatusEnum::PICK->value)->orWhere('status', OrderStatusEnum::TRANSFER->value)->count();
         });
+    }
+
+    protected static function getReportForm($records): array
+    {
+        $orders = Order::whereIn('id', $records->pluck('id'))->get();
+
+        $reportText  = "====================\n";
+        $reportText .= "🔹 عدد الشحنات : {$orders->count()}\n";
+        $reportText .= "🔹 تحصيل تركي : " . number_format($orders->sum('price_tr'), 2) . " ₺\n";
+        $reportText .= "🔹 تحصيل دولار : " . number_format($orders->sum('price'), 2) . " $\n";
+        $reportText .= "====================\n\n";
+
+        $reportText .= "📌 على المستلم\n";
+        $reportText .= "🔸 أجور تركي : " . number_format($orders->where('far_sender', 0)->sum('far_tr'), 2) . " ₺\n";
+        $reportText .= "🔸 أجور دولار : " . number_format($orders->where('far_sender', 0)->sum('far'), 2) . " $\n";
+        $reportText .= "---------------------\n";
+
+        $reportText .= "📌 على المرسل\n";
+        $reportText .= "🔸 أجور تركي : " . number_format($orders->where('far_sender', 1)->sum('far_tr'), 2) . " ₺\n";
+        $reportText .= "🔸 أجور دولار : " . number_format($orders->where('far_sender', 1)->sum('far'), 2) . " $\n";
+        $reportText .= "====================\n";
+
+        return [
+            Textarea::make('report')
+                ->label(false)
+                ->extraAttributes(['style' => 'border: none; background: transparent;'])
+                ->default($reportText)
+                ->disabled()
+                ->rows(15),
+        ];
     }
 }
