@@ -46,14 +46,16 @@ class FastOrder extends CreateRecord
                         Forms\Components\Grid::make(2)
                             ->schema([
 
-                                Forms\Components\Select::make('type')->options([
-                                    OrderTypeEnum::HOME->value => OrderTypeEnum::HOME->getLabel(),
-                                    OrderTypeEnum::BRANCH->value => OrderTypeEnum::BRANCH->getLabel(),
+                                // Forms\Components\Select::make('type')->options([
+                                //     OrderTypeEnum::HOME->value => OrderTypeEnum::HOME->getLabel(),
+                                //     OrderTypeEnum::BRANCH->value => OrderTypeEnum::BRANCH->getLabel(),
+                                // ])->label('نوع الطلب')
+                                //     ->required()
+                                //     ->default(OrderTypeEnum::HOME->value)
+                                //     ->reactive(),
 
-                                ])->label('نوع الطلب')
-                                    ->required()
-                                    ->default(OrderTypeEnum::HOME->value)
-                                    ->reactive(),
+                                Forms\Components\Hidden::make('type')
+                                    ->default(OrderTypeEnum::HOME->value),
 
                                 Forms\Components\Select::make('sender_id')
                                     ->relationship('sender', 'name', fn($query) => $query->active())
@@ -167,25 +169,33 @@ class FastOrder extends CreateRecord
 
                     Forms\Components\Fieldset::make('المستلم')->schema([
                         Forms\Components\Grid::make()->schema([
-                            Forms\Components\Select::make('receive_id')->label('معرف المستلم')->default(fn() => User::active()->where('email', 'zab@gmail.com')->first()?->id)
-                                ->options(User::active()->where('level', LevelUserEnum::USER->value)->pluck('name', 'id')->toArray())->searchable()
-                                ->afterStateUpdated(function ($state, $set) {
-                                    $user = User::with('city')->find($state);
-                                    if ($user) {
-                                        $set('receive_phone', $user?->phone);
-                                        $set('receive_address', $user?->address);
 
-                                        $set('sender_name', $user?->name);
-                                        $set('city_target_id', $user?->city_id);
-                                    }
-                                })->live()->visible(fn($context) => $context === 'create'),
+                            // Forms\Components\Select::make('receive_id')->label('معرف المستلم')->default(fn() => User::active()->where('email', 'zab@gmail.com')->first()?->id)
+                            //     ->options(User::active()->where('level', LevelUserEnum::USER->value)->pluck('name', 'id')->toArray())->searchable()
+                            //     ->afterStateUpdated(function ($state, $set) {
+                            //         $user = User::with('city')->find($state);
+                            //         if ($user) {
+                            //             $set('receive_phone', $user?->phone);
+                            //             $set('receive_address', $user?->address);
+
+                            //             $set('sender_name', $user?->name);
+                            //             $set('city_target_id', $user?->city_id);
+                            //         }
+                            //     })->live()->visible(fn($context) => $context === 'create'),
+
+                            Forms\Components\Hidden::make('receive_id')
+                                ->default(fn() => User::active()->where('email', 'zab@gmail.com')->first()?->id),
+
+                                
+                            
+                            // Forms\Components\TextInput::make('receive_address')->label('عنوان المستلم'),
+
+                        ]),
+                        Forms\Components\Grid::make()->schema([
                             Forms\Components\Select::make('city_target_id')
                                 ->relationship('cityTarget', 'name')
                                 ->label('الى بلدة')->required()->searchable()->preload(),
 
-                        ]),
-                        Forms\Components\Grid::make()->schema([
-                            Forms\Components\TextInput::make('receive_address')->label('عنوان المستلم'),
                             Forms\Components\TextInput::make('receive_phone')->label('هاتف المستلم'),
                         ]),
                     ]),
