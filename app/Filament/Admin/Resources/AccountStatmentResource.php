@@ -122,9 +122,11 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('order.id')->description(fn($record) => $record->order?->code)->label('الطلب')->searchable(),
                 Tables\Columns\TextColumn::make('order.sender.name')->label('المرسل')->description(fn($record) => $record->order?->general_sender_name != null ? "{$record->order->general_sender_name}" : "")->searchable(),
                 Tables\Columns\TextColumn::make('order.global_name')->label('المستلم'),
+                Tables\Columns\TextColumn::make('order.status')->label('حالة الطلب'),
                 Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
                 Tables\Columns\TextColumn::make('order.cityTarget.name')->label('المدينة'),
-                Tables\Columns\TextColumn::make('pending')->label('النوع')->formatStateUsing(fn($record) => $record->pending == true ? "قيد التحصيل" : "")->color('danger'),
+                Tables\Columns\TextColumn::make('pending')->label('النوع')
+                ->formatStateUsing(fn($record) => $record->pending == true ? "قيد التحصيل" : "")->color('danger'),
 
                 //H: disabled the cell
                 //Tables\Columns\TextColumn::make('total')->label('الرصيد'),
@@ -133,7 +135,9 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->description(fn($record) => $record->created_at->format('H:i'))
                     ->label('التاريخ والوقت'),
 
-            ])->defaultSort('id', 'desc')
+            ])
+            ->paginated([10, 25, 50, 100 ,200 , 'all'])
+            ->defaultSort('id', 'desc')
             //H: up here, added default sorting to table based on id to show the latest total of an account
             ->filters([
                 Tables\Filters\SelectFilter::make('user_id')

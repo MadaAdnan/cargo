@@ -39,6 +39,7 @@ use App\Enums\OrderTypeEnum;
 use App\Enums\OrderStatusEnum;
 use Filament\Forms\Components\Tabs;
 use App\Enums\BayTypeEnum;
+use Filament\Forms\Components\Textarea;
 use Filament\Infolists\Infolist;
 use Illuminate\Support\Facades\Cache;
 use PhpOffice\PhpSpreadsheet\Calculation\LookupRef\Selection;
@@ -108,7 +109,14 @@ class OrderResource extends Resource
                                     ->reactive(),
 
                                 Forms\Components\Select::make('sender_id')
-                                    ->relationship('sender', 'name', fn($query) => $query->active())
+                                    // ->relationship('sender', 'name', fn($query) => $query->active())
+                                    ->options(function () {
+                                        $users = User::where('level', LevelUserEnum::USER->value)->get();
+                                        foreach ($users as $user) {
+                                            $options[$user->id] = $user->name;
+                                        }
+                                        return $options;
+                                    })
                                     ->label('معرف المرسل')->required()
                                     ->afterStateUpdated(function ($state, $set) {
                                         $user = User::active()->with('city')->find($state);
@@ -211,8 +219,7 @@ class OrderResource extends Resource
                                                 }
                                             })
                                         //
-                                    )
-                                    ->preload(),
+                                    ),
 
                             ]),
 
@@ -501,7 +508,9 @@ class OrderResource extends Resource
 
 
 
-            ])->defaultSort('created_at', 'desc')
+            ])
+            ->paginated([10, 25, 50, 100 , 'all'])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 //
 
@@ -854,7 +863,16 @@ class OrderResource extends Resource
                     ExcelExport::make()->withChunkSize(100)->fromTable()
                 ])
             ])
-            ->bulkActions([]);
+            ->bulkActions([
+                Tables\Actions\BulkAction::make('generateReport')
+                    ->label('تقرير الشحنات')
+                    ->requiresConfirmation()
+                    ->modalHeading('تقرير الشحنات')
+                    ->modalDescription('عرض تقرير الشحنات.')
+                    ->modalSubmitActionLabel('إغلاق')
+                    ->form(fn($records) => static::getReportForm($records))
+                    ->action(fn($records) => static::generateReport($records)),
+            ]);
     }
 
     public static function getRelations(): array
@@ -884,5 +902,35 @@ class OrderResource extends Resource
         return Cache::remember('navigation_badge_count_order', now()->addDay(), function () {
             return static::getModel()::count();
         });
+    }
+
+    protected static function getReportForm($records): array
+    {
+        $orders = Order::whereIn('id', $records->pluck('id'))->get();
+
+        $reportText  = "====================\n";
+        $reportText .= "🔹 عدد الشحنات : {$orders->count()}\n";
+        $reportText .= "🔹 تحصيل تركي : " . number_format($orders->sum('price_tr'), 2) . " ₺\n";
+        $reportText .= "🔹 تحصيل دولار : " . number_format($orders->sum('price'), 2) . " $\n";
+        $reportText .= "====================\n\n";
+
+        $reportText .= "📌 على المستلم\n";
+        $reportText .= "🔸 أجور تركي : " . number_format($orders->where('far_sender', 0)->sum('far_tr'), 2) . " ₺\n";
+        $reportText .= "🔸 أجور دولار : " . number_format($orders->where('far_sender', 0)->sum('far'), 2) . " $\n";
+        $reportText .= "---------------------\n";
+
+        $reportText .= "📌 على المرسل\n";
+        $reportText .= "🔸 أجور تركي : " . number_format($orders->where('far_sender', 1)->sum('far_tr'), 2) . " ₺\n";
+        $reportText .= "🔸 أجور دولار : " . number_format($orders->where('far_sender', 1)->sum('far'), 2) . " $\n";
+        $reportText .= "====================\n";
+
+        return [
+            Textarea::make('report')
+                ->label(false)
+                ->extraAttributes(['style' => 'border: none; background: transparent;'])
+                ->default($reportText)
+                ->disabled()
+                ->rows(15),
+        ];
     }
 }
