@@ -120,7 +120,7 @@ class OrderResource extends Resource
                                     ->label('معرف المرسل')->required()
                                     ->afterStateUpdated(function ($state, $set) {
                                         $user = User::active()->with('city')->find($state);
-                                        $branch = User::active()->where(['level' => LevelUserEnum::BRANCH->value, 'branch_id' => $user->branch_id])->first()?->id;
+                                        $branch = User::active()->where(['level' => LevelUserEnum::BRANCH->value, 'branch_id' => $user?->branch_id])->first()?->id;
                                         if ($user) {
                                             $set('sender_phone', $user?->phone);
                                             $set('sender_address', $user?->address);
@@ -245,7 +245,7 @@ class OrderResource extends Resource
 
                     Forms\Components\Fieldset::make('المستلم')->schema([
                         Forms\Components\Grid::make()->schema([
-                            Forms\Components\Select::make('receive_id')->label('معرف المستلم')->default(fn() => User::active()->where('email', 'zab@gmail.com')->first()?->id)
+                            Forms\Components\Select::make('receive_id')->label('معرف المستلم')->required()->default(fn() => User::active()->where('email', 'zab@gmail.com')->first()?->id)
                                 ->options(User::active()->where('level', LevelUserEnum::USER->value)->pluck('name', 'id')->toArray())->searchable()
                                 ->afterStateUpdated(function ($state, $set) {
                                     $user = User::with('city')->find($state);
