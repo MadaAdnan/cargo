@@ -21,8 +21,15 @@ class ListOrders extends ListRecords
         return [
             Actions\CreateAction::make(),
             Actions\Action::make('fast-order')->url('/admin/orders/fast-order')->label('شحنة سريعة'),
-            Actions\Action::make('export')->url(route('export-order'), true)->label('تصدير إلى Excel'),
+            Actions\Action::make('export')
+                ->url(fn() => route('export-order', ['filters' => $this->getTableFiltersFromLivewire()]), true)
+                ->label('تصدير إلى Excel'),
         ];
+    }
+
+    protected function getTableFiltersFromLivewire(): array
+    {
+        return $this->tableFilters ?? [];
     }
 
     protected function getTableQuery(): ?Builder
