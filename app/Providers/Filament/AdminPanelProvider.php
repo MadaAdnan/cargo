@@ -27,7 +27,9 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
-//use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
+
+use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
+
 use Rupadana\ApiService\ApiServicePlugin;
 
 class AdminPanelProvider extends PanelProvider
@@ -40,9 +42,16 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->plugins([
 
+
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
-                // FilamentApexChartsPlugin::make(),
-                // ApiServicePlugin::make(),
+
+                FilamentApexChartsPlugin::make(),
+                 ApiServicePlugin::make(),
+
+                
+
+
+
                 FilamentEditProfilePlugin::make()
                     ->shouldShowDeleteAccountForm(false)
                     ->shouldShowAvatarForm()
@@ -90,6 +99,7 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                 IsBlockedUserMiddleware::class
+
                 //                RedirectToPanelMiddleware::class
             ])
 
@@ -102,6 +112,9 @@ class AdminPanelProvider extends PanelProvider
                 'المناطق' => NavigationGroup::make(fn() => 'المناطق'),
                 'الرصيد' =>  NavigationGroup::make(fn() => 'الرصيد'),
                 'معلومات الحساب' =>  NavigationGroup::make(fn() => 'معلومات الحساب'),
+
+//                RedirectToPanelMiddleware::class
+
             ]);
     }
 }

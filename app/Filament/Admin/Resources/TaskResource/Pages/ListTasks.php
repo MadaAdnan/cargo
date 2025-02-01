@@ -23,7 +23,9 @@ class ListTasks extends ListRecords
         return [
             Tab::make('all')->modifyQueryUsing(fn($query)=>$query)->label('الكل'),
             Tab::make('pending')->modifyQueryUsing(fn($query)=>$query->where('is_complete',false))->label('بالإنتظار'),
-            Tab::make('pending')->modifyQueryUsing(fn($query)=>$query->where('is_complete',true))->label('مكتملة'),
+            Tab::make('complete')->modifyQueryUsing(fn($query)=>$query->where('is_complete',true))->label('مكتملة'),
+            Tab::make('my_pending')->modifyQueryUsing(fn($query)=>$query->where(['is_complete'=>false,'user_id'=>auth()->id()]))->label('مهامي بالإنتظار'),
+
         ];
     }
 }
