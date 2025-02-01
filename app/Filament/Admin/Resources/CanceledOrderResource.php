@@ -28,6 +28,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
@@ -42,9 +43,9 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
 
     protected static ?string $label = 'شحنة منتهية';
     protected static ?string $navigationLabel = 'شحنات منتهية';
-    protected static ?string $navigationGroup='الشحنات';
-    protected static ?int $navigationSort=4;
-    protected static ?string $slug='canceled-orders';
+    protected static ?string $navigationGroup = 'الشحنات';
+    protected static ?int $navigationSort = 4;
+    protected static ?string $slug = 'canceled-orders';
 
     public static function getPermissionPrefixes(): array
     {
@@ -79,304 +80,316 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
     }
 
     public static function canDeleteAny(): bool
-    {return auth()->user()->hasPermissionTo('delete_canceled::order');
-    }
-
-    public static function form(Form $form): Form
     {
-        $shipping = Order::latest()->first()?->shipping_date;
-        $date = now()->format('Y-m-d');
-        if ($shipping != null) {
-            try {
-                $date = Carbon::parse($shipping)->format('Y-m-d');
-            } catch (\Exception | \Error $e) {
-            }
-        }
-        return $form
-            ->schema([
-
-
-                Forms\Components\Section::make('معلومات الطلب')->schema([
-//                    SpatieMediaLibraryFileUpload::make('images')->collection('images')->label('أرفق صور')->imageEditor(),
-                    Forms\Components\Fieldset::make('المرسل')->schema([
-                        Forms\Components\Grid::make(2)
-                            ->schema([
-
-                                Forms\Components\Select::make('type')->options([
-                                    OrderTypeEnum::HOME->value => OrderTypeEnum::HOME->getLabel(),
-                                    OrderTypeEnum::BRANCH->value => OrderTypeEnum::BRANCH->getLabel(),
-
-                                ])->label('نوع الطلب')
-                                    ->required()
-                                    ->default(OrderTypeEnum::HOME->value)
-                                    ->reactive(),
-
-                                Forms\Components\Select::make('sender_id')
-                                    ->relationship('sender', 'name', fn($query) => $query->active())
-                                    ->label('معرف المرسل')->required()
-                                    ->afterStateUpdated(function ($state, $set) {
-                                        $user = User::active()->with('city')->find($state);
-                                        $branch = User::active()->where(['level' => LevelUserEnum::BRANCH->value, 'branch_id' => $user->branch_id])->first()?->id;
-                                        if ($user) {
-                                            $set('sender_phone', $user?->phone);
-                                            $set('sender_address', $user?->address);
-                                            $set('city_source_id', $user?->city_id);
-                                            $set('pick_id', $branch);
-
-
-                                        }
-                                    })->live()->visible(fn($context) => $context === 'create')
-                                    ->searchable()
-                                    ->noSearchResultsMessage('الاسم غير موجود')
-                                    ->suffixAction(Action::make('copyCostToPrice')->label('إضافة مستخدم جديد')
-                                        ->icon('fas-user-plus')
-                                        ->form(function () {
-                                            $max = User::max('id') + 1;
-
-                                            return [
-                                                Forms\Components\Grid::make()->schema([
-                                                    Forms\Components\TextInput::make('name')->label('الاسم')->required(),
-                                                    Forms\Components\TextInput::make('email')->label('البريد الالكتروني')->email()->required()->unique(table: 'users', column: 'email')->default('user' . $max . '@gmail.com'),
-                                                ]),
-                                                Forms\Components\Grid::make()->schema([
-                                                    Forms\Components\TextInput::make('username')->label('username')
-                                                        ->unique(table: 'users', column: 'username')->required()->default('user' . $max),
-                                                    Forms\Components\TextInput::make('password')->password()->dehydrateStateUsing(fn($state) => Hash::make($state))
-                                                        ->label('كلمة المرور')->revealable()->required()->default(12345),
-
-                                                ]),
-
-                                                Forms\Components\Grid::make(2) // تقسيم الحقول إلى صفين
-                                                ->schema([
-                                                    Forms\Components\TextInput::make('phone_number')
-                                                        ->label('رقم الهاتف')
-                                                        ->placeholder('1234567890')
-                                                        ->numeric() // التأكد أن الحقل يقبل الأرقام فقط
-                                                        ->maxLength(15)
-                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
-                                                        ->tel()
-                                                        ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),// تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-                                                    //H: Made phone number not required to complete account registration while creating an order
-                                                    //->required(),
-
-                                                    Forms\Components\TextInput::make('country_code')
-                                                        ->label('رمز الدولة')
-                                                        ->placeholder('963')
-                                                        ->prefix('+')
-                                                        ->maxLength(3)
-                                                        ->numeric()
-                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-                                                    // تحديد الحد الأقصى للأرقام (بما في ذلك +)
-                                                    //H: Made phone number not required to complete account registration while creating an order
-                                                    //->required(),
-                                                ]),
-                                                Forms\Components\Grid::make()->schema([
-                                                    Forms\Components\Textarea::make('address')->label('العنوان التفصيلي'),
-                                                    Forms\Components\Select::make('city_id')->options(City::where('is_main', false)->pluck
-                                                    ('name', 'id'))->required()
-                                                        ->label('البلدة/البلدة')
-                                                        ->searchable(),
-
-                                                ]),
-
-                                                Forms\Components\Grid::make()->schema([
-                                                    Forms\Components\TextInput::make('full_name')->label('الاسم الكامل'),
-                                                    Forms\Components\DatePicker::make('birth_date')->label('تاريخ الميلاد')
-                                                        ->format('Y-m-d')->default(now()),
-
-                                                ]),
-
-
-                                            ];
-                                        })
-                                        ->action(function ($set, $data) {
-                                            try {
-                                                $data['level'] = LevelUserEnum::USER->value;
-                                                $data['branch_id'] = City::find($data['city_id'])?->branch_id;
-                                                $data['status'] = ActivateStatusEnum::ACTIVE->value;
-                                                $data['phone'] = '+' . $data['country_code'] . $data['phone_number'];
-                                                unset($data['country_code'], $data['phone_number']);
-                                                while (true) {
-                                                    $code = \Str::random(8);
-
-                                                    $user = User::where('num_id', $code)->first();
-                                                    if (!$user) {
-                                                        $data['num_id'] = $code;
-                                                        break;
-                                                    }
-                                                }
-
-                                                $userNew = User::create($data);
-                                                $set('sender_id', $userNew->id);
-                                                $set('sender_name', $userNew->name);
-                                                $set('sender_address', $userNew->address);
-                                                $set('sender_phone', $userNew->phone);
-                                                Notification::make('success')->title('نجاح العملية')->body("تم إضافة المستخدم بنجاح IBAN:{$userNew->iban}")->success()->send();
-                                            } catch (\Exception | \Error $e) {
-                                                Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
-                                            }
-
-                                        })
-                                    //
-                                    ),
-
-                            ]),
-
-                        Forms\Components\Grid::make()->schema([
-                            Forms\Components\Select::make('city_source_id')
-                                ->relationship('citySource', 'name')
-                                ->label('من بلدة')->reactive()->required()->searchable(),
-                            Forms\Components\TextInput::make('general_sender_name')->label('اسم المرسل'),
-
-
-                        ]),
-                        Forms\Components\Grid::make()->schema([
-
-
-                            Forms\Components\TextInput::make('sender_phone')->label('رقم هاتف المرسل')->required(),
-                            //H: disabled required for sender address in order creation panel
-                            Forms\Components\TextInput::make('sender_address')->label('عنوان المرسل'),
-                            //->required(),
-                        ]),
-
-
-                    ]),
-
-                    Forms\Components\Fieldset::make('المستلم')->schema([
-                        Forms\Components\Grid::make()->schema([
-                            Forms\Components\Select::make('receive_id')->label('معرف المستلم')->default(fn() => User::active()->where('email', 'zab@gmail.com')->first()?->id)
-                                ->options(User::active()->where('level', LevelUserEnum::USER->value)->pluck('name', 'id')->toArray())->searchable()
-                                ->afterStateUpdated(function ($state, $set) {
-                                    $user = User::with('city')->find($state);
-                                    if ($user) {
-                                        $set('receive_phone', $user?->phone);
-                                        $set('receive_address', $user?->address);
-
-                                        $set('sender_name', $user?->name);
-                                        $set('city_target_id', $user?->city_id);
-                                    }
-                                })->live()->visible(fn($context) => $context === 'create'),
-                            Forms\Components\Select::make('city_target_id')
-                                ->relationship('cityTarget', 'name')
-                                ->label('الى بلدة')->required()->searchable(),
-
-                        ]),
-                        Forms\Components\Grid::make()->schema([
-                            Forms\Components\TextInput::make('receive_address')->label('عنوان المستلم'),
-                            Forms\Components\TextInput::make('receive_phone')->label('هاتف المستلم'),
-
-                        ]),
-                        Forms\Components\Grid::make()->schema([
-                            Forms\Components\TextInput::make('global_name')->label('اسم المستلم'),
-
-                        ]),
-
-                    ]),
-
-                    Forms\Components\Fieldset::make('معلومات الشحنة')->schema([
-                        Forms\Components\Grid::make()->schema([
-                            Forms\Components\Select::make('weight_id')
-                                ->relationship('weight', 'name')
-                                ->label
-                                ('الوزن')->searchable()->preload(),
-
-                            Forms\Components\Select::make('size_id')
-                                ->relationship('size', 'name')
-                                ->label
-                                ('الحجم')->searchable()->preload(),
-                        ]),
-
-                        Forms\Components\Grid::make()->schema([
-                            Forms\Components\Select::make('unit_id')
-                                ->relationship('unit', 'name')->label('الوحدة')->required(),
-                            Forms\Components\TextInput::make('note')->label('ملاحظات')
-                        ]),
-                        Forms\Components\Grid::make(1)->schema([
-                            Forms\Components\DatePicker::make('shipping_date')->required()->label('تاريخ الشحنة')->default($date),
-                        ]),
-                    ]),
-                    Forms\Components\Fieldset::make('الأجور')->schema([
-                        Forms\Components\Grid::make(2)->schema([
-                            Forms\Components\TextInput::make('price')->numeric()->label('التحصيل دولار')->default(0)->columnSpan(3)->visible(fn($context) => $context == 'create'),
-                            Forms\Components\TextInput::make('far')->numeric()->label('أجور الشحن دولار')->default(0)->columnSpan(3)->visible(fn($context) => $context == 'create'),
-
-                        ])->columnSpan(2),
-                        Forms\Components\Grid::make(2)->schema([
-                            Forms\Components\TextInput::make('price_tr')->numeric()->label('التحصيل تركي')->default(0)->columnSpan(3)->visible(fn($context) => $context == 'create'),
-                            Forms\Components\TextInput::make('far_tr')->numeric()->label('أجور الشحن تركي')->default(0)->columnSpan(3)->visible(fn($context) => $context == 'create'),
-
-                        ])->columnSpan(2),
-                        Forms\Components\Grid::make()->schema([
-
-                            Forms\Components\Select::make('pick_id')->label('الموظف الملتقط')->options(User::where('level', LevelUserEnum::BRANCH->value)->orWhere('level', LevelUserEnum::STAFF->value)->orWhere('level', LevelUserEnum::ADMIN->value)->pluck('name', 'id'))->searchable()->required()->visible(fn($context) => $context === 'create'),
-
-                        ]),
-
-                        Forms\Components\Grid::make()->schema([
-                            Forms\Components\Radio::make('far_sender')
-                                ->options([
-                                    true => 'المرسل',
-                                    false => 'المستلم'
-                                ])->required()->default(false)->inline(false)
-                                ->label('أجور الشحن على')->visible(fn($context) => $context === 'create'),
-
-                            Forms\Components\TextInput::make('canceled_info')
-                                ->hidden(fn(Forms\Get $get): bool => !$get('active'))->live()
-                                ->label('سبب الارجاع في حال ارجاع الطلب')->visible(fn($context) => $context === 'create'),
-                        ])->visible(fn($context) => $context === 'create'),
-                    ])->columns(4),
-
-
-                ])->collapsible(true)->collapsed(false),
-
-
-                //
-                Forms\Components\Section::make('محتويات الطلب')
-                    ->schema([
-
-                        Forms\Components\Grid::make()->schema([
-                            Forms\Components\Repeater::make('packages')->relationship('packages')->schema([
-                                SpatieMediaLibraryFileUpload::make('package')->label('صورة الشحنة')->collection('packages'),
-                                Forms\Components\TextInput::make('info')->label('معلومات الشحنة'),
-                                Forms\Components\TextInput::make('quantity')->numeric()->label('الكمية'),
-                            ])
-                                ->label('محتويات الطلب')
-                                ->addable(false)
-                                ->deletable(false)->columnSpan(2)
-                                ->collapsible()
-                                ->collapsed(),
-                        ]),
-
-
-                    ])->collapsible(true)->collapsed(true),
-                Forms\Components\Section::make('سلسلة التوكيل')
-                    ->schema([
-                        Forms\Components\Repeater::make('agencies')->relationship('agencies')
-                            ->schema([
-
-                                Forms\Components\Select::make('user_id')->options(User::active()->where(fn($query) => $query->where('level', LevelUserEnum::STAFF->value)
-                                )->pluck('name', 'id'))->label('الموظف')->searchable(),
-                                Forms\Components\Radio::make('status')->options([
-                                    TaskAgencyEnum::TASK->value => TaskAgencyEnum::TASK->getLabel(),
-                                    TaskAgencyEnum::TRANSPORT->value => TaskAgencyEnum::TRANSPORT->getLabel(),
-
-                                ])->label('المهمة'),
-                                Forms\Components\TextInput::make('task')->label('المهمة المطلوب تنفيذها'),
-
-                            ])->defaultItems(2)
-                            ->deletable(true)
-                            ->addActionLabel('إضافة مهمة')
-                            ->label('المهام')
-                            ->itemLabel(fn(array $state): ?string => $state['package_name'] ?? ' مهمة...')->columnSpan(2), //
-                        // استخدام اسم الشحنة كتسمية
-
-
-                    ])->collapsible(true)->collapsed(true)->visible(false),
-
-
-            ]);
-
+        return auth()->user()->hasPermissionTo('delete_canceled::order');
     }
+
+    // public static function form(Form $form): Form
+    // {
+    //     $shipping = Order::latest()->first()?->shipping_date;
+    //     $date = now()->format('Y-m-d');
+    //     if ($shipping != null) {
+    //         try {
+    //             $date = Carbon::parse($shipping)->format('Y-m-d');
+    //         } catch (\Exception | \Error $e) {
+    //         }
+    //     }
+    //     return $form
+    //         ->schema([
+
+
+    //             Forms\Components\Section::make('معلومات الطلب')->schema([
+    //                 //                    SpatieMediaLibraryFileUpload::make('images')->collection('images')->label('أرفق صور')->imageEditor(),
+    //                 Forms\Components\Fieldset::make('المرسل')->schema([
+    //                     Forms\Components\Grid::make(2)
+    //                         ->schema([
+
+    //                             Forms\Components\Select::make('type')->options([
+    //                                 OrderTypeEnum::HOME->value => OrderTypeEnum::HOME->getLabel(),
+    //                                 OrderTypeEnum::BRANCH->value => OrderTypeEnum::BRANCH->getLabel(),
+
+    //                             ])->label('نوع الطلب')
+    //                                 ->required()
+    //                                 ->default(OrderTypeEnum::HOME->value)
+    //                                 ->reactive(),
+
+    //                             Forms\Components\Select::make('sender_id')
+    //                                 ->relationship('sender', 'name', fn($query) => $query->active())
+    //                                 ->label('معرف المرسل')->required()
+    //                                 ->afterStateUpdated(function ($state, $set) {
+    //                                     $user = User::active()->with('city')->find($state);
+    //                                     $branch = User::active()->where(['level' => LevelUserEnum::BRANCH->value, 'branch_id' => $user->branch_id])->first()?->id;
+    //                                     if ($user) {
+    //                                         $set('sender_phone', $user?->phone);
+    //                                         $set('sender_address', $user?->address);
+    //                                         $set('city_source_id', $user?->city_id);
+    //                                         $set('pick_id', $branch);
+    //                                     }
+    //                                 })->live()->visible(fn($context) => $context === 'create')
+    //                                 ->searchable()
+    //                                 ->noSearchResultsMessage('الاسم غير موجود')
+    //                                 ->suffixAction(
+    //                                     Action::make('copyCostToPrice')->label('إضافة مستخدم جديد')
+    //                                         ->icon('fas-user-plus')
+    //                                         ->form(function () {
+    //                                             $max = User::max('id') + 1;
+
+    //                                             return [
+    //                                                 Forms\Components\Grid::make()->schema([
+    //                                                     Forms\Components\TextInput::make('name')->label('الاسم')->required(),
+    //                                                     Forms\Components\TextInput::make('email')->label('البريد الالكتروني')->email()->required()->unique(table: 'users', column: 'email')->default('user' . $max . '@gmail.com'),
+    //                                                 ]),
+    //                                                 Forms\Components\Grid::make()->schema([
+    //                                                     Forms\Components\TextInput::make('username')->label('username')
+    //                                                         ->unique(table: 'users', column: 'username')->required()->default('user' . $max),
+    //                                                     Forms\Components\TextInput::make('password')->password()->dehydrateStateUsing(fn($state) => Hash::make($state))
+    //                                                         ->label('كلمة المرور')->revealable()->required()->default(12345),
+
+    //                                                 ]),
+
+    //                                                 Forms\Components\Grid::make(2) // تقسيم الحقول إلى صفين
+    //                                                     ->schema([
+    //                                                         Forms\Components\TextInput::make('phone_number')
+    //                                                             ->label('رقم الهاتف')
+    //                                                             ->placeholder('1234567890')
+    //                                                             ->numeric() // التأكد أن الحقل يقبل الأرقام فقط
+    //                                                             ->maxLength(15)
+    //                                                             ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
+    //                                                             ->tel()
+    //                                                             ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+    //                                                         //H: Made phone number not required to complete account registration while creating an order
+    //                                                         //->required(),
+
+    //                                                         Forms\Components\TextInput::make('country_code')
+    //                                                             ->label('رمز الدولة')
+    //                                                             ->placeholder('963')
+    //                                                             ->prefix('+')
+    //                                                             ->maxLength(3)
+    //                                                             ->numeric()
+    //                                                             ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+    //                                                         // تحديد الحد الأقصى للأرقام (بما في ذلك +)
+    //                                                         //H: Made phone number not required to complete account registration while creating an order
+    //                                                         //->required(),
+    //                                                     ]),
+    //                                                 Forms\Components\Grid::make()->schema([
+    //                                                     Forms\Components\Textarea::make('address')->label('العنوان التفصيلي'),
+    //                                                     Forms\Components\Select::make('city_id')->options(City::where('is_main', false)->pluck('name', 'id'))->required()
+    //                                                         ->label('البلدة/البلدة')
+    //                                                         ->searchable(),
+
+    //                                                 ]),
+
+    //                                                 Forms\Components\Grid::make()->schema([
+    //                                                     Forms\Components\TextInput::make('full_name')->label('الاسم الكامل'),
+    //                                                     Forms\Components\DatePicker::make('birth_date')->label('تاريخ الميلاد')
+    //                                                         ->format('Y-m-d')->default(now()),
+
+    //                                                 ]),
+
+
+    //                                             ];
+    //                                         })
+    //                                         ->action(function ($set, $data) {
+    //                                             try {
+    //                                                 $data['level'] = LevelUserEnum::USER->value;
+    //                                                 $data['branch_id'] = City::find($data['city_id'])?->branch_id;
+    //                                                 $data['status'] = ActivateStatusEnum::ACTIVE->value;
+    //                                                 $data['phone'] = '+' . $data['country_code'] . $data['phone_number'];
+    //                                                 unset($data['country_code'], $data['phone_number']);
+    //                                                 while (true) {
+    //                                                     $code = \Str::random(8);
+
+    //                                                     $user = User::where('num_id', $code)->first();
+    //                                                     if (!$user) {
+    //                                                         $data['num_id'] = $code;
+    //                                                         break;
+    //                                                     }
+    //                                                 }
+
+    //                                                 $userNew = User::create($data);
+    //                                                 $set('sender_id', $userNew->id);
+    //                                                 $set('sender_name', $userNew->name);
+    //                                                 $set('sender_address', $userNew->address);
+    //                                                 $set('sender_phone', $userNew->phone);
+    //                                                 Notification::make('success')->title('نجاح العملية')->body("تم إضافة المستخدم بنجاح IBAN:{$userNew->iban}")->success()->send();
+    //                                             } catch (\Exception | \Error $e) {
+    //                                                 Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
+    //                                             }
+    //                                         })
+    //                                     //
+    //                                 ),
+
+    //                         ]),
+
+    //                     Forms\Components\Grid::make()->schema([
+    //                         Forms\Components\Select::make('city_source_id')
+    //                             ->relationship('citySource', 'name')
+    //                             ->label('من بلدة')->reactive()->required()->searchable(),
+    //                         Forms\Components\TextInput::make('general_sender_name')->label('اسم المرسل'),
+
+
+    //                     ]),
+    //                     Forms\Components\Grid::make()->schema([
+
+
+    //                         Forms\Components\TextInput::make('sender_phone')->label('رقم هاتف المرسل')->required(),
+    //                         //H: disabled required for sender address in order creation panel
+    //                         Forms\Components\TextInput::make('sender_address')->label('عنوان المرسل'),
+    //                         //->required(),
+    //                     ]),
+
+
+    //                 ]),
+
+    //                 Forms\Components\Fieldset::make('المستلم')->schema([
+    //                     Forms\Components\Grid::make()->schema([
+    //                         Forms\Components\Select::make('receive_id')->label('معرف المستلم')->default(fn() => User::active()->where('email', 'zab@gmail.com')->first()?->id)
+    //                             ->options(User::active()->where('level', LevelUserEnum::USER->value)->pluck('name', 'id')->toArray())->searchable()
+    //                             ->afterStateUpdated(function ($state, $set) {
+    //                                 $user = User::with('city')->find($state);
+    //                                 if ($user) {
+    //                                     $set('receive_phone', $user?->phone);
+    //                                     $set('receive_address', $user?->address);
+
+    //                                     $set('sender_name', $user?->name);
+    //                                     $set('city_target_id', $user?->city_id);
+    //                                 }
+    //                             })->live()->visible(fn($context) => $context === 'create'),
+    //                         Forms\Components\Select::make('city_target_id')
+    //                             ->relationship('cityTarget', 'name')
+    //                             ->label('الى بلدة')->required()->searchable(),
+
+    //                     ]),
+    //                     Forms\Components\Grid::make()->schema([
+    //                         Forms\Components\TextInput::make('receive_address')->label('عنوان المستلم'),
+    //                         Forms\Components\TextInput::make('receive_phone')->label('هاتف المستلم'),
+
+    //                     ]),
+    //                     Forms\Components\Grid::make()->schema([
+    //                         Forms\Components\TextInput::make('global_name')->label('اسم المستلم'),
+
+    //                     ]),
+
+    //                 ]),
+
+    //                 Forms\Components\Fieldset::make('معلومات الشحنة')->schema([
+    //                     Forms\Components\Grid::make()->schema([
+    //                         Forms\Components\Select::make('weight_id')
+    //                             ->relationship('weight', 'name')
+    //                             ->label('الوزن')->searchable()->preload(),
+
+    //                         Forms\Components\Select::make('size_id')
+    //                             ->relationship('size', 'name')
+    //                             ->label('الحجم')->searchable()->preload(),
+    //                     ]),
+
+    //                     Forms\Components\Grid::make()->schema([
+    //                         Forms\Components\Select::make('unit_id')
+    //                             ->relationship('unit', 'name')->label('الوحدة')->required(),
+    //                         Forms\Components\TextInput::make('note')->label('ملاحظات')
+    //                     ]),
+    //                     Forms\Components\Grid::make(1)->schema([
+    //                         Forms\Components\DatePicker::make('shipping_date')->required()->label('تاريخ الشحنة')->default($date),
+    //                     ]),
+    //                 ]),
+    //                 Forms\Components\Fieldset::make('الأجور')->schema([
+    //                     Forms\Components\Grid::make(2)->schema([
+    //                         Forms\Components\TextInput::make('price')->numeric()->label('التحصيل دولار')->default(0)->columnSpan(3)->visible(fn($context) => $context == 'create'),
+    //                         Forms\Components\TextInput::make('far')->numeric()->label('أجور الشحن دولار')->default(0)->columnSpan(3)->visible(fn($context) => $context == 'create'),
+
+    //                     ])->columnSpan(2),
+    //                     Forms\Components\Grid::make(2)->schema([
+    //                         Forms\Components\TextInput::make('price_tr')->numeric()->label('التحصيل تركي')->default(0)->columnSpan(3)->visible(fn($context) => $context == 'create'),
+    //                         Forms\Components\TextInput::make('far_tr')->numeric()->label('أجور الشحن تركي')->default(0)->columnSpan(3)->visible(fn($context) => $context == 'create'),
+
+    //                     ])->columnSpan(2),
+    //                     Forms\Components\Grid::make()->schema([
+
+    //                         Forms\Components\Select::make('pick_id')->label('الموظف الملتقط')->options(User::where('level', LevelUserEnum::BRANCH->value)->orWhere('level', LevelUserEnum::STAFF->value)->orWhere('level', LevelUserEnum::ADMIN->value)->pluck('name', 'id'))->searchable()->required()->visible(fn($context) => $context === 'create'),
+
+    //                     ]),
+
+    //                     Forms\Components\Grid::make()->schema([
+    //                         Forms\Components\Radio::make('far_sender')
+    //                             ->options([
+    //                                 true => 'المرسل',
+    //                                 false => 'المستلم'
+    //                             ])->required()->default(false)->inline(false)
+    //                             ->label('أجور الشحن على')->visible(fn($context) => $context === 'create'),
+
+    //                         Forms\Components\TextInput::make('canceled_info')
+    //                             ->hidden(fn(Forms\Get $get): bool => !$get('active'))->live()
+    //                             ->label('سبب الارجاع في حال ارجاع الطلب')->visible(fn($context) => $context === 'create'),
+    //                     ])->visible(fn($context) => $context === 'create'),
+    //                 ])->columns(4),
+
+    //                 Forms\Components\Fieldset::make('كود الشحنة')
+    //                     ->schema([
+    //                         Forms\Components\Toggle::make('allow_duplicates')
+    //                             ->label('الشحنة مكودة')
+    //                             ->default(true)
+    //                             ->reactive()
+    //                             ->dehydrated(false),
+    //                         Forms\Components\TextInput::make('qr_code')
+    //                             ->label('الكود')
+    //                             ->rule(
+    //                                 fn(callable $get) => $get('allow_duplicates')
+    //                                     ? ['required', 'string', 'max:255', 'unique:orders,qr_code']
+    //                                     : ['nullable', 'string', 'max:255']
+    //                             )
+    //                             ->columnSpan(1),
+    //                     ])
+    //                     ->columns(1),
+    //             ])->collapsible(true)->collapsed(false),
+
+
+    //             //
+    //             Forms\Components\Section::make('محتويات الطلب')
+    //                 ->schema([
+
+    //                     Forms\Components\Grid::make()->schema([
+    //                         Forms\Components\Repeater::make('packages')->relationship('packages')->schema([
+    //                             SpatieMediaLibraryFileUpload::make('package')->label('صورة الشحنة')->collection('packages'),
+    //                             Forms\Components\TextInput::make('info')->label('معلومات الشحنة'),
+    //                             Forms\Components\TextInput::make('quantity')->numeric()->label('الكمية'),
+    //                         ])
+    //                             ->label('محتويات الطلب')
+    //                             ->addable(false)
+    //                             ->deletable(false)->columnSpan(2)
+    //                             ->collapsible()
+    //                             ->collapsed(),
+    //                     ]),
+
+
+    //                 ])->collapsible(true)->collapsed(true),
+    //             Forms\Components\Section::make('سلسلة التوكيل')
+    //                 ->schema([
+    //                     Forms\Components\Repeater::make('agencies')->relationship('agencies')
+    //                         ->schema([
+
+    //                             Forms\Components\Select::make('user_id')->options(User::active()->where(
+    //                                 fn($query) => $query->where('level', LevelUserEnum::STAFF->value)
+    //                             )->pluck('name', 'id'))->label('الموظف')->searchable(),
+    //                             Forms\Components\Radio::make('status')->options([
+    //                                 TaskAgencyEnum::TASK->value => TaskAgencyEnum::TASK->getLabel(),
+    //                                 TaskAgencyEnum::TRANSPORT->value => TaskAgencyEnum::TRANSPORT->getLabel(),
+
+    //                             ])->label('المهمة'),
+    //                             Forms\Components\TextInput::make('task')->label('المهمة المطلوب تنفيذها'),
+
+    //                         ])->defaultItems(2)
+    //                         ->deletable(true)
+    //                         ->addActionLabel('إضافة مهمة')
+    //                         ->label('المهام')
+    //                         ->itemLabel(fn(array $state): ?string => $state['package_name'] ?? ' مهمة...')->columnSpan(2), //
+    //                     // استخدام اسم الشحنة كتسمية
+
+
+    //                 ])->collapsible(true)->collapsed(true)->visible(false),
+
+
+    //         ]);
+    // }
 
     public static function table(Table $table): Table
     {
@@ -384,7 +397,7 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
         $cities = City::selectRaw('id,name,city_id')->get();
 
         return $table
-//            ->poll(10)
+            //            ->poll(10)
             ->columns([
                 //  Tables\Columns\SpatieMediaLibraryImageColumn::make('images')->collection('images')->circular()->openUrlInNewTab(),
                 /*   PopoverColumn::make('qr_url')
@@ -394,6 +407,14 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
                        ->icon('heroicon-o-qr-code'),*/
 
                 Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->code, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
+                    'green' => ['style' => 'background-color:#55FF88;'],
+
+                    default => ['style' => ''],
+                }),
+                Tables\Columns\TextColumn::make('qr_code')->label('الكود'),
+
+                Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
+                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ إنشاء الشحنة')->extraCellAttributes(fn(Model $record) => match ($record->color) {
                     'green' => ['style' => 'background-color:#55FF88;'],
 
                     default => ['style' => ''],
@@ -478,17 +499,13 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record) => 'موظف الإلتقاط : ' . $record->pick?->name)
                     ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل'),
                 Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
-                Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
-                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ إنشاء الشحنة')->extraCellAttributes(fn(Model $record) => match ($record->color) {
-                    'green' => ['style' => 'background-color:#55FF88;'],
-
-                    default => ['style' => ''],
-                })
 
 
-            ])->defaultSort('created_at', 'desc')
+            ])
+            ->paginated([10, 25, 50, 100 , 200 , 'all'])
+            ->defaultSort('created_at', 'desc')
             ->filters([
-//
+                //
 
                 Tables\Filters\Filter::make('created_at')
                     ->form([
@@ -596,7 +613,7 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
 
 
 
-//                Tables\Actions\DeleteAction::make(),
+                //                Tables\Actions\DeleteAction::make(),
 
             ])
             ->headerActions([
@@ -604,9 +621,7 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
                     ExcelExport::make()->withChunkSize(100)->fromTable()
                 ])
             ])
-            ->bulkActions([
-
-            ]);
+            ->bulkActions([]);
     }
 
     public static function getRelations(): array
@@ -620,8 +635,15 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
     {
         return [
             'index' => Pages\ListCanceledOrders::route('/'),
-            'create' => Pages\CreateCanceledOrder::route('/create'),
+            'create' => \App\Filament\Admin\Resources\OrderResource\Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditCanceledOrder::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return Cache::remember('navigation_badge_count_success_order', now()->addDay(), function () {
+            return static::getModel()::where('status', OrderStatusEnum::CANCELED)->count();
+        });
     }
 }

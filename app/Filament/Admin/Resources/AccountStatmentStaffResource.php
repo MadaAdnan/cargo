@@ -87,6 +87,7 @@ class AccountStatmentStaffResource extends Resource implements HasShieldPermissi
             //   ->poll(10)
             ->columns([
 
+                Tables\Columns\TextColumn::make('id')->label('رقم  الفاتورة'),
                 Tables\Columns\TextColumn::make('credit')->label('مدين'),
                 Tables\Columns\TextColumn::make('debit')->label('دائن'),
                 Tables\Columns\TextColumn::make('currency.code')->label('العملة')->sortable(),
@@ -96,10 +97,13 @@ class AccountStatmentStaffResource extends Resource implements HasShieldPermissi
                 Tables\Columns\TextColumn::make('order.id')->description(fn($record) => $record->order?->code)->label('الطلب'),
                 Tables\Columns\TextColumn::make('order.sender.name')->label('المرسل')->description(fn($record) => $record->order?->general_sender_name != null ? "{$record->order->general_sender_name}" : ""),
                 Tables\Columns\TextColumn::make('order.receive.name')->label('المستلم')->description(fn($record) => $record->order?->global_name != null ? " {$record->order->global_name}" : ""),
+                Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
                 Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->description(fn($record) => $record->created_at->format('H:i'))
                     ->label('التاريخ والوقت'),
 
-            ])->defaultSort('id', 'desc')
+            ])
+            ->paginated([10, 25, 50, 100 , 200 , 'all'])
+            ->defaultSort('id', 'desc')
             //H: up here, added default sorting to table based on id to show the latest total of an account
             ->filters([
                 Tables\Filters\SelectFilter::make('user_id')->options(User::where('level', LevelUserEnum::BRANCH->value)
@@ -108,7 +112,7 @@ class AccountStatmentStaffResource extends Resource implements HasShieldPermissi
                 Tables\Filters\SelectFilter::make('currency_id')->options([
                     1 => 'دولار',
                     2 => 'تركي'
-                ])->default(1)->label('العملة'),
+                ])->label('العملة'),
                 Tables\Filters\TernaryFilter::make('pending')->trueLabel('قيد التحصيل')->falseLabel('مكتمل')
                     ->queries(
                         true: fn($query) => $query->where('pending', true),

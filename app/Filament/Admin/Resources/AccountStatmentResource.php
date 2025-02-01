@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\AccountStatmentResource\Pages;
 use App\Filament\Admin\Resources\AccountStatmentResource\RelationManagers;
 use App\Models\AccountStatment;
 use App\Models\Balance;
+use App\Models\User;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -25,7 +26,7 @@ use pxlrbt\FilamentExcel\Exports\ExcelExport;
 class AccountStatmentResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Balance::class;
-  public static function getPermissionPrefixes(): array
+    public static function getPermissionPrefixes(): array
     {
         return [
             'view',
@@ -44,10 +45,10 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
     protected static ?string $pluralModelLabel = 'كشف حساب';
     protected static ?string $label = 'كشف حساب';
     protected static ?string $navigationLabel = 'كشف حساب';
-public static function canAccess(): bool
-{ return auth()->user()->hasPermissionTo('view_account::statment');
-
-}
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('view_account::statment');
+    }
 
     public static function canCreate(): bool
     {
@@ -65,7 +66,8 @@ public static function canAccess(): bool
     }
 
     public static function canDeleteAny(): bool
-    {return auth()->user()->hasPermissionTo('delete_account::statment');
+    {
+        return auth()->user()->hasPermissionTo('delete_account::statment');
     }
 
     public static function form(Form $form): Form
@@ -79,9 +81,9 @@ public static function canAccess(): bool
     public static function table(Table $table): Table
     {
         return $table
-          //  ->poll(10)
+            //  ->poll(10)
             ->columns([
-
+                Tables\Columns\TextColumn::make('id')->label('رقم  الفاتورة'),
                 Tables\Columns\TextColumn::make('credit')->label('مدين'),
                 Tables\Columns\TextColumn::make('debit')->label('دائن'),
                 Tables\Columns\TextColumn::make('currency.code')->label('العملة'),
@@ -117,11 +119,14 @@ public static function canAccess(): bool
 
                 Tables\Columns\TextColumn::make('info')->label('الملاحظات'),
                 Tables\Columns\TextColumn::make('customer_name')->label('الطرف المقابل')->searchable(),
-                Tables\Columns\TextColumn::make('order.id')->description(fn($record)=>$record->order?->code)->label('الطلب')->searchable(),
+                Tables\Columns\TextColumn::make('order.id')->description(fn($record) => $record->order?->code)->label('الطلب')->searchable(),
                 Tables\Columns\TextColumn::make('order.sender.name')->label('المرسل')->description(fn($record) => $record->order?->general_sender_name != null ? "{$record->order->general_sender_name}" : "")->searchable(),
-                Tables\Columns\TextColumn::make('order.receive.name')->label('المستلم')->description(fn($record) => $record->order?->global_name != null ? " {$record->order->global_name}" : ""),
+                Tables\Columns\TextColumn::make('order.global_name')->label('المستلم'),
+                Tables\Columns\TextColumn::make('order.status')->label('حالة الطلب'),
+                Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
                 Tables\Columns\TextColumn::make('order.cityTarget.name')->label('المدينة'),
-                Tables\Columns\TextColumn::make('pending')->label('النوع')->formatStateUsing(fn($record) => $record->pending==true?"قيد التحصيل" : "")->color('danger'),
+                Tables\Columns\TextColumn::make('pending')->label('النوع')
+                ->formatStateUsing(fn($record) => $record->pending == true ? "قيد التحصيل" : "")->color('danger'),
 
                 //H: disabled the cell
                 //Tables\Columns\TextColumn::make('total')->label('الرصيد'),
@@ -130,16 +135,29 @@ public static function canAccess(): bool
                 Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->description(fn($record) => $record->created_at->format('H:i'))
                     ->label('التاريخ والوقت'),
 
-            ])->defaultSort('id', 'desc')
+            ])
+            ->paginated([10, 25, 50, 100 ,200 , 'all'])
+            ->defaultSort('id', 'desc')
             //H: up here, added default sorting to table based on id to show the latest total of an account
             ->filters([
-                Tables\Filters\SelectFilter::make('user_id')->relationship('user', 'name')->searchable()->default(0)->label('المستخدم'),
+                Tables\Filters\SelectFilter::make('user_id')
+                    ->relationship('user', 'name', function ($query) {
+                        $query->withCount('balances')
+                            ->orderBy('balances_count', 'desc');
+                    })
+                    ->options(function () {
+                        return User::withCount('balances')
+                            ->orderBy('balances_count', 'desc')
+                            ->take(30)
+                            ->pluck('name', 'id');
+                    })
+                    ->searchable()->default(0)->label('المستخدم')->preload(),
 
 
                 Tables\Filters\TernaryFilter::make('pending')->trueLabel('قيد التحصيل')->falseLabel('مكتمل')
                     ->queries(
                         true: fn($query) => $query->pending(),
-                        false: fn($query) => $query->where('pending',false),
+                        false: fn($query) => $query->where('pending', false),
                         blank: fn($query) => $query
                     ),
             ])

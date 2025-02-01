@@ -39,7 +39,9 @@ use App\Enums\OrderTypeEnum;
 use App\Enums\OrderStatusEnum;
 use Filament\Forms\Components\Tabs;
 use App\Enums\BayTypeEnum;
+use Filament\Forms\Components\Textarea;
 use Filament\Infolists\Infolist;
+use Illuminate\Support\Facades\Cache;
 use PhpOffice\PhpSpreadsheet\Calculation\LookupRef\Selection;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
@@ -53,10 +55,10 @@ class OrderResource extends Resource
 
     protected static ?string $label = 'شحنة';
     protected static ?string $navigationLabel = 'الكل';
-    protected static ?string $navigationGroup='الشحنات';
+    protected static ?string $navigationGroup = 'الشحنات';
 
     protected static ?string $navigationIcon = 'heroicon-o-truck';
-protected static ?int $navigationSort=1;
+    protected static ?int $navigationSort = 1;
     public static function canDelete(Model $record): bool
     {
         return false;
@@ -92,7 +94,7 @@ protected static ?int $navigationSort=1;
 
 
                 Forms\Components\Section::make('معلومات الطلب')->schema([
-//                    SpatieMediaLibraryFileUpload::make('images')->collection('images')->label('أرفق صور')->imageEditor(),
+                    //                    SpatieMediaLibraryFileUpload::make('images')->collection('images')->label('أرفق صور')->imageEditor(),
                     Forms\Components\Fieldset::make('المرسل')->schema([
                         Forms\Components\Grid::make(2)
                             ->schema([
@@ -107,112 +109,116 @@ protected static ?int $navigationSort=1;
                                     ->reactive(),
 
                                 Forms\Components\Select::make('sender_id')
-                                    ->relationship('sender', 'name', fn($query) => $query->active())
+                                    // ->relationship('sender', 'name', fn($query) => $query->active())
+                                    ->options(function () {
+                                        $users = User::where('level', LevelUserEnum::USER->value)->get();
+                                        foreach ($users as $user) {
+                                            $options[$user->id] = $user->name;
+                                        }
+                                        return $options;
+                                    })
                                     ->label('معرف المرسل')->required()
                                     ->afterStateUpdated(function ($state, $set) {
                                         $user = User::active()->with('city')->find($state);
-                                        $branch = User::active()->where(['level' => LevelUserEnum::BRANCH->value, 'branch_id' => $user->branch_id])->first()?->id;
+                                        $branch = User::active()->where(['level' => LevelUserEnum::BRANCH->value, 'branch_id' => $user?->branch_id])->first()?->id;
                                         if ($user) {
                                             $set('sender_phone', $user?->phone);
                                             $set('sender_address', $user?->address);
                                             $set('city_source_id', $user?->city_id);
                                             $set('pick_id', $branch);
-
-
                                         }
                                     })->live()->visible(fn($context) => $context === 'create')
                                     ->searchable()
                                     ->noSearchResultsMessage('الاسم غير موجود')
-                                    ->suffixAction(Action::make('copyCostToPrice')->label('إضافة مستخدم جديد')
-                                        ->icon('fas-user-plus')
-                                        ->form(function () {
-                                            $max = User::max('id') + 1;
+                                    ->suffixAction(
+                                        Action::make('copyCostToPrice')->label('إضافة مستخدم جديد')
+                                            ->icon('fas-user-plus')
+                                            ->form(function () {
+                                                $max = User::max('id') + 1;
 
-                                            return [
-                                                Forms\Components\Grid::make()->schema([
-                                                    Forms\Components\TextInput::make('name')->label('الاسم')->required(),
-                                                    Forms\Components\TextInput::make('email')->label('البريد الالكتروني')->email()->required()->unique(table: 'users', column: 'email')->default('user' . $max . '@gmail.com'),
-                                                ]),
-                                                Forms\Components\Grid::make()->schema([
-                                                    Forms\Components\TextInput::make('username')->label('username')
-                                                        ->unique(table: 'users', column: 'username')->required()->default('user' . $max),
-                                                    Forms\Components\TextInput::make('password')->password()->dehydrateStateUsing(fn($state) => Hash::make($state))
-                                                        ->label('كلمة المرور')->revealable()->required()->default(12345),
+                                                return [
+                                                    Forms\Components\Grid::make()->schema([
+                                                        Forms\Components\TextInput::make('name')->label('الاسم')->required(),
+                                                        Forms\Components\TextInput::make('email')->label('البريد الالكتروني')->email()->required()->unique(table: 'users', column: 'email')->default('user' . $max . '@gmail.com'),
+                                                    ]),
+                                                    Forms\Components\Grid::make()->schema([
+                                                        Forms\Components\TextInput::make('username')->label('username')
+                                                            ->unique(table: 'users', column: 'username')->required()->default('user' . $max),
+                                                        Forms\Components\TextInput::make('password')->password()->dehydrateStateUsing(fn($state) => Hash::make($state))
+                                                            ->label('كلمة المرور')->revealable()->required()->default(12345),
 
-                                                ]),
+                                                    ]),
 
-                                                Forms\Components\Grid::make(2) // تقسيم الحقول إلى صفين
-                                                ->schema([
-                                                    Forms\Components\TextInput::make('phone_number')
-                                                        ->label('رقم الهاتف')
-                                                        ->placeholder('1234567890')
-                                                        ->numeric() // التأكد أن الحقل يقبل الأرقام فقط
-                                                        ->maxLength(15)
-                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
-                                                        ->tel()
-                                                        ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),// تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-                                                    //H: Made phone number not required to complete account registration while creating an order
-                                                    //->required(),
+                                                    Forms\Components\Grid::make(2) // تقسيم الحقول إلى صفين
+                                                        ->schema([
+                                                            Forms\Components\TextInput::make('phone_number')
+                                                                ->label('رقم الهاتف')
+                                                                ->placeholder('1234567890')
+                                                                ->numeric() // التأكد أن الحقل يقبل الأرقام فقط
+                                                                ->maxLength(15)
+                                                                ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
+                                                                ->tel()
+                                                                ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                                            //H: Made phone number not required to complete account registration while creating an order
+                                                            //->required(),
 
-                                                    Forms\Components\TextInput::make('country_code')
-                                                        ->label('رمز الدولة')
-                                                        ->placeholder('963')
-                                                        ->prefix('+')
-                                                        ->maxLength(3)
-                                                        ->numeric()
-                                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
-                                                    // تحديد الحد الأقصى للأرقام (بما في ذلك +)
-                                                    //H: Made phone number not required to complete account registration while creating an order
-                                                    //->required(),
-                                                ]),
-                                                Forms\Components\Grid::make()->schema([
-                                                    Forms\Components\Textarea::make('address')->label('العنوان التفصيلي'),
-                                                    Forms\Components\Select::make('city_id')->options(City::where('is_main', false)->pluck
-                                                    ('name', 'id'))->required()
-                                                        ->label('البلدة/البلدة')
-                                                        ->searchable(),
+                                                            Forms\Components\TextInput::make('country_code')
+                                                                ->label('رمز الدولة')
+                                                                ->placeholder('963')
+                                                                ->prefix('+')
+                                                                ->maxLength(3)
+                                                                ->numeric()
+                                                                ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']), // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                                            // تحديد الحد الأقصى للأرقام (بما في ذلك +)
+                                                            //H: Made phone number not required to complete account registration while creating an order
+                                                            //->required(),
+                                                        ]),
+                                                    Forms\Components\Grid::make()->schema([
+                                                        Forms\Components\Textarea::make('address')->label('العنوان التفصيلي'),
+                                                        Forms\Components\Select::make('city_id')->options(City::where('is_main', false)->pluck('name', 'id'))->required()
+                                                            ->label('البلدة/البلدة')
+                                                            ->searchable(),
 
-                                                ]),
+                                                    ]),
 
-                                                Forms\Components\Grid::make()->schema([
-                                                    Forms\Components\TextInput::make('full_name')->label('الاسم الكامل'),
-                                                    Forms\Components\DatePicker::make('birth_date')->label('تاريخ الميلاد')
-                                                        ->format('Y-m-d')->default(now()),
+                                                    Forms\Components\Grid::make()->schema([
+                                                        Forms\Components\TextInput::make('full_name')->label('الاسم الكامل'),
+                                                        Forms\Components\DatePicker::make('birth_date')->label('تاريخ الميلاد')
+                                                            ->format('Y-m-d')->default(now()),
 
-                                                ]),
+                                                    ]),
 
 
-                                            ];
-                                        })
-                                        ->action(function ($set, $data) {
-                                            try {
-                                                $data['level'] = LevelUserEnum::USER->value;
-                                                $data['branch_id'] = City::find($data['city_id'])?->branch_id;
-                                                $data['status'] = ActivateStatusEnum::ACTIVE->value;
-                                                $data['phone'] = '+' . $data['country_code'] . $data['phone_number'];
-                                                unset($data['country_code'], $data['phone_number']);
-                                                while (true) {
-                                                    $code = \Str::random(8);
+                                                ];
+                                            })
+                                            ->action(function ($set, $data) {
+                                                try {
+                                                    $data['level'] = LevelUserEnum::USER->value;
+                                                    $data['branch_id'] = City::find($data['city_id'])?->branch_id;
+                                                    $data['status'] = ActivateStatusEnum::ACTIVE->value;
+                                                    $data['phone'] = '+' . $data['country_code'] . $data['phone_number'];
+                                                    unset($data['country_code'], $data['phone_number']);
+                                                    while (true) {
+                                                        $code = \Str::random(8);
 
-                                                    $user = User::where('num_id', $code)->first();
-                                                    if (!$user) {
-                                                        $data['num_id'] = $code;
-                                                        break;
+                                                        $user = User::where('num_id', $code)->first();
+                                                        if (!$user) {
+                                                            $data['num_id'] = $code;
+                                                            break;
+                                                        }
                                                     }
+
+                                                    $userNew = User::create($data);
+                                                    $set('sender_id', $userNew->id);
+                                                    $set('sender_name', $userNew->name);
+                                                    $set('sender_address', $userNew->address);
+                                                    $set('sender_phone', $userNew->phone);
+                                                    Notification::make('success')->title('نجاح العملية')->body("تم إضافة المستخدم بنجاح IBAN:{$userNew->iban}")->success()->send();
+                                                } catch (\Exception | \Error $e) {
+                                                    Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
                                                 }
-
-                                                $userNew = User::create($data);
-                                                $set('sender_id', $userNew->id);
-                                                $set('sender_name', $userNew->name);
-                                                $set('sender_address', $userNew->address);
-                                                $set('sender_phone', $userNew->phone);
-                                                Notification::make('success')->title('نجاح العملية')->body("تم إضافة المستخدم بنجاح IBAN:{$userNew->iban}")->success()->send();
-                                            } catch (\Exception | \Error $e) {
-                                                Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
-                                            }
-
-                                        })
-                                    //
+                                            })
+                                        //
                                     ),
 
                             ]),
@@ -239,7 +245,7 @@ protected static ?int $navigationSort=1;
 
                     Forms\Components\Fieldset::make('المستلم')->schema([
                         Forms\Components\Grid::make()->schema([
-                            Forms\Components\Select::make('receive_id')->label('معرف المستلم')->default(fn() => User::active()->where('email', 'zab@gmail.com')->first()?->id)
+                            Forms\Components\Select::make('receive_id')->label('معرف المستلم')->required()->default(fn() => User::active()->where('email', 'zab@gmail.com')->first()?->id)
                                 ->options(User::active()->where('level', LevelUserEnum::USER->value)->pluck('name', 'id')->toArray())->searchable()
                                 ->afterStateUpdated(function ($state, $set) {
                                     $user = User::with('city')->find($state);
@@ -253,7 +259,7 @@ protected static ?int $navigationSort=1;
                                 })->live()->visible(fn($context) => $context === 'create'),
                             Forms\Components\Select::make('city_target_id')
                                 ->relationship('cityTarget', 'name')
-                                ->label('الى بلدة')->required()->searchable(),
+                                ->label('الى بلدة')->required()->searchable()->preload(),
 
                         ]),
                         Forms\Components\Grid::make()->schema([
@@ -272,13 +278,11 @@ protected static ?int $navigationSort=1;
                         Forms\Components\Grid::make()->schema([
                             Forms\Components\Select::make('weight_id')
                                 ->relationship('weight', 'name')
-                                ->label
-                                ('الوزن')->searchable()->preload(),
+                                ->label('الوزن')->searchable()->preload(),
 
                             Forms\Components\Select::make('size_id')
                                 ->relationship('size', 'name')
-                                ->label
-                                ('الحجم')->searchable()->preload(),
+                                ->label('الحجم')->searchable()->preload(),
                         ]),
 
                         Forms\Components\Grid::make()->schema([
@@ -321,6 +325,23 @@ protected static ?int $navigationSort=1;
                         ])->visible(fn($context) => $context === 'create'),
                     ])->columns(4),
 
+                    Forms\Components\Fieldset::make('كود الشحنة')
+                        ->schema([
+                            Forms\Components\Toggle::make('allow_duplicates')
+                                ->label('الشحنة مكودة')
+                                ->default(true)
+                                ->reactive()
+                                ->dehydrated(false),
+                            Forms\Components\TextInput::make('qr_code')
+                                ->label('الكود')
+                                ->rule(
+                                    fn(callable $get) => $get('allow_duplicates')
+                                        ? ['required', 'string', 'max:255', 'unique:orders,qr_code']
+                                        : ['nullable', 'string', 'max:255']
+                                )
+                                ->columnSpan(1),
+                        ])
+                        ->columns(1)
 
                 ])->collapsible(true)->collapsed(false),
 
@@ -349,7 +370,8 @@ protected static ?int $navigationSort=1;
                         Forms\Components\Repeater::make('agencies')->relationship('agencies')
                             ->schema([
 
-                                Forms\Components\Select::make('user_id')->options(User::active()->where(fn($query) => $query->where('level', LevelUserEnum::STAFF->value)
+                                Forms\Components\Select::make('user_id')->options(User::active()->where(
+                                    fn($query) => $query->where('level', LevelUserEnum::STAFF->value)
                                 )->pluck('name', 'id'))->label('الموظف')->searchable(),
                                 Forms\Components\Radio::make('status')->options([
                                     TaskAgencyEnum::TASK->value => TaskAgencyEnum::TASK->getLabel(),
@@ -365,12 +387,10 @@ protected static ?int $navigationSort=1;
                             ->itemLabel(fn(array $state): ?string => $state['package_name'] ?? ' مهمة...')->columnSpan(2), //
                         // استخدام اسم الشحنة كتسمية
 
-
                     ])->collapsible(true)->collapsed(true)->visible(false),
 
 
             ]);
-
     }
 
     public static function table(Table $table): Table
@@ -379,7 +399,7 @@ protected static ?int $navigationSort=1;
         $cities = City::selectRaw('id,name,city_id')->get();
 
         return $table
-//            ->poll(10)
+            //            ->poll(10)
             ->columns([
                 //  Tables\Columns\SpatieMediaLibraryImageColumn::make('images')->collection('images')->circular()->openUrlInNewTab(),
                 /*   PopoverColumn::make('qr_url')
@@ -388,15 +408,27 @@ protected static ?int $navigationSort=1;
                        ->content(fn($record) => \LaraZeus\Qr\Facades\Qr::render($record->code))
                        ->icon('heroicon-o-qr-code'),*/
 
-                Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->code, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
+                Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->qr_code, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
                     'green' => ['style' => 'background-color:#55FF88;'],
 
                     default => ['style' => ''],
                 }),
-                Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
+
+                Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة')->description(fn($record) => $record->created_at, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
+                    'green' => ['style' => 'background-color:#55FF88;'],
+
+                    default => ['style' => ''],
+                }),
+                Tables\Columns\TextColumn::make('createdBy.name')->label('الموظفون')
+                    ->formatStateUsing(fn($state) => 'المنشأ : ' . $state)
+                    ->description(fn($record) => 'المعدل : ' . $record?->updatedBy?->name, 'bottom'),
 
 
-                Tables\Columns\TextColumn::make('type')->label('نوع الطلب')
+                Tables\Columns\TextColumn::make('far_sender')
+                    ->formatStateUsing(fn($state) => FarType::tryFrom($state)?->getLabel())
+                    ->color(fn($state) => FarType::tryFrom($state)?->getColor())
+                    ->icon(fn($state) => FarType::tryFrom($state)?->getIcon())
+                    ->label('حالة الدفع')
                     ->description(fn($record) => $record->status?->getLabel())
                     ->extraCellAttributes(function ($record) {
                         $list = [];
@@ -419,32 +451,32 @@ protected static ?int $navigationSort=1;
                         }
                         return $list;
                     }),
-                Tables\Columns\TextColumn::make('far_sender')->formatStateUsing(fn($state) => FarType::tryFrom($state)?->getLabel())
-                    ->color(fn($state) => FarType::tryFrom($state)?->getColor())
-                    ->icon(fn($state) => FarType::tryFrom($state)?->getIcon())
-                    ->label('حالة الدفع')
-                    ->description(fn($record) => $record->created_at->diffForHumans())
-                    ->searchable(),
+                // Tables\Columns\TextColumn::make('far_sender')->formatStateUsing(fn($state) => FarType::tryFrom($state)?->getLabel())
+                //     ->color(fn($state) => FarType::tryFrom($state)?->getColor())
+                //     ->icon(fn($state) => FarType::tryFrom($state)?->getIcon())
+                //     ->label('حالة الدفع')
+                //     ->description(fn($record) => $record->created_at->diffForHumans())
+                //     ->searchable(),
 
-                Tables\Columns\TextColumn::make('unit.name')->label('نوع الشحنة'),
+                Tables\Columns\TextColumn::make('unit.name')->label('نوع الشحنة')->toggleable(isToggledHiddenByDefault: false),
 
-                Tables\Columns\TextColumn::make('price')->formatStateUsing(fn($state) => $state . ' $ ')->label('التحصيل USD')/*->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ ')*/,
-                Tables\Columns\TextColumn::make('far')->formatStateUsing(fn($state) => $state . ' $ ')->label('الأجور USD')->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('far')->formatStateUsing(fn($state) => 'الاجور : ' . $state)->label('USD')
+                    ->description(fn($record) => 'التحصيل : ' . $record->price, 'above')
+                    ->toggleable(isToggledHiddenByDefault: false)/*->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ ')*/,
 
-                Tables\Columns\TextColumn::make('price_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('التحصيل TRY')/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
-                Tables\Columns\TextColumn::make('far_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('الأجور TRY')->toggleable(isToggledHiddenByDefault: false)/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
-
-                Tables\Columns\TextColumn::make('currency.name')->label('العملة'),
-
-                Tables\Columns\TextColumn::make('sender.name')->label('اسم المرسل')->description(fn($record) => $record->general_sender_name)->searchable(),
-
-                Tables\Columns\TextColumn::make('citySource.name')->label('من بلدة')->description(fn($record) => " {$record->citySource?->city?->name}")->searchable(),
-                Tables\Columns\TextColumn::make('cityTarget.name')->label('إلى بلدة')->description(fn($record) => " {$record->cityTarget?->city?->name}")->searchable(),
-                Tables\Columns\TextColumn::make('branchSource.name')->label('من فرع')->description(fn($record) => "إلى فرع  {$record->branchTarget?->name}")->searchable(),
+                Tables\Columns\TextColumn::make('far_tr')->formatStateUsing(fn($state) => 'الاجور : ' . $state)->label('TRY')
+                    ->description(fn($record) => 'التحصيل : ' . $record->price_tr, 'above')
+                    ->toggleable(isToggledHiddenByDefault: false),
 
 
-                Tables\Columns\TextColumn::make('global_name')->label('معرف المستلم ')->description(fn($record) => $record->receive?->name)->searchable(),
-                Tables\Columns\TextColumn::make('receive_phone')
+                Tables\Columns\TextColumn::make('currency.name')->label('العملة')->toggleable(isToggledHiddenByDefault: false),
+
+                Tables\Columns\TextColumn::make('sender.name')->label('المرسل / المستلم')->formatStateUsing(fn($state) => 'المرسل : ' . $state)->description(fn($record) => 'المستلم : ' . $record->global_name)->searchable()->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('citySource')->label('بلدة')->formatStateUsing(fn($state) => 'من : ' . $state?->name . ' ( ' . $state?->city?->name . ' )')->description(fn($record) => "إلى : {$record->cityTarget?->name} ( {$record->cityTarget?->city?->name} )")->searchable()->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('branchSource.name')->label('فرع')->formatStateUsing(fn($state) => 'من : ' . $state)->description(fn($record) => "إلى : {$record->branchTarget?->name}")->searchable()->toggleable(isToggledHiddenByDefault: false),
+
+
+                Tables\Columns\TextColumn::make('receive_phone')->toggleable(isToggledHiddenByDefault: false)
                     ->formatStateUsing(fn($record) => (string)$record->receive_address . ' - ' . (string)$record->receive_phone)->label('هاتف المستلم ')
                     /*->description(fn($record) =>  ltrim($record?->receive_phone, '+'))*/
                     ->url(function ($record) {
@@ -471,19 +503,16 @@ protected static ?int $navigationSort=1;
                     })->openUrlInNewTab()
                     ->searchable()->color('danger'),
                 Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record) => 'موظف الإلتقاط : ' . $record->pick?->name)
-                    ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل'),
-                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
-                Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
-                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ إنشاء الشحنة')->extraCellAttributes(fn(Model $record) => match ($record->color) {
-                    'green' => ['style' => 'background-color:#55FF88;'],
-
-                    default => ['style' => ''],
-                })
+                    ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل')->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary')->toggleable(isToggledHiddenByDefault: false),
 
 
-            ])->defaultSort('created_at', 'desc')
+
+            ])
+            ->paginated([10, 25, 50, 100 , 'all'])
+            ->defaultSort('created_at', 'desc')
             ->filters([
-//
+                //
 
                 Tables\Filters\Filter::make('created_at')
                     ->form([
@@ -593,240 +622,240 @@ protected static ?int $navigationSort=1;
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
 
-//                Tables\Actions\ActionGroup::make([
-//                    Tables\Actions\Action::make('set_picker')->form([
-//                        Forms\Components\Select::make('pick_id')
-//                            ->options(User::selectRaw('id,name')->whereIn('level', [
-//                                LevelUserEnum::STAFF->value,
-//                                LevelUserEnum::BRANCH->value,
-//                                LevelUserEnum::ADMIN->value,
-//                            ])->pluck('name', 'id'))
-//                            ->searchable()->label('موظف الإلتقاط'),
-//                    ])
-//                        ->action(function ($record, $data) {
-//                            DB::beginTransaction();
-//                            try {
-//                                if ($record->pick_id == null) {
-//                                    $record->update(['pick_id' => $data['pick_id'], 'status' => OrderStatusEnum::AGREE->value]);
-//                                    HelperBalance::setPickOrder($record);
-//                                    Notification::make('success')->title('نجاح العملية')->body("تم تحديد موظف الإلتقاط بنجاح ")->success()->send();
-//                                    DB::commit();
-//                                }
-//
-//                            } catch (\Exception $e) {
-//                                DB::rollBack();
-//                                Notification::make('error')->title('فشل العملية')->body("{$e->getMessage()}")->danger()->send();
-//                            }
-//
-//                        })
-//                        ->visible(fn($record) => $record->pick_id == null)
-//                        ->label('تحديد موظف الإلتقاط')->color('info'),
-//
-//                    Tables\Actions\Action::make('set_given')->form([
-//                        Forms\Components\Select::make('given_id')
-//                            ->searchable()
-//                            ->getSearchResultsUsing(fn(string $search) => User::active()->selectRaw('id,name')->whereIn('level', [
-//                                LevelUserEnum::STAFF->value,
-//                                LevelUserEnum::BRANCH->value,
-//                                LevelUserEnum::ADMIN->value,
-//                            ])->where('name', 'like', "%$search%")->take(10)->pluck('name', 'id'))
-//                            ->label('موظف التسليم'),
-//                    ])
-//                        ->action(function ($record, $data) {
-//
-//                            $record->update(['given_id' => $data['given_id'], 'status' => OrderStatusEnum::TRANSFER->value]);
-//                            Notification::make('success')->title('نجاح العملية')->body("تم تحديد موظف التسليم بنجاح ")->success()->send();
-//
-//
-//                        })
-//                        ->visible(fn($record) => $record->given_id == null && ($record->status === OrderStatusEnum::PICK || $record->status === OrderStatusEnum::TRANSFER))
-//                        ->label('تحديد موظف التسليم')->color('info'),
-//
-//                    Tables\Actions\Action::make('success_pick')
-//                        ->form(function ($record) {
-//                            $farMessage = 'انت على وشك تأكيد إستلام مبلغ : ';
-//                            if ($record->far_sender == true && ($record->far > 0 || $record->far_tr > 0)) {
-//
-//                                if ($record->far_tr > 0) {
-//
-//                                    $farMessage .= $record->far_tr . ' TRY ';
-//                                }
-//                                if ($record->far > 0) {
-//                                    $farMessage .= ' و' . $record->far . ' USD ';
-//                                }
-//                                $farMessage .= 'أجور شحن';
-//                                return [
-//                                    Forms\Components\Placeholder::make('msg')->content($farMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
-//                                ];
-//                            }
-//                            return [
-//                                Forms\Components\Placeholder::make('msg')->content("أنت على وشك تأكيد إلتقاط الطلب ")->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
-//                            ];
-//                        })
-//                        ->action(function ($record, $data) {
-//                            DB::beginTransaction();
-//                            try {
-//                                HelperBalance::completePicker($record);
-//                                $record->update(['status' => OrderStatusEnum::PICK->value]);
-//                                DB::commit();
-//                                Notification::make('success')->title('نجاح العملية')->body('تم تأكيد إلتقاط الطلب')->success()->send();
-//                            } catch (\Exception | Error $e) {
-//                                Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
-//                            }
-//                        })
-//                        ->label('تأكيد إلتقاط الشحنة')->color('info')
-//                        ->visible(fn($record) => $record->pick_id != null && ($record->status == OrderStatusEnum::AGREE)),
-//
-//                    Tables\Actions\Action::make('success_given')
-//                        ->form(function ($record) {
-//
-//                            $totalPrice = (double)$record->price + (double)$record->far;
-//                            if ($totalPrice == 0) {
-//                                $totalPrice = (double)$record->price_tr + (double)$record->far_tr;
-//                            }
-//                            $priceMessage = 'انت تأكد إستلامك مبلغ : ';
-//
-//
-//                            if ($record->price_tr > 0) {
-//                                $priceMessage .= $record->price_tr . ' TRY ';
-//                            }
-//                            if ($record->price > 0) {
-//                                $priceMessage .= ' و ' . $record->price . ' USD ';
-//                            }
-//                            $priceMessage .= 'قيمة تحصيل الطلب';
-//
-//
-//                            $farMessage = '';
-//
-//                            if ($record->far_sender == false) {
-//                                $farMessage = 'انت تأكد إستلامك مبلغ : ';
-//                                if ($record->far_tr > 0) {
-//                                    $farMessage .= $record->far_tr . ' TRY ';
-//                                }
-//                                if ($record->far > 0) {
-//                                    $farMessage .= ' و ' . $record->far . ' USD ';
-//                                }
-//                                $farMessage .= 'أجور شحن الطلب';
-//
-//                            }
-//
-//                            if ($totalPrice > 0) {
-//                                $form = [
-//                                    Forms\Components\Placeholder::make('msg')->content($priceMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه'),
-//                                    Forms\Components\Placeholder::make('msg_2')->content($farMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
-//                                ];
-//                            } else {
-//                                $form = [
-//                                    Forms\Components\Placeholder::make('msg')->content("أنت على وشك تأكيد تسليم الطلب ")->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
-//                                ];
-//                            }
-//                            return $form;
-//
-//                        })
-//                        ->action(function ($record, $data) {
-//                            DB::beginTransaction();
-//                            try {
-//                                HelperBalance::completeOrder($record);
-//                                $record->update(['status' => OrderStatusEnum::SUCCESS->value]);
-//                                DB::commit();
-//                                Notification::make('success')->title('نجاح العملية')->body('تم تأكيد تسليم الطلب')->success()->send();
-//                            } catch (\Exception | Error $e) {
-//                                Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
-//                            }
-//                        })->label('تأكيد تسليم الشحنة')->color('info')
-//                        ->visible(fn($record) => $record->given_id != null && ($record->status == OrderStatusEnum::TRANSFER)),
-//
-//
-//                    Tables\Actions\Action::make('cancel_order')
-//                        ->form([
-//                            Forms\Components\Radio::make('status')->options(function(){
-//                                $list=[
-//
-//                                    OrderStatusEnum::RETURNED->value => OrderStatusEnum::RETURNED->getLabel(),
-//                                ];
-//                                if(auth()->user()->hasRole('مدير عام')){
-//                                    $list[OrderStatusEnum::CANCELED->value] = OrderStatusEnum::CANCELED->getLabel();
-//                                }
-//                                return $list;
-//                            })->label('الحالة')->required()->default(!auth()->user()->hasRole('مدير عام')?OrderStatusEnum::RETURNED->value:OrderStatusEnum::CANCELED->value),
-//                            Forms\Components\Textarea::make('canceled_info')->label('سبب الإلغاء / الإعادة')
-//                        ])
-//                        ->action(function ($record, $data) {
-//                            DB::beginTransaction();
-//                            try {
-//                                $dataUpdate = ['status' => $data['status'], 'canceled_info' => $data['canceled_info']];
-//                                if ($data['status'] == OrderStatusEnum::RETURNED->value) {
-//                                    $user = User::where([
-//                                        'level' => LevelUserEnum::BRANCH->value,
-//                                        'branch_id' => $record->branch_source_id
-//                                    ])->first()?->id;
-//                                    $dataUpdate['given_id'] = $user;
-//                                    $dataUpdate['returned_id'] = $record->pick_id;
-//                                }
-//                                /**
-//                                 * @var $record Order
-//                                 */
-//                                $record->update($dataUpdate);
-//                                DB::commit();
-//                                Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
-//                            } catch (\Exception | Error $e) {
-//                                DB::rollBack();
-//                                Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
-//                            }
-//                        })->label('الإلغاء / الإعادة')->color('danger')
-//                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED ),
-//                    // تحديد موظف غعادة الطلب
-//                    Tables\Actions\Action::make('set_returned_id')->form([
-//                        Forms\Components\Select::make('staff_id')->searchable()->getSearchResultsUsing(fn(string $search): array => User::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())->label('حدد الموظف')->required(),
-//
-//                    ])
-//                        ->action(function ($record, $data) {
-//                            $record->update(['returned_id' => $data['staff_id']]);
-//                            Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف إعادة الطلب بنجاح')->success()->send();
-//
-//                        })
-//                        ->label('تحديد موظف تسليم المرتجع')
-//                        ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id == null),
-//
-//                    Tables\Actions\Action::make('confirm_returned')
-//                        ->form(function ($record) {
-//                            $list = [];
-//                            if ($record->far_sender == false) {
-//                                if ($record->far > 0) {
-//                                    $list[] = Forms\Components\Placeholder::make('far_usd')->content('سيتم إضافة  ' . $record->far . ' USD  إلى صندوقك  أجور شحن')->label('تحذير');
-//                                }
-//                                if ($record->far_tr > 0) {
-//                                    $list[] = Forms\Components\Placeholder::make('far_try')->content('سيتم إضافة   ' . $record->far_tr . ' TRY  إلى صندوقك  أجور شحن')->label('تحذير');
-//                                }
-//                            }
-//                            if ($record->price > 0) {
-//                                $list[] = Forms\Components\Placeholder::make('price_usd')->content('سيتم إضافة  ' . $record->price . ' USD  إلى صندوقك  قيمة تحصيل')->label('تحذير');
-//
-//                            }
-//                            if ($record->price_tr > 0) {
-//                                $list[] = Forms\Components\Placeholder::make('price_try')->content('سيتم إضافة  ' . $record->price_tr . ' TRY  إلى صندوقك  قيمة تحصيل')->label('تحذير');
-//
-//                            }
-//                            return $list;
-//                        })
-//                        ->action(function ($record) {
-//                            DB::beginTransaction();
-//                            try {
-//                                $record->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value]);
-//                                HelperBalance::confirmReturn($record);
-//                                DB::commit();
-//                                Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
-//                            } catch (\Exception | Error $e) {
-//                                DB::rollBack();
-//                                Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
-//                            }
-//                        })->label('تأكيد تسليم المرتجع')->color('danger')
-//                        ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id != null),
-//                    Tables\Actions\Action::make('check_green')->action(fn($record) => $record->update(['color' => 'green']))->label('تعيين باللون الاخضر')->visible(fn($record) => $record->color == null)
-//
-//                ])
+                //                Tables\Actions\ActionGroup::make([
+                //                    Tables\Actions\Action::make('set_picker')->form([
+                //                        Forms\Components\Select::make('pick_id')
+                //                            ->options(User::selectRaw('id,name')->whereIn('level', [
+                //                                LevelUserEnum::STAFF->value,
+                //                                LevelUserEnum::BRANCH->value,
+                //                                LevelUserEnum::ADMIN->value,
+                //                            ])->pluck('name', 'id'))
+                //                            ->searchable()->label('موظف الإلتقاط'),
+                //                    ])
+                //                        ->action(function ($record, $data) {
+                //                            DB::beginTransaction();
+                //                            try {
+                //                                if ($record->pick_id == null) {
+                //                                    $record->update(['pick_id' => $data['pick_id'], 'status' => OrderStatusEnum::AGREE->value]);
+                //                                    HelperBalance::setPickOrder($record);
+                //                                    Notification::make('success')->title('نجاح العملية')->body("تم تحديد موظف الإلتقاط بنجاح ")->success()->send();
+                //                                    DB::commit();
+                //                                }
+                //
+                //                            } catch (\Exception $e) {
+                //                                DB::rollBack();
+                //                                Notification::make('error')->title('فشل العملية')->body("{$e->getMessage()}")->danger()->send();
+                //                            }
+                //
+                //                        })
+                //                        ->visible(fn($record) => $record->pick_id == null)
+                //                        ->label('تحديد موظف الإلتقاط')->color('info'),
+                //
+                //                    Tables\Actions\Action::make('set_given')->form([
+                //                        Forms\Components\Select::make('given_id')
+                //                            ->searchable()
+                //                            ->getSearchResultsUsing(fn(string $search) => User::active()->selectRaw('id,name')->whereIn('level', [
+                //                                LevelUserEnum::STAFF->value,
+                //                                LevelUserEnum::BRANCH->value,
+                //                                LevelUserEnum::ADMIN->value,
+                //                            ])->where('name', 'like', "%$search%")->take(10)->pluck('name', 'id'))
+                //                            ->label('موظف التسليم'),
+                //                    ])
+                //                        ->action(function ($record, $data) {
+                //
+                //                            $record->update(['given_id' => $data['given_id'], 'status' => OrderStatusEnum::TRANSFER->value]);
+                //                            Notification::make('success')->title('نجاح العملية')->body("تم تحديد موظف التسليم بنجاح ")->success()->send();
+                //
+                //
+                //                        })
+                //                        ->visible(fn($record) => $record->given_id == null && ($record->status === OrderStatusEnum::PICK || $record->status === OrderStatusEnum::TRANSFER))
+                //                        ->label('تحديد موظف التسليم')->color('info'),
+                //
+                //                    Tables\Actions\Action::make('success_pick')
+                //                        ->form(function ($record) {
+                //                            $farMessage = 'انت على وشك تأكيد إستلام مبلغ : ';
+                //                            if ($record->far_sender == true && ($record->far > 0 || $record->far_tr > 0)) {
+                //
+                //                                if ($record->far_tr > 0) {
+                //
+                //                                    $farMessage .= $record->far_tr . ' TRY ';
+                //                                }
+                //                                if ($record->far > 0) {
+                //                                    $farMessage .= ' و' . $record->far . ' USD ';
+                //                                }
+                //                                $farMessage .= 'أجور شحن';
+                //                                return [
+                //                                    Forms\Components\Placeholder::make('msg')->content($farMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
+                //                                ];
+                //                            }
+                //                            return [
+                //                                Forms\Components\Placeholder::make('msg')->content("أنت على وشك تأكيد إلتقاط الطلب ")->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
+                //                            ];
+                //                        })
+                //                        ->action(function ($record, $data) {
+                //                            DB::beginTransaction();
+                //                            try {
+                //                                HelperBalance::completePicker($record);
+                //                                $record->update(['status' => OrderStatusEnum::PICK->value]);
+                //                                DB::commit();
+                //                                Notification::make('success')->title('نجاح العملية')->body('تم تأكيد إلتقاط الطلب')->success()->send();
+                //                            } catch (\Exception | Error $e) {
+                //                                Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
+                //                            }
+                //                        })
+                //                        ->label('تأكيد إلتقاط الشحنة')->color('info')
+                //                        ->visible(fn($record) => $record->pick_id != null && ($record->status == OrderStatusEnum::AGREE)),
+                //
+                //                    Tables\Actions\Action::make('success_given')
+                //                        ->form(function ($record) {
+                //
+                //                            $totalPrice = (double)$record->price + (double)$record->far;
+                //                            if ($totalPrice == 0) {
+                //                                $totalPrice = (double)$record->price_tr + (double)$record->far_tr;
+                //                            }
+                //                            $priceMessage = 'انت تأكد إستلامك مبلغ : ';
+                //
+                //
+                //                            if ($record->price_tr > 0) {
+                //                                $priceMessage .= $record->price_tr . ' TRY ';
+                //                            }
+                //                            if ($record->price > 0) {
+                //                                $priceMessage .= ' و ' . $record->price . ' USD ';
+                //                            }
+                //                            $priceMessage .= 'قيمة تحصيل الطلب';
+                //
+                //
+                //                            $farMessage = '';
+                //
+                //                            if ($record->far_sender == false) {
+                //                                $farMessage = 'انت تأكد إستلامك مبلغ : ';
+                //                                if ($record->far_tr > 0) {
+                //                                    $farMessage .= $record->far_tr . ' TRY ';
+                //                                }
+                //                                if ($record->far > 0) {
+                //                                    $farMessage .= ' و ' . $record->far . ' USD ';
+                //                                }
+                //                                $farMessage .= 'أجور شحن الطلب';
+                //
+                //                            }
+                //
+                //                            if ($totalPrice > 0) {
+                //                                $form = [
+                //                                    Forms\Components\Placeholder::make('msg')->content($priceMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه'),
+                //                                    Forms\Components\Placeholder::make('msg_2')->content($farMessage)->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
+                //                                ];
+                //                            } else {
+                //                                $form = [
+                //                                    Forms\Components\Placeholder::make('msg')->content("أنت على وشك تأكيد تسليم الطلب ")->extraAttributes(['style' => 'color:red;font-weight:900;font-size:1rem;'])->label('تنبيه')
+                //                                ];
+                //                            }
+                //                            return $form;
+                //
+                //                        })
+                //                        ->action(function ($record, $data) {
+                //                            DB::beginTransaction();
+                //                            try {
+                //                                HelperBalance::completeOrder($record);
+                //                                $record->update(['status' => OrderStatusEnum::SUCCESS->value]);
+                //                                DB::commit();
+                //                                Notification::make('success')->title('نجاح العملية')->body('تم تأكيد تسليم الطلب')->success()->send();
+                //                            } catch (\Exception | Error $e) {
+                //                                Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
+                //                            }
+                //                        })->label('تأكيد تسليم الشحنة')->color('info')
+                //                        ->visible(fn($record) => $record->given_id != null && ($record->status == OrderStatusEnum::TRANSFER)),
+                //
+                //
+                //                    Tables\Actions\Action::make('cancel_order')
+                //                        ->form([
+                //                            Forms\Components\Radio::make('status')->options(function(){
+                //                                $list=[
+                //
+                //                                    OrderStatusEnum::RETURNED->value => OrderStatusEnum::RETURNED->getLabel(),
+                //                                ];
+                //                                if(auth()->user()->hasRole('مدير عام')){
+                //                                    $list[OrderStatusEnum::CANCELED->value] = OrderStatusEnum::CANCELED->getLabel();
+                //                                }
+                //                                return $list;
+                //                            })->label('الحالة')->required()->default(!auth()->user()->hasRole('مدير عام')?OrderStatusEnum::RETURNED->value:OrderStatusEnum::CANCELED->value),
+                //                            Forms\Components\Textarea::make('canceled_info')->label('سبب الإلغاء / الإعادة')
+                //                        ])
+                //                        ->action(function ($record, $data) {
+                //                            DB::beginTransaction();
+                //                            try {
+                //                                $dataUpdate = ['status' => $data['status'], 'canceled_info' => $data['canceled_info']];
+                //                                if ($data['status'] == OrderStatusEnum::RETURNED->value) {
+                //                                    $user = User::where([
+                //                                        'level' => LevelUserEnum::BRANCH->value,
+                //                                        'branch_id' => $record->branch_source_id
+                //                                    ])->first()?->id;
+                //                                    $dataUpdate['given_id'] = $user;
+                //                                    $dataUpdate['returned_id'] = $record->pick_id;
+                //                                }
+                //                                /**
+                //                                 * @var $record Order
+                //                                 */
+                //                                $record->update($dataUpdate);
+                //                                DB::commit();
+                //                                Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
+                //                            } catch (\Exception | Error $e) {
+                //                                DB::rollBack();
+                //                                Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
+                //                            }
+                //                        })->label('الإلغاء / الإعادة')->color('danger')
+                //                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED ),
+                //                    // تحديد موظف غعادة الطلب
+                //                    Tables\Actions\Action::make('set_returned_id')->form([
+                //                        Forms\Components\Select::make('staff_id')->searchable()->getSearchResultsUsing(fn(string $search): array => User::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())->label('حدد الموظف')->required(),
+                //
+                //                    ])
+                //                        ->action(function ($record, $data) {
+                //                            $record->update(['returned_id' => $data['staff_id']]);
+                //                            Notification::make('success')->title('نجاح العملية')->body('تم تحديد موظف إعادة الطلب بنجاح')->success()->send();
+                //
+                //                        })
+                //                        ->label('تحديد موظف تسليم المرتجع')
+                //                        ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id == null),
+                //
+                //                    Tables\Actions\Action::make('confirm_returned')
+                //                        ->form(function ($record) {
+                //                            $list = [];
+                //                            if ($record->far_sender == false) {
+                //                                if ($record->far > 0) {
+                //                                    $list[] = Forms\Components\Placeholder::make('far_usd')->content('سيتم إضافة  ' . $record->far . ' USD  إلى صندوقك  أجور شحن')->label('تحذير');
+                //                                }
+                //                                if ($record->far_tr > 0) {
+                //                                    $list[] = Forms\Components\Placeholder::make('far_try')->content('سيتم إضافة   ' . $record->far_tr . ' TRY  إلى صندوقك  أجور شحن')->label('تحذير');
+                //                                }
+                //                            }
+                //                            if ($record->price > 0) {
+                //                                $list[] = Forms\Components\Placeholder::make('price_usd')->content('سيتم إضافة  ' . $record->price . ' USD  إلى صندوقك  قيمة تحصيل')->label('تحذير');
+                //
+                //                            }
+                //                            if ($record->price_tr > 0) {
+                //                                $list[] = Forms\Components\Placeholder::make('price_try')->content('سيتم إضافة  ' . $record->price_tr . ' TRY  إلى صندوقك  قيمة تحصيل')->label('تحذير');
+                //
+                //                            }
+                //                            return $list;
+                //                        })
+                //                        ->action(function ($record) {
+                //                            DB::beginTransaction();
+                //                            try {
+                //                                $record->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value]);
+                //                                HelperBalance::confirmReturn($record);
+                //                                DB::commit();
+                //                                Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
+                //                            } catch (\Exception | Error $e) {
+                //                                DB::rollBack();
+                //                                Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
+                //                            }
+                //                        })->label('تأكيد تسليم المرتجع')->color('danger')
+                //                        ->visible(fn($record) => $record->status == OrderStatusEnum::RETURNED && $record->returned_id != null),
+                //                    Tables\Actions\Action::make('check_green')->action(fn($record) => $record->update(['color' => 'green']))->label('تعيين باللون الاخضر')->visible(fn($record) => $record->color == null)
+                //
+                //                ])
 
-//                Tables\Actions\DeleteAction::make(),
+                //                Tables\Actions\DeleteAction::make(),
 
             ])
             ->headerActions([
@@ -835,7 +864,14 @@ protected static ?int $navigationSort=1;
                 ])
             ])
             ->bulkActions([
-
+                Tables\Actions\BulkAction::make('generateReport')
+                    ->label('تقرير الشحنات')
+                    ->requiresConfirmation()
+                    ->modalHeading('تقرير الشحنات')
+                    ->modalDescription('عرض تقرير الشحنات.')
+                    ->modalSubmitActionLabel('إغلاق')
+                    ->form(fn($records) => static::getReportForm($records))
+                    ->action(fn($records) => static::generateReport($records)),
             ]);
     }
 
@@ -857,6 +893,44 @@ protected static ?int $navigationSort=1;
             'index' => Pages\ListOrders::route('/'),
             'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
+            'fast-order' => Pages\FastOrder::route('/fast-order'),
+        ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return Cache::remember('navigation_badge_count_order', now()->addDay(), function () {
+            return static::getModel()::count();
+        });
+    }
+
+    protected static function getReportForm($records): array
+    {
+        $orders = Order::whereIn('id', $records->pluck('id'))->get();
+
+        $reportText  = "====================\n";
+        $reportText .= "🔹 عدد الشحنات : {$orders->count()}\n";
+        $reportText .= "🔹 تحصيل تركي : " . number_format($orders->sum('price_tr'), 2) . " ₺\n";
+        $reportText .= "🔹 تحصيل دولار : " . number_format($orders->sum('price'), 2) . " $\n";
+        $reportText .= "====================\n\n";
+
+        $reportText .= "📌 على المستلم\n";
+        $reportText .= "🔸 أجور تركي : " . number_format($orders->where('far_sender', 0)->sum('far_tr'), 2) . " ₺\n";
+        $reportText .= "🔸 أجور دولار : " . number_format($orders->where('far_sender', 0)->sum('far'), 2) . " $\n";
+        $reportText .= "---------------------\n";
+
+        $reportText .= "📌 على المرسل\n";
+        $reportText .= "🔸 أجور تركي : " . number_format($orders->where('far_sender', 1)->sum('far_tr'), 2) . " ₺\n";
+        $reportText .= "🔸 أجور دولار : " . number_format($orders->where('far_sender', 1)->sum('far'), 2) . " $\n";
+        $reportText .= "====================\n";
+
+        return [
+            Textarea::make('report')
+                ->label(false)
+                ->extraAttributes(['style' => 'border: none; background: transparent;'])
+                ->default($reportText)
+                ->disabled()
+                ->rows(15),
         ];
     }
 }

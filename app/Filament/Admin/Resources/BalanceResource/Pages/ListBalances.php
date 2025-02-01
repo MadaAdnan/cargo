@@ -139,208 +139,208 @@ class ListBalances extends ListRecords
                 })
                 ->label('إضافة سند دفع'),
 
-            Actions\ActionGroup::make([
-                /**
-                 * Add credit
-                 */
-                Actions\Action::make('create_balance_start_credit')
-                    ->form([
+            // Actions\ActionGroup::make([
+            //     /**
+            //      * Add credit
+            //      */
+            //     Actions\Action::make('create_balance_start_credit')
+            //         ->form([
 
-                        Repeater::make('quid')->schema([
+            //             Repeater::make('quid')->schema([
 
-                            Grid::make(3)->schema([
-                                Select::make('user_id')->options(User::active()->hideGlobal()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
-                                    ->label('المستخدم'),
-                                TextInput::make('value')->required()->numeric()->label('القيمة'),
-                                TextInput::make('info')->label('بيان'),
-                            ])
-                        ])->label('سند قبض')
-                    ])
-                    //
-                    ->action(function ($data) {
+            //                 Grid::make(3)->schema([
+            //                     Select::make('user_id')->options(User::active()->hideGlobal()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+            //                         ->label('المستخدم'),
+            //                     TextInput::make('value')->required()->numeric()->label('القيمة'),
+            //                     TextInput::make('info')->label('بيان'),
+            //                 ])
+            //             ])->label('سند قبض')
+            //         ])
+            //         //
+            //         ->action(function ($data) {
 
-                        DB::beginTransaction();
-                        try {
-                            foreach ($data['quid'] as $user) {
-                                Balance::create([
-                                    'type' => 'start',
-                                    'user_id' => $user['user_id'],
-                                    'debit' => $user['value'],
-                                    'credit' => 0,
-                                    'info' => $user['info'],
-                                    'currency_id' => 1,
-                                    'is_complete' => true,
-                                    'customer_name' => 'بداية المدة'
-                                ]);
-                            }
-                            DB::commit();
-                            Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
-                        } catch (\Exception | \Error $e) {
-                            DB::rollBack();
-                            Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
-                        }
+            //             DB::beginTransaction();
+            //             try {
+            //                 foreach ($data['quid'] as $user) {
+            //                     Balance::create([
+            //                         'type' => 'start',
+            //                         'user_id' => $user['user_id'],
+            //                         'debit' => $user['value'],
+            //                         'credit' => 0,
+            //                         'info' => $user['info'],
+            //                         'currency_id' => 1,
+            //                         'is_complete' => true,
+            //                         'customer_name' => 'بداية المدة'
+            //                     ]);
+            //                 }
+            //                 DB::commit();
+            //                 Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+            //             } catch (\Exception | \Error $e) {
+            //                 DB::rollBack();
+            //                 Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
+            //             }
 
-                    })
-                    ->label('إضافة سند قبض بداية المدة'),
-                /**
-                 * Add credit
-                 */
-                Actions\Action::make('create_balance_start_debit')
-                    ->form([
+            //         })
+            //         ->label('إضافة سند قبض بداية المدة'),
+            //     /**
+            //      * Add credit
+            //      */
+            //     Actions\Action::make('create_balance_start_debit')
+            //         ->form([
 
-                        Repeater::make('quid')->schema([
+            //             Repeater::make('quid')->schema([
 
-                            Grid::make()->schema([
-                                Select::make('user_id')->options(User::active()->hideGlobal()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
-                                    ->label('المستخدم'),
-                                TextInput::make('value')->required()->numeric()->label('القيمة'),
-                                TextInput::make('info')->label('بيان'),
-                            ])
-                        ])->label('سند دفع')
-                    ])
-                    //
-                    ->action(function ($data) {
-                        DB::beginTransaction();
-                        try {
-                            foreach ($data['quid'] as $user) {
-                                Balance::create([
-                                    'type' => 'start',
-                                    'user_id' => $user['user_id'],
-                                    'debit' => 0,
-                                    'credit' => $user['value'],
-                                    'info' => $user['info'],
-                                    'currency_id' => 1,
-                                    'is_complete' => true,
-                                    'customer_name' => 'بداية المدة'
-                                ]);
-                            }
-                            DB::commit();
-                            Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
-                        } catch (\Exception | \Error $e) {
-                            DB::rollBack();
-                            Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
-                        }
+            //                 Grid::make()->schema([
+            //                     Select::make('user_id')->options(User::active()->hideGlobal()->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+            //                         ->label('المستخدم'),
+            //                     TextInput::make('value')->required()->numeric()->label('القيمة'),
+            //                     TextInput::make('info')->label('بيان'),
+            //                 ])
+            //             ])->label('سند دفع')
+            //         ])
+            //         //
+            //         ->action(function ($data) {
+            //             DB::beginTransaction();
+            //             try {
+            //                 foreach ($data['quid'] as $user) {
+            //                     Balance::create([
+            //                         'type' => 'start',
+            //                         'user_id' => $user['user_id'],
+            //                         'debit' => 0,
+            //                         'credit' => $user['value'],
+            //                         'info' => $user['info'],
+            //                         'currency_id' => 1,
+            //                         'is_complete' => true,
+            //                         'customer_name' => 'بداية المدة'
+            //                     ]);
+            //                 }
+            //                 DB::commit();
+            //                 Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+            //             } catch (\Exception | \Error $e) {
+            //                 DB::rollBack();
+            //                 Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
+            //             }
 
-                    })
-                    ->label('إضافة سند دفع بداية المدة'),
+            //         })
+            //         ->label('إضافة سند دفع بداية المدة'),
 
-            ])->button()->label('سندات بداية المدة'),
-
-
-            Actions\ActionGroup::make([
-                /**
-                 * Add credit
-                 */
-                Actions\Action::make('create_balance_account_credit')
-                    ->form([
+            // ])->button()->label('سندات بداية المدة'),
 
 
-                        Grid::make(3)->schema([
-                            Select::make('user_id')->options(User::active()->hideGlobal()->accounts()->where('currency_id', 1)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
-                                ->label('المستخدم'),
-                            TextInput::make('value')->required()->numeric()->label('القيمة'),
-                            TextInput::make('info')->label('بيان'),
-                        ])
+            // Actions\ActionGroup::make([
+            //     /**
+            //      * Add credit
+            //      */
+            //     Actions\Action::make('create_balance_account_credit')
+            //         ->form([
 
-                    ])
-                    //
-                    ->action(function ($data) {
-                        DB::beginTransaction();
-                        try {
-                            $user = User::find($data['user_id']);
-                            if($user?->id ==auth()->id()){
-                                Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
-                                return;
-                            }
-                            Balance::create([
-                                'type' => BalanceTypeEnum::PUSH->value,
-                                'user_id' => $data['user_id'],
-                                'debit' => $data['value'],
-                                'credit' => 0,
-                                'info' => $data['info'],
-                                'currency_id' => 1,
-                                'is_complete' => true,
-                                'customer_name' => auth()->user()->name,
-                            ]);
-                            Balance::create([
-                                'type' => BalanceTypeEnum::CATCH->value,
-                                'user_id' => auth()->id(),
-                                'debit' => 0,
-                                'credit' => $data['value'],
-                                'info' => $data['info'],
-                                'is_complete' => true,
-                                'currency_id' => 1,
-                                'customer_name' => $user?->name??$user->id,
-                            ]);
 
-                            DB::commit();
-                            Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
-                        } catch (\Exception | \Error $e) {
-                            DB::rollBack();
-                            Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
-                        }
+            //             Grid::make(3)->schema([
+            //                 Select::make('user_id')->options(User::active()->hideGlobal()->accounts()->where('currency_id', 1)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+            //                     ->label('المستخدم'),
+            //                 TextInput::make('value')->required()->numeric()->label('القيمة'),
+            //                 TextInput::make('info')->label('بيان'),
+            //             ])
 
-                    })
-                    ->label('إضافة سند قبض من حساب مالي'),
-                /**
-                 * Add credit
-                 */
-                Actions\Action::make('create_balance_account_debit')
-                    ->form([
-                        Grid::make()->schema([
-                            Select::make('user_id')->options(User::active()->hideGlobal()->accounts()->where('currency_id', 1)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
-                                ->label('المستخدم'),
-                            TextInput::make('value')->required()->numeric()->label('القيمة'),
-                            TextInput::make('info')->label('بيان'),
+            //         ])
+            //         //
+            //         ->action(function ($data) {
+            //             DB::beginTransaction();
+            //             try {
+            //                 $user = User::find($data['user_id']);
+            //                 if($user?->id ==auth()->id()){
+            //                     Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+            //                     return;
+            //                 }
+            //                 Balance::create([
+            //                     'type' => BalanceTypeEnum::PUSH->value,
+            //                     'user_id' => $data['user_id'],
+            //                     'debit' => $data['value'],
+            //                     'credit' => 0,
+            //                     'info' => $data['info'],
+            //                     'currency_id' => 1,
+            //                     'is_complete' => true,
+            //                     'customer_name' => auth()->user()->name,
+            //                 ]);
+            //                 Balance::create([
+            //                     'type' => BalanceTypeEnum::CATCH->value,
+            //                     'user_id' => auth()->id(),
+            //                     'debit' => 0,
+            //                     'credit' => $data['value'],
+            //                     'info' => $data['info'],
+            //                     'is_complete' => true,
+            //                     'currency_id' => 1,
+            //                     'customer_name' => $user?->name??$user->id,
+            //                 ]);
 
-                        ])
-                    ])
-                    //
-                    ->action(function ($data) {
-                        DB::beginTransaction();
-                        try {
-                            if (auth()->user()->total_balance < $data['value'] && !auth()->user()->hasRole('super_admin')) {
-                                Notification::make('error')->title('فشل العملية')->body('لا تملك رصيد كافي')->danger()->send();
-                                return;
-                            }
-                            $user = User::find($data['user_id']);
-                            if($user?->id ==auth()->id()){
-                                Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
-                                return;
-                            }
-                            Balance::create([
-                                'type' => BalanceTypeEnum::CATCH->value,
-                                'user_id' => $data['user_id'],
-                                'debit' => 0,
-                                'credit' => $data['value'],
-                                'info' => $data['info'],
-                                'currency_id' => 1,
-                                'is_complete' => true,
-                                'customer_name' => auth()->user()->name,
-                            ]);
+            //                 DB::commit();
+            //                 Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+            //             } catch (\Exception | \Error $e) {
+            //                 DB::rollBack();
+            //                 Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
+            //             }
 
-                            Balance::create([
-                                'type' => BalanceTypeEnum::PUSH->value,
-                                'user_id' => auth()->id(),
-                                'debit' => $data['value'],
-                                'credit' => 0,
-                                'info' => $data['info'],
-                                'currency_id' => 1,
-                                'is_complete' => true,
-                                'customer_name' => $user?->name??$user?->id,
-                            ]);
+            //         })
+            //         ->label('إضافة سند قبض من حساب مالي'),
+            //     /**
+            //      * Add credit
+            //      */
+            //     Actions\Action::make('create_balance_account_debit')
+            //         ->form([
+            //             Grid::make()->schema([
+            //                 Select::make('user_id')->options(User::active()->hideGlobal()->accounts()->where('currency_id', 1)->get()->mapWithKeys(fn($user) => [$user->id => $user->iban_name]))->searchable()->required()
+            //                     ->label('المستخدم'),
+            //                 TextInput::make('value')->required()->numeric()->label('القيمة'),
+            //                 TextInput::make('info')->label('بيان'),
 
-                            DB::commit();
-                            Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
-                        } catch (\Exception | \Error $e) {
-                            DB::rollBack();
-                            Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
-                        }
+            //             ])
+            //         ])
+            //         //
+            //         ->action(function ($data) {
+            //             DB::beginTransaction();
+            //             try {
+            //                 if (auth()->user()->total_balance < $data['value'] && !auth()->user()->hasRole('super_admin')) {
+            //                     Notification::make('error')->title('فشل العملية')->body('لا تملك رصيد كافي')->danger()->send();
+            //                     return;
+            //                 }
+            //                 $user = User::find($data['user_id']);
+            //                 if($user?->id ==auth()->id()){
+            //                     Notification::make('error')->title('فشل العملية')->body('لا يمكنك التحويل لنفسك')->danger()->send();
+            //                     return;
+            //                 }
+            //                 Balance::create([
+            //                     'type' => BalanceTypeEnum::CATCH->value,
+            //                     'user_id' => $data['user_id'],
+            //                     'debit' => 0,
+            //                     'credit' => $data['value'],
+            //                     'info' => $data['info'],
+            //                     'currency_id' => 1,
+            //                     'is_complete' => true,
+            //                     'customer_name' => auth()->user()->name,
+            //                 ]);
 
-                    })
-                    ->label('إضافة سند دفع لحساب مالي'),
+            //                 Balance::create([
+            //                     'type' => BalanceTypeEnum::PUSH->value,
+            //                     'user_id' => auth()->id(),
+            //                     'debit' => $data['value'],
+            //                     'credit' => 0,
+            //                     'info' => $data['info'],
+            //                     'currency_id' => 1,
+            //                     'is_complete' => true,
+            //                     'customer_name' => $user?->name??$user?->id,
+            //                 ]);
 
-            ])->button()->label('سندات الحسابات المالية'),
+            //                 DB::commit();
+            //                 Notification::make('success')->title('نجاح العملية')->body('تم إضافة السندات بنجاح')->success()->send();
+            //             } catch (\Exception | \Error $e) {
+            //                 DB::rollBack();
+            //                 Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
+            //             }
+
+            //         })
+            //         ->label('إضافة سند دفع لحساب مالي'),
+
+            // ])->button()->label('سندات الحسابات المالية'),
 
         ];
     }

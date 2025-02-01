@@ -18,6 +18,7 @@ class ListCanceledOrders extends ListRecords
     {
         return [
             Actions\CreateAction::make()->label('إضافة شحنة'),
+            Actions\Action::make('fast-order')->url('/admin/orders/fast-order')->label('شحنة سريعة'),
         ];
     }
     protected function getTableQuery(): ?Builder

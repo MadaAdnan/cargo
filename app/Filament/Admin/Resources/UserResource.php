@@ -28,7 +28,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Tabs;
-
+use Illuminate\Support\Facades\Cache;
 use PHPUnit\Exception;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
@@ -72,6 +72,7 @@ class UserResource extends Resource
                                         ->placeholder('1234567890')
                                         ->numeric() // التأكد أن الحقل يقبل الأرقام فقط
                                         ->maxLength(15)
+                                        ->nullable()
                                         ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
                                         ->tel()
                                         ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),
@@ -364,6 +365,8 @@ Tables\Actions\Action::make('request')->form([
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        return Cache::remember('navigation_badge_count_user', now()->addDay(), function () {
+            return static::getModel()::count();
+        });
     }
 }

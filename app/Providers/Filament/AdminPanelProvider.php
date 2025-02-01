@@ -13,6 +13,7 @@ use App\Http\Middleware\StopPanelMiddleware;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -43,7 +44,12 @@ class AdminPanelProvider extends PanelProvider
 
 
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+
                 FilamentApexChartsPlugin::make(),
+                 ApiServicePlugin::make(),
+
+                
+
 
 
                 FilamentEditProfilePlugin::make()
@@ -93,9 +99,22 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                 IsBlockedUserMiddleware::class
+
+                //                RedirectToPanelMiddleware::class
+            ])
+
+            //sorting navigation group
+            ->navigationGroups([
+                'الشحنات' => NavigationGroup::make(fn() => 'الشحنات'),
+                'التقارير' => NavigationGroup::make(fn() => 'التقارير'),
+                'إدارة الوصول' => NavigationGroup::make(fn() => 'إدارة الوصول'),
+                'الحسابات المالية'  => NavigationGroup::make(fn() => 'الحسابات المالية'),
+                'المناطق' => NavigationGroup::make(fn() => 'المناطق'),
+                'الرصيد' =>  NavigationGroup::make(fn() => 'الرصيد'),
+                'معلومات الحساب' =>  NavigationGroup::make(fn() => 'معلومات الحساب'),
+
 //                RedirectToPanelMiddleware::class
+
             ]);
     }
-
-
 }

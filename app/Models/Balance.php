@@ -42,5 +42,8 @@ class Balance extends Model
     public function scopePending($query){
         return $query->where('pending',1)->where('is_complete',1);
     }
-
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class,'created_by');
+    }
 }

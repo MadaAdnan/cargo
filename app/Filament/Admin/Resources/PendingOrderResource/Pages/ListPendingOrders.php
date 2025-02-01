@@ -18,6 +18,7 @@ class ListPendingOrders extends ListRecords
     {
         return [
             Actions\CreateAction::make()->label('إضافة شحنة'),
+            Actions\Action::make('fast-order')->url('/admin/orders/fast-order')->label('شحنة سريعة'),
            // Actions\Action::make('export')->url(route('export-order'),true)->label('تصدير إلى Excel'),
         ];
     }
@@ -30,7 +31,7 @@ class ListPendingOrders extends ListRecords
     public function getTabs(): array
     {
         return [
-//            Tab::make('all')->modifyQueryUsing(fn($query)=>$query->where('status','!=' ,""))->badge(Order::all()->count())->label('الكل'),
+            Tab::make('all')->modifyQueryUsing(fn($query)=>$query->where('status','!=' ,""))->badge(Order::all()->count())->label('الكل'),
             Tab::make('pick')->modifyQueryUsing(fn($query)=>$query->where('status',OrderStatusEnum::PICK->value))->badge(Order::where('status',OrderStatusEnum::PICK->value)->count())->label('تم الإلتقاط'),
             Tab::make('transfer')->modifyQueryUsing(fn($query)=>$query->where('status',OrderStatusEnum::TRANSFER->value))->badge(Order::where('status',OrderStatusEnum::TRANSFER->value)->count())->label('بإنتظار التسليم'),
 
