@@ -22,6 +22,7 @@ use App\Filament\Admin\Resources\PendingOrderResource;
 
 class FastOrder extends CreatePendingOrder
 {
+    protected static string $resource = PendingOrderResource::class;
     protected static ?string $title = 'شحنة سريعة';
 
     public function form(Form $form): Form
@@ -203,6 +204,10 @@ class FastOrder extends CreatePendingOrder
                                 ->label('الى بلدة')->required()->searchable()->preload(),
 
                             Forms\Components\TextInput::make('receive_phone')->label('هاتف المستلم'),
+                        ]),
+                        Forms\Components\Grid::make()->schema([
+                            Forms\Components\TextInput::make('global_name')->label('اسم المستلم'),
+
                         ]),
                     ]),
 

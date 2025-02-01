@@ -34,3 +34,4 @@ Route::get('phone/{num}',function ($num){
 
 Route::post('/track-shipment',[OrderStatusController::class,'show'])->name('trackShipment');
 Route::get('export-order',[\App\Http\Controllers\ExportController::class,'exportOrder'])->name('export-order');
+Route::get('export-balance-report',[\App\Http\Controllers\ExportController::class,'exportBalanceReport'])->name('export-balance-report');

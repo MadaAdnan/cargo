@@ -16,6 +16,10 @@ class ListAccountStatments extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+            Actions\Action::make('export')
+                ->url(fn() => route('export-balance-report', ['filters' => $this->tableFilters ?? []]), true)
+                ->label('تصدير إلى Excel')
+                ->openUrlInNewTab(false),
         ];
     }
     public function getTabs(): array

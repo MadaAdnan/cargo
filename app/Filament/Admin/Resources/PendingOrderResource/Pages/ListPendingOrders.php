@@ -31,7 +31,8 @@ class ListPendingOrders extends ListRecords
     public function getTabs(): array
     {
         return [
-            Tab::make('all')->modifyQueryUsing(fn($query)=>$query->where('status','!=' ,""))->badge(Order::all()->count())->label('الكل'),
+            Tab::make('all')->modifyQueryUsing(fn($query)=>$query->where('status',OrderStatusEnum::PICK->value)->orWhere('status',OrderStatusEnum::TRANSFER->value))->badge(Order::where('status',OrderStatusEnum::PICK->value)->orWhere('status',OrderStatusEnum::TRANSFER->value)->count())
+            ->label('الكل'),
             Tab::make('pick')->modifyQueryUsing(fn($query)=>$query->where('status',OrderStatusEnum::PICK->value))->badge(Order::where('status',OrderStatusEnum::PICK->value)->count())->label('تم الإلتقاط'),
             Tab::make('transfer')->modifyQueryUsing(fn($query)=>$query->where('status',OrderStatusEnum::TRANSFER->value))->badge(Order::where('status',OrderStatusEnum::TRANSFER->value)->count())->label('بإنتظار التسليم'),
 
