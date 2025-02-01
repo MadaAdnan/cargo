@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Filament\Admin\Resources\OrderResource\Pages;
+namespace App\Filament\Admin\Resources\PendingOrderResource\Pages;
 
 use App\Enums\LevelUserEnum;
-use App\Filament\Admin\Resources\OrderResource;
 use App\Models\City;
 use App\Models\User;
 use Filament\Forms\Form;
@@ -19,11 +18,10 @@ use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Hash;
 use App\Enums\OrderTypeEnum;
+use App\Filament\Admin\Resources\PendingOrderResource;
 
-class FastOrder extends CreateRecord
+class FastOrder extends CreatePendingOrder
 {
-    protected static string $resource = OrderResource::class;
-
     protected static ?string $title = 'شحنة سريعة';
 
     public function form(Form $form): Form
