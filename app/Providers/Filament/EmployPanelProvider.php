@@ -75,7 +75,7 @@ class EmployPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 StopMiddleware::class,
-                // StopPanelMiddleware::class
+                StopPanelMiddleware::class
             ])
             ->authMiddleware([
                 Authenticate::class,
