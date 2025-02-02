@@ -31,9 +31,7 @@ class OrderObserver
             'branch_id' => $order->branch_target_id
         ])->first()?->id;
         $order->given_id = $given_id;
-        if ($given_id != null) {
-            $order->status = OrderStatusEnum::TRANSFER;
-        }
+        $order->status = OrderStatusEnum::TRANSFER;
         Cache::forget('navigation_badge_count_order');
         Cache::forget('navigation_badge_count_pending_order');
         Cache::forget('navigation_badge_count_success_order');
