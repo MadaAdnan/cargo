@@ -69,7 +69,7 @@ class FastOrder extends CreateRecord
                                     ->label('معرف المرسل')->required()
                                     ->afterStateUpdated(function ($state, $set) {
                                         $user = User::active()->with('city')->find($state);
-                                        $branch = User::active()->where(['level' => LevelUserEnum::BRANCH->value, 'branch_id' => $user->branch_id])->first()?->id;
+                                        $branch = User::active()->where(['level' => LevelUserEnum::BRANCH->value, 'branch_id' => $user?->branch_id])->first()?->id;
                                         if ($user) {
                                             $set('sender_phone', $user?->phone);
                                             $set('sender_address', $user?->address);
@@ -169,7 +169,9 @@ class FastOrder extends CreateRecord
                                             })
                                         //
                                     ),
-
+                                Forms\Components\Select::make('city_source_id')
+                                    ->relationship('citySource', 'name')
+                                    ->label('من بلدة')->reactive()->required()->searchable(),
                             ]),
                     ]),
 
@@ -270,5 +272,10 @@ class FastOrder extends CreateRecord
 
                 //
             ]);
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }
