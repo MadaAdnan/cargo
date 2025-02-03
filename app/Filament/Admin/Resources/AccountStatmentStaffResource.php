@@ -101,7 +101,9 @@ class AccountStatmentStaffResource extends Resource implements HasShieldPermissi
                 Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->description(fn($record) => $record->created_at->format('H:i'))
                     ->label('التاريخ والوقت'),
 
-            ])->defaultSort('id', 'desc')
+            ])
+            ->paginated([10, 25, 50, 100 , 200 , 'all'])
+            ->defaultSort('id', 'desc')
             //H: up here, added default sorting to table based on id to show the latest total of an account
             ->filters([
                 Tables\Filters\SelectFilter::make('user_id')->options(User::where('level', LevelUserEnum::BRANCH->value)

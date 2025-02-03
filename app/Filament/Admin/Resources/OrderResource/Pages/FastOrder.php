@@ -58,7 +58,14 @@ class FastOrder extends CreateRecord
                                     ->default(OrderTypeEnum::HOME->value),
 
                                 Forms\Components\Select::make('sender_id')
-                                    ->relationship('sender', 'name', fn($query) => $query->active())
+                                    // ->relationship('sender', 'name', fn($query) => $query->active())
+                                    ->options(function () {
+                                        $users = User::where('level', LevelUserEnum::USER->value)->get();
+                                        foreach ($users as $user) {
+                                            $options[$user->id] = $user->name;
+                                        }
+                                        return $options;
+                                    })
                                     ->label('معرف المرسل')->required()
                                     ->afterStateUpdated(function ($state, $set) {
                                         $user = User::active()->with('city')->find($state);
@@ -161,8 +168,7 @@ class FastOrder extends CreateRecord
                                                 }
                                             })
                                         //
-                                    )
-                                    ->preload(),
+                                    ),
 
                             ]),
                     ]),
@@ -186,8 +192,8 @@ class FastOrder extends CreateRecord
                             Forms\Components\Hidden::make('receive_id')
                                 ->default(fn() => User::active()->where('email', 'zab@gmail.com')->first()?->id),
 
-                                
-                            
+
+
                             // Forms\Components\TextInput::make('receive_address')->label('عنوان المستلم'),
 
                         ]),

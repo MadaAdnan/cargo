@@ -72,6 +72,7 @@ class UserResource extends Resource
                                         ->placeholder('1234567890')
                                         ->numeric() // التأكد أن الحقل يقبل الأرقام فقط
                                         ->maxLength(15)
+                                        ->nullable()
                                         ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
                                         ->tel()
                                         ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),
