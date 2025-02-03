@@ -962,6 +962,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
             'index' => Pages\ListPendingOrders::route('/'),
             'create' => Pages\CreatePendingOrder::route('/create'),
             'edit' => Pages\EditPendingOrder::route('/{record}/edit'),
+            'fast-order' => Pages\FastOrder::route('/fast-order'),
         ];
     }
 

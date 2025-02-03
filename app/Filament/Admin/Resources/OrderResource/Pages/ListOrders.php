@@ -20,7 +20,7 @@ class ListOrders extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
-            Actions\Action::make('fast-order')->url('/admin/orders/fast-order')->label('شحنة سريعة'),
+            Actions\Action::make('fast-order')->url('/admin/pending-orders/fast-order')->label('شحنة سريعة'),
             Actions\Action::make('export')
                 ->url(fn() => route('export-order', ['filters' => $this->tableFilters ?? []]), true)
                 ->label('تصدير إلى Excel')
