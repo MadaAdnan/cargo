@@ -40,6 +40,7 @@ use App\Enums\OrderStatusEnum;
 use Filament\Forms\Components\Tabs;
 use App\Enums\BayTypeEnum;
 use Filament\Infolists\Infolist;
+use Illuminate\Support\Facades\Cache;
 use PhpOffice\PhpSpreadsheet\Calculation\LookupRef\Selection;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
@@ -859,5 +860,12 @@ protected static ?int $navigationSort=1;
             'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return Cache::remember('navigation_badge_count_order', now()->addDay(), function () {
+            return static::getModel()::count();
+        });
     }
 }

@@ -11,6 +11,7 @@ use App\Models\Order;
 use Filament\Notifications\Notification;
 use App\Enums\LevelUserEnum;
 use Illuminate\Foundation\Auth\User;
+use Illuminate\Support\Facades\Cache;
 
 class OrderObserver
 {
@@ -31,6 +32,10 @@ class OrderObserver
         if ($given_id != null) {
             $order->status = OrderStatusEnum::TRANSFER;
         }
+        Cache::forget('navigation_badge_count_order');
+        Cache::forget('navigation_badge_count_pending_order');
+        Cache::forget('navigation_badge_count_canceled_order');
+        Cache::forget('navigation_badge_count_returned_order');
 
 
     }
@@ -70,6 +75,10 @@ class OrderObserver
             $order->balances()->delete();
         }
 
+        Cache::forget('navigation_badge_count_order');
+        Cache::forget('navigation_badge_count_pending_order');
+        Cache::forget('navigation_badge_count_canceled_order');
+        Cache::forget('navigation_badge_count_returned_order');
 
     }
 

@@ -28,6 +28,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use PHPUnit\Exception;
@@ -943,5 +944,12 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
             'create' => Pages\CreatePendingOrder::route('/create'),
             'edit' => Pages\EditPendingOrder::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return Cache::remember('navigation_badge_count_pending_order', now()->addDay(), function () {
+            return static::getModel()::where('status', OrderStatusEnum::PENDING)->count();
+        });
     }
 }

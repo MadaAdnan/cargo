@@ -28,7 +28,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Tabs;
-
+use Illuminate\Support\Facades\Cache;
 use PHPUnit\Exception;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
@@ -364,6 +364,8 @@ Tables\Actions\Action::make('request')->form([
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        return Cache::remember('navigation_badge_count_user', now()->addDay(), function () {
+            return static::getModel()::count();
+        });
     }
 }

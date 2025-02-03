@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\City;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 
 class UserObserver
 {
@@ -21,7 +22,7 @@ class UserObserver
             ]);
             $user->save();
         }
-
+        Cache::forget('navigation_badge_count_user');
     }
 
     /**
