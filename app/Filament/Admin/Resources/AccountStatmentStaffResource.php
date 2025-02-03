@@ -109,7 +109,7 @@ class AccountStatmentStaffResource extends Resource implements HasShieldPermissi
                 Tables\Filters\SelectFilter::make('currency_id')->options([
                     1 => 'دولار',
                     2 => 'تركي'
-                ])->default(1)->label('العملة'),
+                ])->label('العملة'),
                 Tables\Filters\TernaryFilter::make('pending')->trueLabel('قيد التحصيل')->falseLabel('مكتمل')
                     ->queries(
                         true: fn($query) => $query->where('pending', true),
