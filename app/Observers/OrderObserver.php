@@ -34,7 +34,7 @@ class OrderObserver
         }
         Cache::forget('navigation_badge_count_order');
         Cache::forget('navigation_badge_count_pending_order');
-        Cache::forget('navigation_badge_count_canceled_order');
+        Cache::forget('navigation_badge_count_success_order');
         Cache::forget('navigation_badge_count_returned_order');
 
 
@@ -77,7 +77,7 @@ class OrderObserver
 
         Cache::forget('navigation_badge_count_order');
         Cache::forget('navigation_badge_count_pending_order');
-        Cache::forget('navigation_badge_count_canceled_order');
+        Cache::forget('navigation_badge_count_success_order');
         Cache::forget('navigation_badge_count_returned_order');
 
     }

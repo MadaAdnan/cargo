@@ -121,7 +121,7 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('customer_name')->label('الطرف المقابل')->searchable(),
                 Tables\Columns\TextColumn::make('order.id')->description(fn($record) => $record->order?->code)->label('الطلب')->searchable(),
                 Tables\Columns\TextColumn::make('order.sender.name')->label('المرسل')->description(fn($record) => $record->order?->general_sender_name != null ? "{$record->order->general_sender_name}" : "")->searchable(),
-                Tables\Columns\TextColumn::make('order.receive.name')->label('المستلم')->description(fn($record) => $record->order?->global_name != null ? " {$record->order->global_name}" : ""),
+                Tables\Columns\TextColumn::make('order.global_name')->label('المستلم'),
                 Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
                 Tables\Columns\TextColumn::make('order.cityTarget.name')->label('المدينة'),
                 Tables\Columns\TextColumn::make('pending')->label('النوع')->formatStateUsing(fn($record) => $record->pending == true ? "قيد التحصيل" : "")->color('danger'),
@@ -144,7 +144,7 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                     ->options(function () {
                         return User::withCount('balances')
                             ->orderBy('balances_count', 'desc')
-                            ->take(15)
+                            ->take(30)
                             ->pluck('name', 'id');
                     })
                     ->searchable()->default(0)->label('المستخدم')->preload(),

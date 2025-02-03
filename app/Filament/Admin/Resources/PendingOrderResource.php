@@ -399,13 +399,12 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                        ->content(fn($record) => \LaraZeus\Qr\Facades\Qr::render($record->code))
                        ->icon('heroicon-o-qr-code'),*/
 
-                Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->code, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
+                Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->qr_code, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
                     'green' => ['style' => 'background-color:#55FF88;'],
 
                     default => ['style' => ''],
                 }),
                 
-                Tables\Columns\TextColumn::make('qr_code')->label('الكود'),
                 Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
                 Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ إنشاء الشحنة')->extraCellAttributes(fn(Model $record) => match ($record->color) {
                     'green' => ['style' => 'background-color:#55FF88;'],
@@ -954,7 +953,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
     public static function getNavigationBadge(): ?string
     {
         return Cache::remember('navigation_badge_count_pending_order', now()->addDay(), function () {
-            return static::getModel()::where('status', OrderStatusEnum::PENDING)->count();
+            return static::getModel()::where('status',OrderStatusEnum::PICK->value)->orWhere('status',OrderStatusEnum::TRANSFER->value)->count();
         });
     }
 }
