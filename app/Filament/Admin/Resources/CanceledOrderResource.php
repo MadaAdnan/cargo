@@ -332,12 +332,12 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
                                 ->dehydrated(false),
                             Forms\Components\TextInput::make('qr_code')
                                 ->label('الكود')
-                                ->rules(function (callable $get) {
-                                    
-                                    return $get('allow_duplicates')
-                                        ? ['required', 'string', 'max:255', 'unique:orders,qr_code'] 
-                                        : ['nullable', 'string', 'max:255'];
-                                }),
+                                ->rule(
+                                    fn(callable $get) => $get('allow_duplicates')
+                                        ? ['required', 'string', 'max:255', 'unique:orders,qr_code']
+                                        : ['nullable', 'string', 'max:255']
+                                )
+                                ->columnSpan(1),
                         ])
                         ->columns(1),
                 ])->collapsible(true)->collapsed(false),
