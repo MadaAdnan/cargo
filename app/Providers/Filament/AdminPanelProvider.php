@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Admin\Widgets\AdminPanelControl;
 use App\Filament\Admin\Widgets\BalanceCustomerView;
 use App\Filament\Admin\Widgets\BalanceEmployeeView;
 use App\Filament\Admin\Widgets\BalanceView;
@@ -70,7 +71,8 @@ class AdminPanelProvider extends PanelProvider
                 OrdersOverview::class,
                 BalanceView::class,
                 BalanceEmployeeView::class,
-                BalanceCustomerView::class
+                BalanceCustomerView::class,
+                AdminPanelControl::class
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->databaseNotifications()
