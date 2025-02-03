@@ -258,7 +258,7 @@ class OrderResource extends Resource
                                     }
                                 })->live()->visible(fn($context) => $context === 'create'),
                             Forms\Components\Select::make('city_target_id')
-                            ->options(city::pluck('name', 'id'))
+                                ->options(city::pluck('name', 'id'))
                                 ->label('الى بلدة')->required()->searchable(),
 
                         ]),
@@ -472,7 +472,16 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('currency.name')->label('العملة')->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('sender.name')->label('المرسل / المستلم')->formatStateUsing(fn($state) => 'المرسل : ' . $state)->description(fn($record) => 'المستلم : ' . $record->global_name)->searchable()->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('citySource')->label('بلدة')->formatStateUsing(fn($state) => 'من : ' . $state?->name . ' ( ' . $state?->city?->name . ' )')->description(fn($record) => "إلى : {$record->cityTarget?->name} ( {$record->cityTarget?->city?->name} )")->searchable()->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('citySource.name')
+                    ->label('بلدة')
+                    ->formatStateUsing(fn($state, $record) => 'من : ' . $record->citySource?->name . ' ( ' . $record->citySource?->city?->name . ' )')
+                    ->description(fn($record) => "إلى : {$record->cityTarget?->name} ( {$record->cityTarget?->city?->name} )")
+                    ->searchable(query: function (Builder $query, string $search) {
+                        $query->whereHas('citySource', function ($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%");
+                        });
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('branchSource.name')->label('فرع')->formatStateUsing(fn($state) => 'من : ' . $state)->description(fn($record) => "إلى : {$record->branchTarget?->name}")->searchable()->toggleable(isToggledHiddenByDefault: false),
 
 
@@ -509,7 +518,7 @@ class OrderResource extends Resource
 
 
             ])
-            ->paginated([10, 25, 50, 100 , 'all'])
+            ->paginated([10, 25, 50, 100, 'all'])
             ->defaultSort('created_at', 'desc')
             ->filters([
                 //
