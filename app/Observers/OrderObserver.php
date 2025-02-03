@@ -11,7 +11,9 @@ use App\Models\Order;
 use Filament\Notifications\Notification;
 use App\Enums\LevelUserEnum;
 use Illuminate\Foundation\Auth\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 class OrderObserver
 {
@@ -36,8 +38,6 @@ class OrderObserver
         Cache::forget('navigation_badge_count_pending_order');
         Cache::forget('navigation_badge_count_success_order');
         Cache::forget('navigation_badge_count_returned_order');
-
-
     }
 
 
@@ -51,7 +51,7 @@ class OrderObserver
             \DB::beginTransaction();
             try {
 
-                    HelperBalance::completePicker($order);
+                HelperBalance::completePicker($order);
 
 
 
@@ -59,9 +59,14 @@ class OrderObserver
             } catch (\Exception | \Error $e) {
                 \DB::rollBack();
             }
-
         }
+    }
 
+    public function updating(Order $order): void
+    {
+        if (Schema::hasColumn('orders', 'updated_by')) {
+            $order->updated_by = Auth::user()->id;
+        }
     }
 
     /**
@@ -79,7 +84,6 @@ class OrderObserver
         Cache::forget('navigation_badge_count_pending_order');
         Cache::forget('navigation_badge_count_success_order');
         Cache::forget('navigation_badge_count_returned_order');
-
     }
 
     /**

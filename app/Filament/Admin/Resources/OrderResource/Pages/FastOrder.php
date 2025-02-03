@@ -181,7 +181,7 @@ class FastOrder extends CreateRecord
                                 })->live()->visible(fn($context) => $context === 'create'),
                             Forms\Components\Select::make('city_target_id')
                                 ->relationship('cityTarget', 'name')
-                                ->label('الى بلدة')->required()->searchable(),
+                                ->label('الى بلدة')->required()->searchable()->preload(),
 
                         ]),
                         Forms\Components\Grid::make()->schema([
@@ -231,9 +231,23 @@ class FastOrder extends CreateRecord
                         ])->visible(fn($context) => $context === 'create'),
                     ])->columns(4),
 
-                    Forms\Components\Fieldset::make('كود الشحنة')->schema([
-                        Forms\Components\TextInput::make('qr_code')->label('الكود')
-                    ])->columns(1),
+                    Forms\Components\Fieldset::make('كود الشحنة')
+                        ->schema([
+                            Forms\Components\Toggle::make('allow_duplicates')
+                                ->label('الشحنة مكودة')
+                                ->default(true)
+                                ->reactive()
+                                ->dehydrated(false),
+                            Forms\Components\TextInput::make('qr_code')
+                                ->label('الكود')
+                                ->rules(function (callable $get) {
+
+                                    return $get('allow_duplicates')
+                                        ? ['required', 'string', 'max:255', 'unique:orders,qr_code']
+                                        : ['nullable', 'string', 'max:255'];
+                                }),
+                        ])
+                        ->columns(1)
 
                 ])->collapsible(true)->collapsed(false),
 
