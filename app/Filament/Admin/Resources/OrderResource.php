@@ -258,8 +258,8 @@ class OrderResource extends Resource
                                     }
                                 })->live()->visible(fn($context) => $context === 'create'),
                             Forms\Components\Select::make('city_target_id')
-                                ->relationship('cityTarget', 'name')
-                                ->label('الى بلدة')->required()->searchable()->preload(),
+                            ->options(city::pluck('name', 'id'))
+                                ->label('الى بلدة')->required()->searchable(),
 
                         ]),
                         Forms\Components\Grid::make()->schema([
