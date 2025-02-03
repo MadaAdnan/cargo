@@ -432,26 +432,26 @@ protected static ?int $navigationSort=1;
                     ->description(fn($record) => $record->created_at->diffForHumans())
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('unit.name')->label('نوع الشحنة'),
+                    Tables\Columns\TextColumn::make('unit.name')->label('نوع الشحنة')->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('price')->formatStateUsing(fn($state) => $state . ' $ ')->label('التحصيل USD')/*->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ ')*/,
-                Tables\Columns\TextColumn::make('far')->formatStateUsing(fn($state) => $state . ' $ ')->label('الأجور USD')->toggleable(isToggledHiddenByDefault: false),
-
-                Tables\Columns\TextColumn::make('price_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('التحصيل TRY')/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
-                Tables\Columns\TextColumn::make('far_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('الأجور TRY')->toggleable(isToggledHiddenByDefault: false)/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
-
-                Tables\Columns\TextColumn::make('currency.name')->label('العملة'),
-
-                Tables\Columns\TextColumn::make('sender.name')->label('اسم المرسل')->description(fn($record) => $record->general_sender_name)->searchable(),
-
-                Tables\Columns\TextColumn::make('citySource.name')->label('من بلدة')->description(fn($record) => " {$record->citySource?->city?->name}")->searchable(),
-                Tables\Columns\TextColumn::make('cityTarget.name')->label('إلى بلدة')->description(fn($record) => " {$record->cityTarget?->city?->name}")->searchable(),
-                Tables\Columns\TextColumn::make('branchSource.name')->label('من فرع')->description(fn($record) => "إلى فرع  {$record->branchTarget?->name}")->searchable(),
-
-
-                Tables\Columns\TextColumn::make('global_name')->label('معرف المستلم ')->description(fn($record) => $record->receive?->name)->searchable(),
-                Tables\Columns\TextColumn::make('receive_phone')
-                    ->formatStateUsing(fn($record) => (string)$record->receive_address . ' - ' . (string)$record->receive_phone)->label('هاتف المستلم ')
+                    Tables\Columns\TextColumn::make('price')->formatStateUsing(fn($state) => $state . ' $ ')->label('التحصيل USD')->toggleable(isToggledHiddenByDefault: true)/*->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ ')*/,
+                    Tables\Columns\TextColumn::make('far')->formatStateUsing(fn($state) => $state . ' $ ')->label('الأجور USD')->toggleable(isToggledHiddenByDefault: false),
+    
+                    Tables\Columns\TextColumn::make('price_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('التحصيل TRY')->toggleable(isToggledHiddenByDefault: true)/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
+                    Tables\Columns\TextColumn::make('far_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('الأجور TRY')->toggleable(isToggledHiddenByDefault: false)/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
+    
+                    Tables\Columns\TextColumn::make('currency.name')->label('العملة')->toggleable(isToggledHiddenByDefault: true),
+    
+                    Tables\Columns\TextColumn::make('sender.name')->label('اسم المرسل')->description(fn($record) => $record->general_sender_name)->searchable()->toggleable(isToggledHiddenByDefault: true),
+    
+                    Tables\Columns\TextColumn::make('citySource.name')->label('من بلدة')->description(fn($record) => " {$record->citySource?->city?->name}")->searchable()->toggleable(isToggledHiddenByDefault: true),
+                    Tables\Columns\TextColumn::make('cityTarget.name')->label('إلى بلدة')->description(fn($record) => " {$record->cityTarget?->city?->name}")->searchable()->toggleable(isToggledHiddenByDefault: true),
+                    Tables\Columns\TextColumn::make('branchSource.name')->label('من فرع')->description(fn($record) => "إلى فرع  {$record->branchTarget?->name}")->searchable()->toggleable(isToggledHiddenByDefault: true),
+    
+    
+                    Tables\Columns\TextColumn::make('global_name')->label('معرف المستلم ')->description(fn($record) => $record->receive?->name)->searchable()->toggleable(isToggledHiddenByDefault: true),
+                    Tables\Columns\TextColumn::make('receive_phone')->toggleable(isToggledHiddenByDefault: true)
+                        ->formatStateUsing(fn($record) => (string)$record->receive_address . ' - ' . (string)$record->receive_phone)->label('هاتف المستلم ')
                     /*->description(fn($record) =>  ltrim($record?->receive_phone, '+'))*/
                     ->url(function ($record) {
                         $far = $record->far_sender ? 'على المرسل' : 'على المستلم';
@@ -477,8 +477,9 @@ protected static ?int $navigationSort=1;
                     })->openUrlInNewTab()
                     ->searchable()->color('danger'),
                 Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record) => 'موظف الإلتقاط : ' . $record->pick?->name)
-                    ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل'),
-                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
+                ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل')->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary')->toggleable(isToggledHiddenByDefault: true),
+
 
 
             ])->defaultSort('created_at', 'desc')
