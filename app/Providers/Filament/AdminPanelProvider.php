@@ -13,6 +13,7 @@ use App\Http\Middleware\StopPanelMiddleware;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -28,6 +29,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
 //use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 use Rupadana\ApiService\ApiServicePlugin;
+
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -39,8 +41,8 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
 
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
-               // FilamentApexChartsPlugin::make(),
-               // ApiServicePlugin::make(),
+                // FilamentApexChartsPlugin::make(),
+                // ApiServicePlugin::make(),
                 FilamentEditProfilePlugin::make()
                     ->shouldShowDeleteAccountForm(false)
                     ->shouldShowAvatarForm()
@@ -71,7 +73,7 @@ class AdminPanelProvider extends PanelProvider
                 BalanceCustomerView::class
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
-           ->databaseNotifications()
+            ->databaseNotifications()
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -82,15 +84,24 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-               //  StopPanelMiddleware::class
+                //  StopPanelMiddleware::class
 
             ])
             ->authMiddleware([
                 Authenticate::class,
-IsBlockedUserMiddleware::class
-//                RedirectToPanelMiddleware::class
+                IsBlockedUserMiddleware::class
+                //                RedirectToPanelMiddleware::class
+            ])
+
+            //sorting navigation group
+            ->navigationGroups([
+                'الشحنات' => NavigationGroup::make(fn() => 'الشحنات'),
+                'التقارير' => NavigationGroup::make(fn() => 'التقارير'),
+                'إدارة الوصول' => NavigationGroup::make(fn() => 'إدارة الوصول'),
+                'الحسابات المالية'  => NavigationGroup::make(fn() => 'الحسابات المالية'),
+                'المناطق' => NavigationGroup::make(fn() => 'المناطق'),
+                'الرصيد' =>  NavigationGroup::make(fn() => 'الرصيد'),
+                'معلومات الحساب' =>  NavigationGroup::make(fn() => 'معلومات الحساب'),
             ]);
     }
-
-
 }
