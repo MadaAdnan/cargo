@@ -96,6 +96,7 @@ class AccountStatmentStaffResource extends Resource implements HasShieldPermissi
                 Tables\Columns\TextColumn::make('order.id')->description(fn($record) => $record->order?->code)->label('الطلب'),
                 Tables\Columns\TextColumn::make('order.sender.name')->label('المرسل')->description(fn($record) => $record->order?->general_sender_name != null ? "{$record->order->general_sender_name}" : ""),
                 Tables\Columns\TextColumn::make('order.receive.name')->label('المستلم')->description(fn($record) => $record->order?->global_name != null ? " {$record->order->global_name}" : ""),
+                Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
                 Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->description(fn($record) => $record->created_at->format('H:i'))
                     ->label('التاريخ والوقت'),
 
