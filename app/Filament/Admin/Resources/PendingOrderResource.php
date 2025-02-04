@@ -417,16 +417,21 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                     default => ['style' => ''],
                 }),
 
-                Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
-                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ إنشاء الشحنة')->extraCellAttributes(fn(Model $record) => match ($record->color) {
+                Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة')->description(fn($record) => $record->created_at, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
                     'green' => ['style' => 'background-color:#55FF88;'],
 
                     default => ['style' => ''],
                 }),
-                Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
+                Tables\Columns\TextColumn::make('createdBy.name')->label('الموظفون')
+                    ->formatStateUsing(fn($state) => 'المنشأ : ' . $state)
+                    ->description(fn($record) => 'المعدل : ' . $record?->updatedBy?->name, 'bottom'),
 
 
-                Tables\Columns\TextColumn::make('type')->label('نوع الطلب')
+                Tables\Columns\TextColumn::make('far_sender')
+                    ->formatStateUsing(fn($state) => FarType::tryFrom($state)?->getLabel())
+                    ->color(fn($state) => FarType::tryFrom($state)?->getColor())
+                    ->icon(fn($state) => FarType::tryFrom($state)?->getIcon())
+                    ->label('حالة الدفع')
                     ->description(fn($record) => $record->status?->getLabel())
                     ->extraCellAttributes(function ($record) {
                         $list = [];
@@ -449,32 +454,41 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                         }
                         return $list;
                     }),
-                Tables\Columns\TextColumn::make('far_sender')->formatStateUsing(fn($state) => FarType::tryFrom($state)?->getLabel())
-                    ->color(fn($state) => FarType::tryFrom($state)?->getColor())
-                    ->icon(fn($state) => FarType::tryFrom($state)?->getIcon())
-                    ->label('حالة الدفع')
-                    ->description(fn($record) => $record->created_at->diffForHumans())
-                    ->searchable(),
+                // Tables\Columns\TextColumn::make('far_sender')->formatStateUsing(fn($state) => FarType::tryFrom($state)?->getLabel())
+                //     ->color(fn($state) => FarType::tryFrom($state)?->getColor())
+                //     ->icon(fn($state) => FarType::tryFrom($state)?->getIcon())
+                //     ->label('حالة الدفع')
+                //     ->description(fn($record) => $record->created_at->diffForHumans())
+                //     ->searchable(),
 
-                Tables\Columns\TextColumn::make('unit.name')->label('نوع الشحنة'),
+                Tables\Columns\TextColumn::make('unit.name')->label('نوع الشحنة')->toggleable(isToggledHiddenByDefault: false),
 
-                Tables\Columns\TextColumn::make('price')->formatStateUsing(fn($state) => $state . ' $ ')->label('التحصيل USD')/*->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ ')*/,
-                Tables\Columns\TextColumn::make('far')->formatStateUsing(fn($state) => $state . ' $ ')->label('الأجور USD')->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('far')->formatStateUsing(fn($state) => 'الاجور : ' . $state)->label('USD')
+                    ->description(fn($record) => 'التحصيل : ' . $record->price, 'above')
+                    ->toggleable(isToggledHiddenByDefault: false)/*->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ ')*/,
 
-                Tables\Columns\TextColumn::make('price_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('التحصيل TRY')/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
-                Tables\Columns\TextColumn::make('far_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('الأجور TRY')->toggleable(isToggledHiddenByDefault: false)/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
-
-                Tables\Columns\TextColumn::make('currency.name')->label('العملة'),
-
-                Tables\Columns\TextColumn::make('sender.name')->label('اسم المرسل')->description(fn($record) => $record->general_sender_name)->searchable(),
-
-                Tables\Columns\TextColumn::make('citySource.name')->label('من بلدة')->description(fn($record) => " {$record->citySource?->city?->name}")->searchable(),
-                Tables\Columns\TextColumn::make('cityTarget.name')->label('إلى بلدة')->description(fn($record) => " {$record->cityTarget?->city?->name}")->searchable(),
-                Tables\Columns\TextColumn::make('branchSource.name')->label('من فرع')->description(fn($record) => "إلى فرع  {$record->branchTarget?->name}")->searchable(),
+                Tables\Columns\TextColumn::make('far_tr')->formatStateUsing(fn($state) => 'الاجور : ' . $state)->label('TRY')
+                    ->description(fn($record) => 'التحصيل : ' . $record->price_tr, 'above')
+                    ->toggleable(isToggledHiddenByDefault: false),
 
 
-                Tables\Columns\TextColumn::make('global_name')->label('معرف المستلم ')->description(fn($record) => $record->receive?->name)->searchable(),
-                Tables\Columns\TextColumn::make('receive_phone')
+                Tables\Columns\TextColumn::make('currency.name')->label('العملة')->toggleable(isToggledHiddenByDefault: false),
+
+                Tables\Columns\TextColumn::make('sender.name')->label('المرسل / المستلم')->formatStateUsing(fn($state) => 'المرسل : ' . $state)->description(fn($record) => 'المستلم : ' . $record->global_name)->searchable()->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('citySource.name')
+                    ->label('بلدة')
+                    ->formatStateUsing(fn($state, $record) => 'من : ' . $record->citySource?->name . ' ( ' . $record->citySource?->city?->name . ' )')
+                    ->description(fn($record) => "إلى : {$record->cityTarget?->name} ( {$record->cityTarget?->city?->name} )")
+                    ->searchable(query: function (Builder $query, string $search) {
+                        $query->whereHas('citySource', function ($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%");
+                        });
+                    })
+                    ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('branchSource.name')->label('فرع')->formatStateUsing(fn($state) => 'من : ' . $state)->description(fn($record) => "إلى : {$record->branchTarget?->name}")->searchable()->toggleable(isToggledHiddenByDefault: false),
+
+
+                Tables\Columns\TextColumn::make('receive_phone')->toggleable(isToggledHiddenByDefault: false)
                     ->formatStateUsing(fn($record) => (string)$record->receive_address . ' - ' . (string)$record->receive_phone)->label('هاتف المستلم ')
                     /*->description(fn($record) =>  ltrim($record?->receive_phone, '+'))*/
                     ->url(function ($record) {
@@ -501,8 +515,9 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                     })->openUrlInNewTab()
                     ->searchable()->color('danger'),
                 Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record) => 'موظف الإلتقاط : ' . $record->pick?->name)
-                    ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل'),
-                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
+                    ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل')->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary')->toggleable(isToggledHiddenByDefault: false),
+
 
 
             ])
