@@ -20,7 +20,7 @@ class AdminPanelControl extends Widget implements HasForms
 
     public array $cacheKeys = [
         'branch_panel' => 'لوحة الفروع',
-        'user_panel' => 'لوحة المستخدمي',
+        'user_panel' => 'لوحة المستخدمين',
         'employee_panel' => 'لوحة الموظفين',
     ];
 
