@@ -657,7 +657,10 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
     public static function getNavigationBadge(): ?string
     {
         return Cache::remember('navigation_badge_count_success_order', now()->addDay(), function () {
-            return static::getModel()::where('status', OrderStatusEnum::CANCELED)->count();
+            return static::getModel()::where('status', OrderStatusEnum::SUCCESS)
+            ->orWhere('status', OrderStatusEnum::CANCELED)
+            ->orWhere('status', OrderStatusEnum::CONFIRM_RETURNED)
+            ->count();
         });
     }
 }
