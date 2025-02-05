@@ -10,6 +10,7 @@ use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Cache;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules\Can;
 
 class AdminPanelControl extends Widget implements HasForms
 {
@@ -41,7 +42,7 @@ class AdminPanelControl extends Widget implements HasForms
             $switches[] = Toggle::make($key)
                 ->label($label)
                 ->reactive()
-                ->afterStateUpdated(fn ($state) => $this->updateCache($key, $state));
+                ->afterStateUpdated(fn($state) => $this->updateCache($key, $state));
         }
 
         return [
@@ -67,6 +68,6 @@ class AdminPanelControl extends Widget implements HasForms
 
     public static function canView(): bool
     {
-        return Auth::check() && Auth::id() === 54;
+        return auth()->user()->hasPermissionTo('widget_AdminPanelControl');
     }
 }
