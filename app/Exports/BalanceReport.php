@@ -30,7 +30,7 @@ class BalanceReport implements FromQuery, WithChunkReading, WithHeadings, WithMa
             $query->where('user_id', $this->filters['value']);
         }
 
-        return $query->orderBy('id', 'desc');
+        return $query->orderBy('created_at', 'asc');
     }
 
     public function chunkSize(): int
