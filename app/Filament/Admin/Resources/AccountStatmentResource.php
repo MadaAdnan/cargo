@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Enums\FarType;
+use App\Enums\OrderStatusEnum;
 use App\Filament\Admin\Resources\AccountStatmentResource\Pages;
 use App\Filament\Admin\Resources\AccountStatmentResource\RelationManagers;
 use App\Models\AccountStatment;
@@ -87,6 +89,9 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('credit')->label('مدين'),
                 Tables\Columns\TextColumn::make('debit')->label('دائن'),
                 Tables\Columns\TextColumn::make('currency.code')->label('العملة'),
+                Tables\Columns\TextColumn::make('order.far_sender')
+                    ->formatStateUsing(fn($state) => FarType::tryFrom($state)?->getLabel())
+                    ->label('حالة الدفع'),
 
                 /*Tables\Columns\BadgeColumn::make('process_type')
                     ->label('نوع العملية')
@@ -126,7 +131,7 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
                 Tables\Columns\TextColumn::make('order.cityTarget.name')->label('المدينة'),
                 Tables\Columns\TextColumn::make('pending')->label('النوع')
-                ->formatStateUsing(fn($record) => $record->pending == true ? "قيد التحصيل" : "")->color('danger'),
+                    ->formatStateUsing(fn($record) => $record->pending == true ? "قيد التحصيل" : "")->color('danger'),
 
                 //H: disabled the cell
                 //Tables\Columns\TextColumn::make('total')->label('الرصيد'),
@@ -136,7 +141,7 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                     ->label('التاريخ والوقت'),
 
             ])
-            ->paginated([10, 25, 50, 100 ,200 , 'all'])
+            ->paginated([10, 25, 50, 100, 200, 'all'])
             ->defaultSort('id', 'desc')
             //H: up here, added default sorting to table based on id to show the latest total of an account
             ->filters([
