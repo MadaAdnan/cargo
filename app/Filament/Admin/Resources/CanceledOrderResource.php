@@ -469,7 +469,8 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
 
                 Tables\Columns\TextColumn::make('currency.name')->label('العملة')->toggleable(isToggledHiddenByDefault: false),
 
-                Tables\Columns\TextColumn::make('sender.name')->label('المرسل / المستلم')->formatStateUsing(fn($state) => 'المرسل : ' . $state)->description(fn($record) => 'المستلم : ' . $record->global_name)->searchable()->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('sender.name')->label('المرسل')->searchable()->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('global_name')->label('المستلم')->searchable()->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('citySource.name')
                     ->label('بلدة')
                     ->formatStateUsing(fn($state, $record) => 'من : ' . $record->citySource?->name . ' ( ' . $record->citySource?->city?->name . ' )')
