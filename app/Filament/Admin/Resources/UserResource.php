@@ -228,7 +228,8 @@ class UserResource extends Resource
                     ->when($data['city_id'],fn($query)=>$query->where('city_id',$data['city_id']))
                     ->when($data['branch_id'],fn($query)=>$query->where('branch_id',$data['branch_id']))
                 )
-            ])->headerActions([
+            ])
+            ->headerActions([
                 ExportAction::make()->exports([
                     ExcelExport::make()->withChunkSize(100)->fromTable()
                 ])
@@ -239,7 +240,8 @@ class UserResource extends Resource
                     Tables\Actions\Action::make('balance_tr')->url(fn($record) => UserResource::getUrl('balanceTr', ['record' => $record]))->label('كشف حساب تركي'),
                     Tables\Actions\Action::make('balance_usd_pending')->url(fn($record) => UserResource::getUrl('balancePendingUsd', ['record' => $record, 'currency' => 1,'pending'=>1]))->label('كشف حساب دولار قيد التحصيل'),
                     Tables\Actions\Action::make('balance_tr_pending')->url(fn($record) => UserResource::getUrl('balancePendingTR', ['record' => $record, 'currency' => 2,'pending'=>1]))->label('كشف حساب تركي قيد التحصيل'),
-Tables\Actions\Action::make('request')->form([
+Tables\Actions\Action::make('request')
+    ->form([
     Forms\Components\Radio::make('currency_id')->options([
         1 => ' من الدولار إلى التركي',
         2 => 'من التركي إلى الدولار',
@@ -284,7 +286,8 @@ Tables\Actions\Action::make('request')->form([
         }
     })->live()->debounce(1000),
     Forms\Components\TextInput::make('result')->dehydrated(false)->label('الإجمالي')->numeric()->required(),
-])->action(function($record,$data){
+])
+    ->action(function($record,$data){
     if ($data['currency_id'] == 1) {
         $currency=2;
         $result= HelperBalance::formatNumber((double)$data['amount'] * (double)$data['exchange']);
@@ -329,7 +332,13 @@ Tables\Actions\Action::make('request')->form([
       \DB::rollBack();
       Notification::make('success')->danger()->title('فشل العملية')->body($e->getMessage())->send();
   }
-})->label('تصريف عملة')
+})->label('تصريف عملة'),
+                    Tables\Actions\Action::make('currect')->form([
+                        Forms\Components\TextInput::make('value')->label('الرصيد الصحيح')
+                    ])->action(function($record,$data){
+                        $currentBalance=$record->total_balance;
+                    })
+                        ->label('تصحيح الرصيدUSD')
                 ])->label('كشف حساب'),
                 Tables\Actions\ViewAction::make(),
 
