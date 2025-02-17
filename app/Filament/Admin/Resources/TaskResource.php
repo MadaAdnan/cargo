@@ -88,6 +88,11 @@ class TaskResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('complete')->action(fn($record)=>$record->update(['is_complete'=>1]))->requiresConfirmation()->label('إنهاء المهمة'),
+                  Tables\Actions\DeleteAction::make(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
