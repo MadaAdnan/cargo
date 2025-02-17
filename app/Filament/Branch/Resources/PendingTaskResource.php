@@ -78,7 +78,7 @@ class PendingTaskResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn($query) => $query->where(fn($query) => $query->where('user_id', auth()->id())->orWhere('delegate_id', auth()->id()))->where('is_pending::taske', false)->latest())
+            ->modifyQueryUsing(fn($query) => $query->where(fn($query) => $query->where('user_id', auth()->id())->orWhere('delegate_id', auth()->id()))->where('is_pending', false)->latest())
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('التسلسل'),
                 Tables\Columns\TextColumn::make('from')->label('إستلام من')->color(fn($record) => $record->is_sender ? 'danger' : null),
@@ -94,7 +94,7 @@ class PendingTaskResource extends Resource
             ])
             ->actions([
 //                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('complete')->label('إتمام')->button()->requiresConfirmation()->action(fn($record) => $record->update(['is_pending::taske' => true])),
+                Tables\Actions\Action::make('complete')->label('إتمام')->button()->requiresConfirmation()->action(fn($record) => $record->update(['is_pending' => true])),
                 Tables\Actions\Action::make('transfer')->label('توكيل موظف')->button()
                     ->form([
                         Forms\Components\Select::make('delegate_id')->options(User::where('level', LevelUserEnum::STAFF->value)->orWhere('level', LevelUserEnum::BRANCH->value)->pluck('name', 'id'))->label('الموظف') ->searchable(),
