@@ -12,14 +12,16 @@ class DailyOverview extends BaseWidget
     protected function getStats(): array
     {
         $ordersNum=Order::whereDate('created_at',now());
+        $senderFar=Order::whereDate('created_at',now())->where('orders.far_sender',1);
+        $reciveFar=Order::whereDate('created_at',now())->where('orders.far_sender',0);
         return [
             Stat::make('الشحنات المنشأة اليوم', $ordersNum->count()),
             Stat::make('إجمالي قيمة الشحنات USD', $ordersNum->sum('price')),
             Stat::make('إجمالي قيمة الشحنات TRY', $ordersNum->sum('price_tr')),
-            Stat::make('إجمالي أجور الشحنات USD  على المرسل', $ordersNum->where('orders.far_sender',1)->get()->sum('far')),
-            Stat::make('إجمالي أجور الشحنات USD  على المستلم', $ordersNum->where('orders.far_sender',0)->get()->sum('far')),
-            Stat::make('إجمالي أجور الشحنات TRY  على المرسل', $ordersNum->where('orders.far_sender',1)->get()->sum('far_tr')),
-            Stat::make('إجمالي أجور الشحنات TRY  على المستلم', $ordersNum->where('orders.far_sender',0)->get()->sum('far_tr')),
+            Stat::make('إجمالي أجور الشحنات USD  على المرسل', $senderFar->sum('far')),
+            Stat::make('إجمالي أجور الشحنات USD  على المستلم',$reciveFar->sum('far')),
+            Stat::make('إجمالي أجور الشحنات TRY  على المرسل', $senderFar->sum('far_tr')),
+            Stat::make('إجمالي أجور الشحنات TRY  على المستلم', $reciveFar->sum('far_tr')),
         ];
     }
 }
