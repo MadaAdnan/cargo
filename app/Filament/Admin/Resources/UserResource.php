@@ -333,12 +333,66 @@ Tables\Actions\Action::make('request')
       Notification::make('success')->danger()->title('فشل العملية')->body($e->getMessage())->send();
   }
 })->label('تصريف عملة'),
-                    Tables\Actions\Action::make('currect')->form([
+                    Tables\Actions\Action::make('currect_USD')->form([
                         Forms\Components\TextInput::make('value')->label('الرصيد الصحيح')
-                    ])->action(function($record,$data){
+                    ])
+                        ->action(function($record,$data){
                         $currentBalance=$record->total_balance;
+                        $value=$data['value'] - $currentBalance;
+                        if($value>0){
+                            Balance::create([
+                               'user_id'=>$record->id,
+                               'info'=>'تصحيح رصيد ومطابقة',
+                               'credit'=>$value,
+                               'debit'=>0,
+                               'is_complete'=>true,
+                               'pending'=>false,
+                               'currency_id'=>1,
+                            ]);
+                        }elseif ($value<0){
+                            Balance::create([
+                                'user_id'=>$record->id,
+                                'info'=>'تصحيح رصيد ومطابقة',
+                                'debit'=>$value*-1,
+                                'credit'=>0,
+                                'is_complete'=>true,
+                                'pending'=>false,
+                                'currency_id'=>1,
+                            ]);
+                        }
+                        Notification::make('success')->success()->title('نجاح')->body('تم تصحيح الرصيد')->send();
                     })
-                        ->label('تصحيح الرصيدUSD')
+                        ->label('تصحيح الرصيدUSD'),
+                    Tables\Actions\Action::make('currect_TRY')->form([
+                        Forms\Components\TextInput::make('value')->label('الرصيد الصحيح')
+                    ])
+                        ->action(function($record,$data){
+                            $currentBalance=$record->total_balance;
+                            $value=$data['value'] - $currentBalance;
+                            if($value>0){
+                                Balance::create([
+                                    'user_id'=>$record->id,
+                                    'info'=>'تصحيح رصيد ومطابقة',
+                                    'credit'=>$value,
+                                    'debit'=>0,
+                                    'is_complete'=>true,
+                                    'pending'=>false,
+                                    'currency_id'=>2,
+                                ]);
+                            }elseif ($value<0){
+                                Balance::create([
+                                    'user_id'=>$record->id,
+                                    'info'=>'تصحيح رصيد ومطابقة',
+                                    'debit'=>$value*-1,
+                                    'credit'=>0,
+                                    'is_complete'=>true,
+                                    'pending'=>false,
+                                    'currency_id'=>2,
+                                ]);
+                            }
+                            Notification::make('success')->success()->title('نجاح')->body('تم تصحيح الرصيد')->send();
+                        })
+                        ->label('تصحيح الرصيدTRY')
                 ])->label('كشف حساب'),
                 Tables\Actions\ViewAction::make(),
 
