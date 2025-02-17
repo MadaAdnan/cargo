@@ -16,10 +16,10 @@ class DailyOverview extends BaseWidget
             Stat::make('الشحنات المنشأة اليوم', $ordersNum->count()),
             Stat::make('إجمالي قيمة الشحنات USD', $ordersNum->sum('price')),
             Stat::make('إجمالي قيمة الشحنات TRY', $ordersNum->sum('price_tr')),
-            Stat::make('إجمالي أجور الشحنات USD  على المرسل', $ordersNum->where('orders.far_sender',1)->sum('far')),
-            Stat::make('إجمالي أجور الشحنات USD  على المستلم', $ordersNum->where('orders.far_sender',0)->sum('far')),
-            Stat::make('إجمالي أجور الشحنات TRY  على المرسل', $ordersNum->where('orders.far_sender',1)->sum('far_tr')),
-            Stat::make('إجمالي أجور الشحنات TRY  على المستلم', $ordersNum->where('orders.far_sender',0)->sum('far_tr')),
+            Stat::make('إجمالي أجور الشحنات USD  على المرسل', $ordersNum->where('orders.far_sender',1)->get()->sum('far')),
+            Stat::make('إجمالي أجور الشحنات USD  على المستلم', $ordersNum->where('orders.far_sender',0)->get()->sum('far')),
+            Stat::make('إجمالي أجور الشحنات TRY  على المرسل', $ordersNum->where('orders.far_sender',1)->get()->sum('far_tr')),
+            Stat::make('إجمالي أجور الشحنات TRY  على المستلم', $ordersNum->where('orders.far_sender',0)->get()->sum('far_tr')),
         ];
     }
 }
