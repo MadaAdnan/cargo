@@ -8,6 +8,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class DailyOverview extends BaseWidget
 {
+    protected ?string $heading='تقرير يومي';
     protected function getStats(): array
     {
         $ordersNum=Order::whereDate('created_at',now());
