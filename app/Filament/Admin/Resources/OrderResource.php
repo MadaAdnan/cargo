@@ -16,6 +16,7 @@ use App\Models\Branch;
 use App\Models\City;
 use App\Models\Order;
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Carbon\Carbon;
 use Error;
 use Filament\Forms;
@@ -48,7 +49,7 @@ use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 
-class OrderResource extends Resource
+class OrderResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Order::class;
     protected static ?string $pluralModelLabel = 'الطلبات';
@@ -59,6 +60,19 @@ class OrderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-truck';
     protected static ?int $navigationSort = 1;
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'publish',
+            'cancel'
+        ];
+    }
     public static function canDelete(Model $record): bool
     {
         return false;
