@@ -655,7 +655,7 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                                 Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                             }
                         })->label('الإلغاء / الإعادة')->color('danger')
-                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED),
+                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED),
 
 
 
