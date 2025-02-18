@@ -27,11 +27,13 @@
         }
 
         @media print {
+            *{
+                font-size: 11pt;
+            }
             ul{
-                font-size: 12pt;
+
                 width: 205mm;
-                padding: 1pt;
-                margin: 1pt;
+
             }
             .printer {
                 width: 210mm;
