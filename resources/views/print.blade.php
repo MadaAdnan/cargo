@@ -28,9 +28,10 @@
 
         @media print {
             ul{
+                font-size: 14pt;
                 width: 205mm;
-                padding: 0;
-                margin: 0;
+                padding: 1pt;
+                margin: 1pt;
             }
             .printer {
                 width: 210mm;
