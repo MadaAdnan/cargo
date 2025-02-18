@@ -52,7 +52,7 @@
 <div class="printer">
     <table class="table">
         <tr>
-            <td colspan="2" rowspan="3"><img src="" alt=""></td>
+            <td colspan="3" rowspan="3"><img src="" alt=""></td>
 
         </tr>
         <tr>
