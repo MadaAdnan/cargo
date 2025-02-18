@@ -402,7 +402,6 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
         $cities = City::selectRaw('id,name,city_id')->get();
 
         return $table
-            //            ->poll(10)
             ->columns([
                 //  Tables\Columns\SpatieMediaLibraryImageColumn::make('images')->collection('images')->circular()->openUrlInNewTab(),
                 /*   PopoverColumn::make('qr_url')
@@ -512,6 +511,8 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
 
 
             ])
+            //            ->poll(10)
+
             ->paginated([10, 25, 50, 100 , 200 ,'all'])
             ->defaultSort('created_at', 'desc')
             ->filters([

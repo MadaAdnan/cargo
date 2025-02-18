@@ -1,0 +1,103 @@
+->columns([
+                //  Tables\Columns\SpatieMediaLibraryImageColumn::make('images')->collection('images')->circular()->openUrlInNewTab(),
+                /*   PopoverColumn::make('qr_url')
+                       ->trigger('click')
+                       ->placement('right')
+                       ->content(fn($record) => \LaraZeus\Qr\Facades\Qr::render($record->code))
+                       ->icon('heroicon-o-qr-code'),*/
+
+                Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->qr_code, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
+                    'green' => ['style' => 'background-color:#55FF88;'],
+
+                    default => ['style' => ''],
+                }),
+
+                Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة'),
+                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->label('تاريخ إنشاء الشحنة')->extraCellAttributes(fn(Model $record) => match ($record->color) {
+                    'green' => ['style' => 'background-color:#55FF88;'],
+
+                    default => ['style' => ''],
+                }),
+                Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
+
+
+                Tables\Columns\TextColumn::make('type')->label('نوع الطلب')
+                    ->description(fn($record) => $record->status?->getLabel())
+                    ->extraCellAttributes(function ($record) {
+                        $list = [];
+                        switch ($record->status) {
+                            case OrderStatusEnum::PICK:
+                                $list = ['style' => 'background-color:yellow'];
+                                break;
+                            case OrderStatusEnum::TRANSFER:
+                                $list = ['style' => 'background-color:orange'];
+                                break;
+                            case OrderStatusEnum::RETURNED:
+                                $list = ['style' => 'background-color:red'];
+                                break;
+                            case OrderStatusEnum::CANCELED:
+                                $list = ['style' => 'background-color:gray;color:black'];
+                                break;
+                            case OrderStatusEnum::SUCCESS:
+                                $list = ['style' => 'background-color:green;color:black'];
+                                break;
+                        }
+                        return $list;
+                    }),
+                Tables\Columns\TextColumn::make('far_sender')->formatStateUsing(fn($state) => FarType::tryFrom($state)?->getLabel())
+                    ->color(fn($state) => FarType::tryFrom($state)?->getColor())
+                    ->icon(fn($state) => FarType::tryFrom($state)?->getIcon())
+                    ->label('حالة الدفع')
+                    ->description(fn($record) => $record->created_at->diffForHumans())
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('unit.name')->label('نوع الشحنة'),
+
+                Tables\Columns\TextColumn::make('price')->formatStateUsing(fn($state) => $state . ' $ ')->label('التحصيل USD')/*->description(fn($record) => 'اجور الشحن : ' . $record->far . ' $ ')*/,
+                Tables\Columns\TextColumn::make('far')->formatStateUsing(fn($state) => $state . ' $ ')->label('الأجور USD')->toggleable(isToggledHiddenByDefault: false),
+
+                Tables\Columns\TextColumn::make('price_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('التحصيل TRY')/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
+                Tables\Columns\TextColumn::make('far_tr')->formatStateUsing(fn($state) => $state . 'TRY')->label('الأجور TRY')->toggleable(isToggledHiddenByDefault: false)/*->description(fn($record) => 'اجور الشحن : ' . $record->far_tr . 'TRY')*/,
+
+                Tables\Columns\TextColumn::make('currency.name')->label('العملة'),
+
+                Tables\Columns\TextColumn::make('sender.name')->label('اسم المرسل')->description(fn($record) => $record->general_sender_name)->searchable(),
+
+                Tables\Columns\TextColumn::make('citySource.name')->label('من بلدة')->description(fn($record) => " {$record->citySource?->city?->name}")->searchable(),
+                Tables\Columns\TextColumn::make('cityTarget.name')->label('إلى بلدة')->description(fn($record) => " {$record->cityTarget?->city?->name}")->searchable(),
+                Tables\Columns\TextColumn::make('branchSource.name')->label('من فرع')->description(fn($record) => "إلى فرع  {$record->branchTarget?->name}")->searchable(),
+
+
+                Tables\Columns\TextColumn::make('global_name')->label('معرف المستلم ')->description(fn($record) => $record->receive?->name)->searchable(),
+                Tables\Columns\TextColumn::make('receive_phone')
+                    ->formatStateUsing(fn($record) => (string)$record->receive_address . ' - ' . (string)$record->receive_phone)->label('هاتف المستلم ')
+                    /*->description(fn($record) =>  ltrim($record?->receive_phone, '+'))*/
+                    ->url(function ($record) {
+                        $far = $record->far_sender ? 'على المرسل' : 'على المستلم';
+
+                        $message = "السلام عليكم ورحمة الله وبركاته
+                        %0a
+                         لكم طلب مرسل عبر شركة الفاتح للنقل الداخلي
+                         %0a
+                           من : {$record->sender?->full_name}
+                           %0a
+                            إلى : {$record->global_name}
+                       %0a
+                        قيمة الطلب : {$record->price}
+                        %0a
+                        أجور الطلب : {$record->far}
+                        %0a
+                        الأجور : {$far}
+                        %0a
+                        يرجى تأكيد حضوركم وإرسال عنوان دقيق ليتم تسليمكم الطلب فيه مع إرفاق رقم البناء والشقة وإرفاق موقع GPS لتسريع الوصول للعنوان
+                          %0a
+                         ملاحظة : سيتم التوزيع خلال أقرب فرصة ممكنة إن شاء الله ";
+                        return url('https://wa.me/' . ltrim($record?->receive_phone, '+') . '?text=' . $message);
+                    })->openUrlInNewTab()
+                    ->searchable()->color('danger'),
+                Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record) => 'موظف الإلتقاط : ' . $record->pick?->name)
+                    ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل'),
+                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
+
+
+            ])
