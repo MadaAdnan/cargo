@@ -71,7 +71,7 @@
             </td>
         </tr>
         <tr>
-            <td rowspan="3" >
+            <td rowspan="3" colspan="3">
                 <img src="{{$order->qr_url}}" alt="">
             </td>
             <td>
