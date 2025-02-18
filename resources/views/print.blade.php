@@ -9,6 +9,7 @@
     <style>
         .printer {
             margin: auto;
+            padding: 3pt;
         }
 
         .table {
@@ -26,11 +27,16 @@
             color: #FFF;
         }
         .logo{
+            height: 25mm;
             width: 50mm;
-            aspect-ratio: 2/1;
+            display: inline-block;
+            margin: auto;
         }
-
+        td.img{
+            max-width: 75mm;
+        }
         @media print {
+
             *{
                 font-size: 11pt;
             }
@@ -41,6 +47,7 @@
             }
             .printer {
                 width: 210mm;
+                padding: 3pt;
             }
 
             .table {
@@ -57,38 +64,63 @@
             tr, td {
                 border: 1pt solid #000;
             }
-            .logo{
-                width: 50mm;
-                aspect-ratio: 2/1;
+
+
+            td{
+                max-width: 50mm!important;
+            }
+            .hide{
+                display: none;
+            }
+            .text-blue{
+                color:#1e40af ;
             }
         }
+        .hide{
+            display: none;
+        }
+        .text-blue{
+            color:#1e40af ;
+        }
+
     </style>
 </head>
 <body>
 <div class="printer">
-    <table class="table">
+    <table class="table hide">
         <tr>
-            <td colspan="3" rowspan="3"><img src="{{asset('imgs/img1.png')}}" class="logo" alt=""></td>
-
+            <td rowspan="3" colspan="2" class="w-50"><img style="width: 50mm" src="{{asset('imgs/img1.png')}}" class="logo" alt=""></td>
+            <td class="w-50" colspan="2"><span class="text-blue bold">التاريخ :</span> <span>{{$order->shipping_date}}</span></td>
         </tr>
         <tr>
-            <td><span>التاريخ</span></td>
-            <td><span>{{$order->shipping_date}}</span></td>
-
+            <td class="w-50" colspan="2">
+                <span  class="text-blue bold">للتواصل</span> <span>+945345223</span>
+            </td>
         </tr>
         <tr>
-            <td><span>للتواصل</span></td>
+            <td class="w-50" colspan="2">
+                <span class="text-orange">لا يسلم الطرد إلا لصاحب الاسم المكتوب على إشعار الشحن</span>
+            </td>
+        </tr>
+    </table>
+    <table class="table ">
+        <tr>
+            <td rowspan="3" colspan="2" class="w-50"><img style="width: 50mm" src="{{asset('imgs/img1.png')}}" class="logo" alt=""></td>
+            <td class="w-50" colspan="2"><span class="text-blue bold">التاريخ :</span> <span>{{$order->shipping_date}}</span></td>
+        </tr>
+        <tr>
+            <td colspan="2"><span>للتواصل</span></td>
             <td><span>+945345223</span></td>
         </tr>
         <tr>
 
-            <td colspan="5">
+            <td colspan="4">
                 <span class="info">لا يسلم الطرد إلا لصاحب الاسم المكتوب على إشعار الشحن</span>
             </td>
         </tr>
         <tr>
-            <td rowspan="3" colspan="2">
-                <img src="{{$order->qr_url}}" alt="">
+            <td rowspan="3" class="img" >
+                <img style="width: 50mm" src="{{asset('imgs/img1.png')}}" alt="">
             </td>
             <td>
                 <span>الاسم</span>
@@ -96,15 +128,15 @@
             <td>
                 <span>البلدة</span>
             </td>
-            <td>
+            <td colspan="2">
                 <span>الأجور</span>
             </td>
         </tr>
         <tr>
 
             <td ><span>المرسل :</span><span>{{$order->sender?->name}}</span></td>
-            <td><span>{{$order->citySource?->name}}</span></td>
-            <td>
+            <td ><span>{{$order->citySource?->name}}</span></td>
+            <td colspan="2">
                 @if($order->far>0 && $order->far_sender==false)
                     <span>{{$order->far}} $</span> &nbsp;
                 @endif
@@ -126,6 +158,7 @@
                 @endif
             </td>
         </tr>
+
         <tr>
             <td colspan="5"><span>الرقم : </span><span>{{$order->id}}</span></td>
         </tr>
