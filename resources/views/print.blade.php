@@ -28,7 +28,7 @@
 
         @media print {
             ul{
-                font-size: 14pt;
+                font-size: 12pt;
                 width: 205mm;
                 padding: 1pt;
                 margin: 1pt;
