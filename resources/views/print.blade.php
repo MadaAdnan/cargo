@@ -65,7 +65,8 @@
             <td><span>+945345223</span></td>
         </tr>
         <tr>
-            <td colspan="4">
+            <td colspan="2"></td>
+            <td colspan="3">
                 <span class="info">لا يسلم الطرد إلا لصاحب الاسم المكتوب على إشعار الشحن</span>
             </td>
         </tr>
