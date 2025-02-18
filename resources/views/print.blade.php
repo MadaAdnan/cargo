@@ -57,7 +57,7 @@
         </tr>
         <tr>
             <td><span>التاريخ</span></td>
-            <td><span>{{$order->shipping_date->format('Y-m-d')}}</span></td>
+            <td><span>{{$order->shipping_date}}</span></td>
 
         </tr>
         <tr>
