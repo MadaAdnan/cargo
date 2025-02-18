@@ -615,6 +615,7 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
 
                 // Tables\Actions\ViewAction::make(),
                 //  Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('print')->url(fn($record)=>route('print',$record->id))->label('طباعة')->icon('fas-print'),
 
                 Tables\Actions\ActionGroup::make([
 
