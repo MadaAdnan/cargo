@@ -71,7 +71,7 @@
             </td>
         </tr>
         <tr>
-            <td rowspan="3" colspan="3">
+            <td rowspan="3" colspan="2">
                 <img src="{{$order->qr_url}}" alt="">
             </td>
             <td>
@@ -85,7 +85,7 @@
             </td>
         </tr>
         <tr>
-            <td></td>
+
             <td colspan="2"><span>المرسل :</span><span>{{$order->sender?->name}}</span></td>
             <td><span>{{$order->citySource?->name}}</span></td>
             <td>
@@ -98,7 +98,7 @@
             </td>
         </tr>
         <tr>
-            <td></td>
+
             <td colspan="2"><span>المستلم :</span><span>{{$order->receive?->name}}</span></td>
             <td><span>{{$order->cityTarget?->name}}</span></td>
             <td>
