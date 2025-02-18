@@ -27,9 +27,10 @@
         }
 
         @media print {
-.printer{
-    width: 210mm;
-}
+            .printer {
+                width: 210mm;
+            }
+
             .table {
                 width: 205mm;
                 border: 1pt solid #000;
@@ -56,7 +57,7 @@
         </tr>
         <tr>
             <td><span>التاريخ</span></td>
-            <td><span>{{$order->created_at->format('Y-m-d')}}</span></td>
+            <td><span>{{$order->shipping_date->format('Y-m-d')}}</span></td>
 
         </tr>
         <tr>
