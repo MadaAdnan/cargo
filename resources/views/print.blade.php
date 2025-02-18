@@ -65,13 +65,13 @@
             <td><span>+945345223</span></td>
         </tr>
         <tr>
-            <td colspan="2"></td>
-            <td colspan="3">
+
+            <td colspan="5">
                 <span class="info">لا يسلم الطرد إلا لصاحب الاسم المكتوب على إشعار الشحن</span>
             </td>
         </tr>
         <tr>
-            <td >
+            <td colspan="2">
                 <img src="{{$order->qr_url}}" alt="">
             </td>
             <td>
