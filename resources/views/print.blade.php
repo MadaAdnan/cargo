@@ -12,7 +12,7 @@
         }
 
         .table {
-            width: 210mm;
+            width: 205mm;
             border: 1pt solid #000;
             border-collapse: collapse;
         }
@@ -27,9 +27,11 @@
         }
 
         @media print {
-
+.printer{
+    width: 210mm;
+}
             .table {
-                width: 210mm;
+                width: 205mm;
                 border: 1pt solid #000;
                 border-collapse: collapse;
             }
