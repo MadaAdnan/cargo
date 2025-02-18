@@ -25,6 +25,10 @@
             background-color: #1e40af;
             color: #FFF;
         }
+        .logo{
+            width: 100mm;
+            aspect-ratio: 1/2;
+        }
 
         @media print {
             *{
@@ -53,6 +57,10 @@
             tr, td {
                 border: 1pt solid #000;
             }
+            .logo{
+                width: 100mm;
+                aspect-ratio: 1/2;
+            }
         }
     </style>
 </head>
@@ -60,7 +68,7 @@
 <div class="printer">
     <table class="table">
         <tr>
-            <td colspan="3" rowspan="3"><img src="" alt=""></td>
+            <td colspan="3" rowspan="3"><img src="{{asset('imgs/img1.png')}}" class="logo" alt=""></td>
 
         </tr>
         <tr>
