@@ -804,7 +804,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                                 Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
                             }
                         })->label('الإلغاء / الإعادة')->color('danger')
-                        ->visible(fn($record) => $record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED),
+                        ->visible(fn($record) =>auth()->user()->hasAnyPermission(['cancel_order'])&&$record->status !== OrderStatusEnum::SUCCESS && $record->status !== OrderStatusEnum::CANCELED && $record->status !== OrderStatusEnum::RETURNED && $record->status !== OrderStatusEnum::CONFIRM_RETURNED),
                     // تحديد موظف غعادة الطلب
                     /*  Tables\Actions\Action::make('set_returned_id')->form([
                         Forms\Components\Select::make('staff_id')->searchable()->getSearchResultsUsing(fn(string $search): array => User::where('name', 'like', "%{$search}%")->limit(50)->pluck('name', 'id')->toArray())->label('حدد الموظف')->required(),

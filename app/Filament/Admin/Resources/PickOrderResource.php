@@ -793,7 +793,7 @@ public static function shouldRegisterNavigation(): bool
                             Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
 
                         }
-                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('مدير عام'))->requiresConfirmation(),
+                    })->label('إلغاء الشحنات')->visible(auth()->user()->hasAnyPermission(['cancel_order']))->requiresConfirmation(),
                     //returned Order
                     Tables\Actions\BulkAction::make('returned_order')->action(function ($records) {
                         foreach ($records as $record) {
