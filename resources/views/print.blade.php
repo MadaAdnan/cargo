@@ -27,6 +27,11 @@
         }
 
         @media print {
+            ul{
+                width: 205mm;
+                padding: 0;
+                margin: 0;
+            }
             .printer {
                 width: 210mm;
             }
