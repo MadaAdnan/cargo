@@ -156,5 +156,16 @@
         </tr>
     </table>
 </div>
+<script>
+    function printDiv() {
+        var printContents = document.querySelector(".printer").innerHTML;
+        var originalContents = document.body.innerHTML;
+
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
+        location.reload(); // لإعادة تحميل الصفحة بعد الطباعة
+    }
+</script>
 </body>
 </html>
