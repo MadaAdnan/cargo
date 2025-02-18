@@ -157,6 +157,7 @@
     </table>
 </div>
 <script>
+    printDiv()
     function printDiv() {
         var printContents = document.querySelector(".printer").innerHTML;
         var originalContents = document.body.innerHTML;
