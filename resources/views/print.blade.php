@@ -26,8 +26,8 @@
             color: #FFF;
         }
         .logo{
-            width: 100mm;
-            aspect-ratio: 1/2;
+            width: 50mm;
+            aspect-ratio: 2/1;
         }
 
         @media print {
@@ -58,8 +58,8 @@
                 border: 1pt solid #000;
             }
             .logo{
-                width: 100mm;
-                aspect-ratio: 1/2;
+                width: 50mm;
+                aspect-ratio: 2/1;
             }
         }
     </style>
