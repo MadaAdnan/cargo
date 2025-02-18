@@ -632,7 +632,7 @@ class OrderResource extends Resource implements HasShieldPermissions
             //->filtersFormMaxHeight('300px')
             ->actions([
 
-
+                Tables\Actions\Action::make('print')->url(fn($record)=>route('print',$record->id)),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
 

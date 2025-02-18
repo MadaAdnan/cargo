@@ -25,7 +25,7 @@ return "<p>الموقع متوقف للصيانة</p>". "<a href='https://guba-s
 
 
 })->name('welcome');
-
+Route::get('print/{id}',[\App\Http\Controllers\PrinterController::class,'printer'])->name('print');
 Route::get('/ship', [OrderStatusController::class, 'index']);
 
 Route::get('phone/{num}',function ($num){
