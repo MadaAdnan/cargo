@@ -86,7 +86,7 @@
         </tr>
         <tr>
 
-            <td colspan="2"><span>المرسل :</span><span>{{$order->sender?->name}}</span></td>
+            <td ><span>المرسل :</span><span>{{$order->sender?->name}}</span></td>
             <td><span>{{$order->citySource?->name}}</span></td>
             <td>
                 @if($order->far>0 && $order->far_sender==false)
@@ -99,7 +99,7 @@
         </tr>
         <tr>
 
-            <td colspan="2"><span>المستلم :</span><span>{{$order->receive?->name}}</span></td>
+            <td ><span>المستلم :</span><span>{{$order->receive?->name}}</span></td>
             <td><span>{{$order->cityTarget?->name}}</span></td>
             <td>
                 @if($order->far>0 && $order->far_sender)
