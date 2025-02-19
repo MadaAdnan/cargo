@@ -717,8 +717,9 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                             foreach ($records as $record) {
                                 $record->update(['status' => OrderStatusEnum::CANCELED->value, 'canceled_info' => $data['msg']]);
                                 $record->balances()->delete();
-                                Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
+
                             }
+                            Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
                         })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin')),
 
 
@@ -733,7 +734,7 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                             Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
                         } catch (\Exception | Error $e) {
                             DB::rollBack();
-                            Notification::make('error')->title('فشل العملية')->body($e->getLine())->danger()->send();
+                            Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
                         }
                     })->label('تأكيد تسليم المرتجع')->requiresConfirmation(),
 
