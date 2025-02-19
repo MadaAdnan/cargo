@@ -926,7 +926,8 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
 
                         })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('مدير عام'))->requiresConfirmation(),
                     //returned Order
-                    Tables\Actions\BulkAction::make('returned_order')->action(function ($records) {
+                    Tables\Actions\BulkAction::make('returned_order')
+                        ->action(function ($records) {
                         foreach ($records as $record) {
                             DB::beginTransaction();
                             try {
@@ -952,14 +953,14 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                     })->label('مرتجع الشحنات')->requiresConfirmation(),
 
                     //                    ExportBulkAction::make()
-                    Tables\Actions\BulkAction::make('generateReport')
+                   /* Tables\Actions\BulkAction::make('generateReport')
                         ->label('تقرير الشحنات')
                         ->requiresConfirmation()
                         ->modalHeading('تقرير الشحنات')
                         ->modalDescription('عرض تقرير الشحنات.')
                         ->modalSubmitActionLabel('إغلاق')
                         ->form(fn($records) => static::getReportForm($records))
-                        ->action(fn($records) => static::generateReport($records)),
+                        ->action(fn($records) => static::generateReport($records)),*/
                 ]),
             ]);
     }
