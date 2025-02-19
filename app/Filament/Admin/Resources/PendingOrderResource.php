@@ -902,11 +902,14 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                                     HelperBalance::completeOrder($record);
 
                                     DB::commit();
+                                    Notification::make('success')->title('نجاح العملية')->body('تم تأكيد تسليم الطلبات')->success()->send();
+
                                 } catch (\Exception | \Error $e) {
                                     DB::rollBack();
+                                    Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
+
                                 }
                             }
-                            Notification::make('success')->title('نجاح العملية')->body('تم تأكيد تسليم الطلبات')->success()->send();
                         })->label('تأكيد التسليم')->requiresConfirmation(),
 
                     //cancel Order
@@ -918,8 +921,9 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                             foreach ($records as $record) {
                                 $record->update(['status' => OrderStatusEnum::CANCELED->value, 'canceled_info' => $data['msg']]);
                                 $record->balances()->delete();
-                                Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
                             }
+                            Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
+
                         })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('مدير عام'))->requiresConfirmation(),
                     //returned Order
                     Tables\Actions\BulkAction::make('returned_order')->action(function ($records) {
@@ -936,11 +940,14 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                                 $record->update($dataUpdate);
 
                                 DB::commit();
+                                Notification::make('success')->title('نجاح')->body('تم تحديد الشحنات كمرتجع بنجاح')->success()->send();
+
                             } catch (Exception | \Error $e) {
                                 DB::rollBack();
+                                Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
+
                             }
 
-                            Notification::make('success')->title('نجاح')->body('تم تحديد الشحنات كمرتجع بنجاح')->success()->send();
                         }
                     })->label('مرتجع الشحنات')->requiresConfirmation(),
 
