@@ -409,7 +409,7 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                     ->placement('right')
                     ->content(fn($record) => \LaraZeus\Qr\Facades\Qr::render($record->code))
                     ->icon('heroicon-o-qr-code'),
-                Tables\Columns\TextColumn::make('qr_code')->label('QR-CODE')->searchable(),
+                Tables\Columns\TextColumn::make('code')->label('QR-CODE')->searchable(),
 
                 Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->code, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
                     'green' => ['style' => 'background-color:#55FF88;'],
