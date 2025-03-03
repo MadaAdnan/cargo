@@ -7,6 +7,7 @@ use App\Enums\BayTypeEnum;
 use App\Enums\OrderStatusEnum;
 use App\Helper\HelperBalance;
 use App\Models\Balance;
+use App\Models\Branch;
 use App\Models\Order;
 use Filament\Notifications\Notification;
 use App\Enums\LevelUserEnum;
@@ -22,7 +23,9 @@ class OrderObserver
     {
         if ($order->pick_id == null) {
             $order->status = OrderStatusEnum::PENDING;
-        } else {
+            $order->pick_id = $order->manager_branch?->id;
+        }
+        if ($order->pick_id != null) {
             $order->status = OrderStatusEnum::PICK;
         }
         $order->created_by = auth()->id();
@@ -52,7 +55,6 @@ class OrderObserver
             try {
 
                 HelperBalance::completePicker($order);
-
 
 
                 \DB::commit();

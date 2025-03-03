@@ -48,7 +48,9 @@ class Order extends Model implements HasMedia
     {
         return $this->belongsTo(City::class, 'city_source_id');
     }
-
+public function getManagerBranchAttribute(){
+        return User::where(['level'=>LevelUserEnum::BRANCH->value,'branch_id' => $this->id])->first();
+}
     public function branchSource(): BelongsTo
     {
         return $this->belongsTo(Branch::class, 'branch_source_id');
