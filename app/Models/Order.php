@@ -48,9 +48,12 @@ class Order extends Model implements HasMedia
     {
         return $this->belongsTo(City::class, 'city_source_id');
     }
-public function getManagerBranchAttribute(){
-        return User::where(['level'=>LevelUserEnum::BRANCH->value,'branch_id' => $this->id])->first();
-}
+
+    public function getManagerBranchAttribute(): ?User
+    {
+        return User::where(['level' => LevelUserEnum::BRANCH->value, 'branch_id' => $this->id])->first();
+    }
+
     public function branchSource(): BelongsTo
     {
         return $this->belongsTo(Branch::class, 'branch_source_id');
@@ -63,12 +66,12 @@ public function getManagerBranchAttribute(){
 
     public function sender(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'sender_id')->where('level',LevelUserEnum::USER->value);
+        return $this->belongsTo(User::class, 'sender_id')->where('level', LevelUserEnum::USER->value);
     }
 
     public function receive(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'receive_id')->where('level',LevelUserEnum::USER->value);
+        return $this->belongsTo(User::class, 'receive_id')->where('level', LevelUserEnum::USER->value);
     }
 
     public function packages(): HasMany
@@ -119,20 +122,24 @@ public function getManagerBranchAttribute(){
     {
         return $this->belongsTo(User::class, 'given_id');
     }
+
     public function returned(): BelongsTo
     {
         return $this->belongsTo(User::class, 'returned_id');
     }
+
     public function currency(): BelongsTo
     {
         return $this->belongsTo(Currency::class);
     }
+
     public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(User::class,'created_by');
+        return $this->belongsTo(User::class, 'created_by');
     }
+
     public function updatedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class,'updated_by');
+        return $this->belongsTo(User::class, 'updated_by');
     }
 }

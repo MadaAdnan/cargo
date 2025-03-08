@@ -14,12 +14,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+/*Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
-});
+});*/
 Route::prefix('v1')->group(function () {
     Route::post('/login', [\App\Http\Controllers\Api\AuthController::class, 'login']);
+
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('tasks', [\App\Http\Controllers\Api\TaskController::class, 'index']);
+
+        Route::post('/profile', [\App\Http\Controllers\Api\AuthController::class, 'profile']);
+
+        Route::apiResource('tasks', \App\Http\Controllers\Api\TaskController::class)->only(['index','store','update']);
     });
 });

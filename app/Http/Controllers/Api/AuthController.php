@@ -38,6 +38,60 @@ class AuthController extends Controller
         ]);
     }
 
+
+    public function profile(Request $request){
+        /**
+         * @var $user User
+         */
+
+        $user=auth()->user();
+        if(empty($request->name)||\Str::length($request->name)<3){
+            return ApiHelper::apiResponse([
+                'msg'=>'يرجى إدخال اسم صالح',
+                'input'=>'name'
+            ],401,'error');
+        }
+        if(empty($request->email)|| !filter_var($request->email,FILTER_VALIDATE_EMAIL)){
+            return ApiHelper::apiResponse([
+                'msg'=>'يرجى إدخال بريد صالح',
+                'input'=>'email'
+            ],401,'error');
+        }
+        if(empty($request->phone)||\Str::length($request->phone)<9){
+            return ApiHelper::apiResponse([
+                'msg'=>'يرجى إدخال رقم هاتف صالح',
+                'input'=>'phone'
+            ],401,'error');
+        }
+        if(!empty($request->password)&& \Str::length($request->phone)<8){
+            return ApiHelper::apiResponse([
+                'msg'=>'يرجى إدخال كلمة مرور من 8 أحرف على الأقل',
+                'input'=>'password'
+            ],401,'error');
+        }
+        if($request->confirm_password!=$request->password){
+            return ApiHelper::apiResponse([
+                'msg'=>'كلمة المرور غير متطابقة',
+                'input'=>'password'
+            ],401,'error');
+        }
+       /* $this->validate($request,[
+            'name'=>'required|string',
+            'email'=>'required|email|unique:users,email,'.auth()->id(),
+            'password'=>'nullable|min:8',
+            'confirm_password'=>'same:password',
+            'phone'=>'required',
+        ]);*/
+        $data['name']=$request->name;
+        $data['email']=$request->email;
+        $data['phone']=$request->phone;
+        if(!empty($request->password)){
+            $data['password']=bcrypt($request->password);
+        }
+
+        $user->update($data);
+        return ApiHelper::apiResponse(['user'=>new UserResource($user->refresh())]);
+    }
     /**
      * Display a listing of the resource.
      */

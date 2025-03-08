@@ -45,7 +45,17 @@ class TaskController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $task=Task::where('created_id',auth()->id())->findOrFail($id);
+        $task->update([
+            'user_id'=>$request->user_id,
+            'delegate_id'=>$request->delegate_id,
+            'task'=>$request->task,
+            'from'=>$request->sender,
+            'to'=>$request->receive,
+            'receive_phone'=>$request->phone,
+
+        ]);
+
     }
 
     /**
