@@ -410,9 +410,9 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                        ->placement('right')
                        ->content(fn($record) => \LaraZeus\Qr\Facades\Qr::render($record->code))
                        ->icon('heroicon-o-qr-code'),
-                Tables\Columns\TextColumn::make('code')->label('QR-CODE')->searchable()->disabledClick()->copyable(),
+                Tables\Columns\TextColumn::make('qr_code')->label('QR-CODE')->copyable()->searchable(),
 
-                Tables\Columns\TextColumn::make('id')->description(fn($record) => $record->qr_code, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
+                Tables\Columns\TextColumn::make('id')->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
                     'green' => ['style' => 'background-color:#55FF88;'],
 
                     default => ['style' => ''],
