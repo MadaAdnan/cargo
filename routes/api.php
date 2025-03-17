@@ -25,7 +25,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/profile', [\App\Http\Controllers\Api\AuthController::class, 'profile']);
 
         Route::apiResource('tasks', \App\Http\Controllers\Api\TaskController::class)->only(['index','store','update']);
-        Route::apiResource('orders', \App\Http\Controllers\Api\OrderController::class)->only(['index']);
+        Route::apiResource('orders', \App\Http\Controllers\Api\OrderController::class)->only(['index','show']);
 
         Route::post('orders/success',[\App\Http\Controllers\Api\OrderController::class,'setToSuccess']);
         Route::post('orders/returned',[\App\Http\Controllers\Api\OrderController::class,'setToReturned']);
