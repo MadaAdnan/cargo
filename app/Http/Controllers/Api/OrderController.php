@@ -39,13 +39,13 @@ class OrderController extends Controller
 
     public function setToSuccess(Request $request)
     {
-        if ((int)$request->order_id <= 0) {
+        if (empty($request->qr_code )) {
             return ApiHelper::apiResponse([
                 'msg' => 'يرجى إدخال رقم الشحنة',
             ], 401, 'error');
         }
         $order = Order::whereNot('status',OrderStatusEnum::SUCCESS->value)
-            ->where('qr_code', $request->order_id)->first();
+            ->where('qr_code', $request->qr_code)->first();
         if (!$order) {
             return ApiHelper::apiResponse([
                 'msg' => 'الشحنة غير موجودة',
@@ -72,12 +72,12 @@ class OrderController extends Controller
 
     public function setToReturned(Request $request)
     {
-        if ((int)$request->order_id <= 0) {
+        if (empty($request->qr_code )) {
             return ApiHelper::apiResponse([
                 'msg' => 'يرجى إدخال رقم الشحنة',
             ], 401, 'error');
         }
-        $order = Order::whereNot('status', OrderStatusEnum::RETURNED->value)->whereNot('status', OrderStatusEnum::CONFIRM_RETURNED->value) ->where('qr_code', $request->order_id)->first();
+        $order = Order::whereNot('status', OrderStatusEnum::RETURNED->value)->whereNot('status', OrderStatusEnum::CONFIRM_RETURNED->value) ->where('qr_code', $request->qr_code)->first();
         if (!$order) {
             return ApiHelper::apiResponse([
                 'msg' => 'الشحنة غير موجودة',
@@ -108,12 +108,12 @@ class OrderController extends Controller
 
     public function setToConfirmedReturned(Request $request)
     {
-        if ((int)$request->order_id <= 0) {
+        if (empty($request->qr_code )) {
             return ApiHelper::apiResponse([
                 'msg' => 'يرجى إدخال رقم الشحنة',
             ], 401, 'error');
         }
-        $order = Order::where('status', OrderStatusEnum::RETURNED->value) ->where('qr_code', $request->order_id)->first();
+        $order = Order::where('status', OrderStatusEnum::RETURNED->value) ->where('qr_code', $request->qr_code)->first();
         if (!$order) {
             return ApiHelper::apiResponse([
                 'msg' => 'الشحنة غير موجودة',
@@ -139,12 +139,12 @@ class OrderController extends Controller
 
     public function setToCanceled(Request $request)
     {
-        if ((int)$request->order_id <= 0) {
+        if (empty($request->qr_code )) {
             return ApiHelper::apiResponse([
                 'msg' => 'يرجى إدخال رقم الشحنة',
             ], 401, 'error');
         }
-        $order = Order:: where('qr_code', $request->order_id)->first();
+        $order = Order:: where('qr_code', $request->qr_code)->first();
         if (!$order) {
             return ApiHelper::apiResponse([
                 'msg' => 'الشحنة غير موجودة',
@@ -180,7 +180,10 @@ class OrderController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $order=Order::where('qr_code',$id)->first();
+        return ApiHelper::apiResponse([
+            'order'=>new OrderResource($order),
+        ]);
     }
 
     /**
