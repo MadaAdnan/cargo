@@ -44,7 +44,8 @@ class OrderController extends Controller
                 'msg' => 'يرجى إدخال رقم الشحنة',
             ], 401, 'error');
         }
-        $order = Order::whereNot('status', OrderStatusEnum::SUCCESS->value)->find($request->order_id);
+        $order = Order::whereNot('status',OrderStatusEnum::SUCCESS->value)
+            ->where('qr_code', $request->order_id)->first();
         if (!$order) {
             return ApiHelper::apiResponse([
                 'msg' => 'الشحنة غير موجودة',
@@ -76,7 +77,7 @@ class OrderController extends Controller
                 'msg' => 'يرجى إدخال رقم الشحنة',
             ], 401, 'error');
         }
-        $order = Order::whereNot('status', OrderStatusEnum::RETURNED->value)->whereNot('status', OrderStatusEnum::CONFIRM_RETURNED->value)->find($request->order_id);
+        $order = Order::whereNot('status', OrderStatusEnum::RETURNED->value)->whereNot('status', OrderStatusEnum::CONFIRM_RETURNED->value) ->where('qr_code', $request->order_id)->first();
         if (!$order) {
             return ApiHelper::apiResponse([
                 'msg' => 'الشحنة غير موجودة',
@@ -112,7 +113,7 @@ class OrderController extends Controller
                 'msg' => 'يرجى إدخال رقم الشحنة',
             ], 401, 'error');
         }
-        $order = Order::where('status', OrderStatusEnum::RETURNED->value)->find($request->order_id);
+        $order = Order::where('status', OrderStatusEnum::RETURNED->value) ->where('qr_code', $request->order_id)->first();
         if (!$order) {
             return ApiHelper::apiResponse([
                 'msg' => 'الشحنة غير موجودة',
@@ -143,7 +144,7 @@ class OrderController extends Controller
                 'msg' => 'يرجى إدخال رقم الشحنة',
             ], 401, 'error');
         }
-        $order = Order::find($request->order_id);
+        $order = Order:: where('qr_code', $request->order_id)->first();
         if (!$order) {
             return ApiHelper::apiResponse([
                 'msg' => 'الشحنة غير موجودة',
