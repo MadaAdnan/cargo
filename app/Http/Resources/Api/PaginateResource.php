@@ -15,11 +15,11 @@ class PaginateResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'current_page' => $this->currentPage(),
-            'last_page' => $this->lastPage(),
-            'per_page' => $this->perPage(),
+            'currentPage' => $this->currentPage(),
+            'lastPage' => $this->lastPage(),
+            'perPage' => $this->perPage(),
             'total' => $this->total(),
-            'has_more_pages' => $this->hasMorePages(),
+            'has_MorePages' => $this->hasMorePages(),
         ];
     }
 }

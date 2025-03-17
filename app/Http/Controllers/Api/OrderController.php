@@ -9,6 +9,7 @@ use App\Helper\HelperBalance;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\OrderResource;
 
+use App\Http\Resources\Api\PaginateResource;
 use App\Models\Order;
 use App\Models\User;
 use DB;
@@ -22,10 +23,21 @@ class OrderController extends Controller
      */
     public function index()
     {
-        //
+        $status = \request()->get('status');
+        $qr = \request()->get('qr');
+        $orders = Order::
+        when(!empty($status), fn($query) => $query->where('status', $status))
+            ->when(!empty($qr), fn($query) => $query->where('qr_code', $qr))
+            ->latest()
+            ->with(['citySource', 'branchSource', 'cityTarget', 'branchTarget', 'unit', 'sender', 'createdBy'])
+            ->paginate(15);
+        return ApiHelper::apiResponse([
+            'orders' => OrderResource::collection($orders),
+            'paginate' => new PaginateResource($orders)
+        ]);
     }
 
-    public function SetToSuccess(Request $request)
+    public function setToSuccess(Request $request)
     {
         if ((int)$request->order_id <= 0) {
             return ApiHelper::apiResponse([
@@ -57,14 +69,14 @@ class OrderController extends Controller
         }
     }
 
-    public function SetToReturned(Request $request)
+    public function setToReturned(Request $request)
     {
         if ((int)$request->order_id <= 0) {
             return ApiHelper::apiResponse([
                 'msg' => 'يرجى إدخال رقم الشحنة',
             ], 401, 'error');
         }
-        $order = Order::whereNot('status', OrderStatusEnum::SUCCESS->value)->find($request->order_id);
+        $order = Order::whereNot('status', OrderStatusEnum::RETURNED->value)->whereNot('status', OrderStatusEnum::CONFIRM_RETURNED->value)->find($request->order_id);
         if (!$order) {
             return ApiHelper::apiResponse([
                 'msg' => 'الشحنة غير موجودة',
@@ -85,6 +97,67 @@ class OrderController extends Controller
             return ApiHelper::apiResponse([
                 'order' => new OrderResource($order),
             ]);
+        } catch (\Exception | Error $e) {
+            DB::rollBack();
+            return ApiHelper::apiResponse([
+                'msg' => $e->getMessage(),
+            ], 401, 'error');
+        }
+    }
+
+    public function setToConfirmedReturned(Request $request)
+    {
+        if ((int)$request->order_id <= 0) {
+            return ApiHelper::apiResponse([
+                'msg' => 'يرجى إدخال رقم الشحنة',
+            ], 401, 'error');
+        }
+        $order = Order::where('status', OrderStatusEnum::RETURNED->value)->find($request->order_id);
+        if (!$order) {
+            return ApiHelper::apiResponse([
+                'msg' => 'الشحنة غير موجودة',
+            ], 401, 'error');
+        }
+        DB::beginTransaction();
+        try {
+            $order->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value]);
+            HelperBalance::confirmReturn($order);
+            DB::commit();
+            $order->refresh();
+            return ApiHelper::apiResponse([
+                'order' => new OrderResource($order),
+            ]);
+
+        } catch (\Exception | Error $e) {
+            DB::rollBack();
+            return ApiHelper::apiResponse([
+                'msg' => $e->getMessage(),
+            ], 401, 'error');
+        }
+    }
+
+    public function setToCanceled(Request $request)
+    {
+        if ((int)$request->order_id <= 0) {
+            return ApiHelper::apiResponse([
+                'msg' => 'يرجى إدخال رقم الشحنة',
+            ], 401, 'error');
+        }
+        $order = Order::find($request->order_id);
+        if (!$order) {
+            return ApiHelper::apiResponse([
+                'msg' => 'الشحنة غير موجودة',
+            ], 401, 'error');
+        }
+        DB::beginTransaction();
+        try {
+            $order->update(['status' => OrderStatusEnum::CANCELED->value, 'canceled_info' => $request->msg]);
+            DB::commit();
+            $order->refresh();
+            return ApiHelper::apiResponse([
+                'order' => new OrderResource($order),
+            ]);
+
         } catch (\Exception | Error $e) {
             DB::rollBack();
             return ApiHelper::apiResponse([

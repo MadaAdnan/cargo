@@ -29,13 +29,14 @@ class OrderResource extends JsonResource
             'price' => (double)$this->price,
             'priceTr' => (double)$this->price_tr,
             'senderName'=>$this->sender?->full_name,
-            'receiveName'=>$this->sender?->global_name,
+            'receiveName'=>$this->global_name,
             'receivePhone'=>$this->receive_phone,
             'citySource'=>$this->citySource?->name,
             'branchSource'=>$this->branchSource?->name,
             'cityTarget'=>$this->cityTarget?->name,
             'branchTarget'=>$this->branchTarget?->name,
             'status'=>$this->status,
+            'qrCode'=>$this->qr_code
         ];
     }
 }
