@@ -35,6 +35,7 @@ class OrderResource extends JsonResource
             'branchSource'=>$this->branchSource?->name,
             'cityTarget'=>$this->cityTarget?->name,
             'branchTarget'=>$this->branchTarget?->name,
+            'status'=>$this->status,
         ];
     }
 }
