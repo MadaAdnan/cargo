@@ -379,7 +379,7 @@ class HelperBalance
             }
             Balance::where('order_id', $order->id)->where('pending', true)->delete();
         } catch (\Exception | \Error $e) {
-            throw new \Exception($e->getMessage());
+            throw new \Exception($e->getMessage().'=='.$e->getLine());
         }
 
 
