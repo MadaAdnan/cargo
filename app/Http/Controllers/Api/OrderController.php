@@ -51,6 +51,7 @@ class OrderController extends Controller
                 'msg' => 'الشحنة غير موجودة',
             ], 401, 'error');
         }
+        return $order;
         DB::beginTransaction();
         try {
             HelperBalance::completeOrder($order);
