@@ -182,9 +182,15 @@ class OrderController extends Controller
     public function show(string $id)
     {
         $order=Order::where('qr_code',$id)->first();
+        if($order){
+            return ApiHelper::apiResponse([
+                'order'=>new OrderResource($order),
+            ]);
+        }
         return ApiHelper::apiResponse([
-            'order'=>new OrderResource($order),
-        ]);
+            'msg'=>"لم يتم العثور على الشحنة",
+        ],401,'error');
+
     }
 
     /**
