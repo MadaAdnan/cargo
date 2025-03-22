@@ -17,10 +17,14 @@ class TaskResource extends JsonResource
         return [
             'id'=>$this->id,
             'sender'=>$this->from,
+            'senderPhone'=>$this->sender_phone,
             'receive'=>$this->to,
+            'receivePhone'=>$this->receive_phone,
             'body'=>$this->task,
             'is_complete'=>$this->is_complete,
             'createdAt'=>$this->created_at->format('Y-m-d H:i'),
+
+
 
         ];
     }
