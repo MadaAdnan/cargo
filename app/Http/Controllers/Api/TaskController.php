@@ -45,7 +45,12 @@ class TaskController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $task = Task::where('created_id', auth()->id())->findOrFail($id);
+        $task = Task::where('created_id', auth()->id())->find($id);
+        if ($task == null) {
+            return ApiHelper::apiResponse([
+                'msg'=>'لم يتم إيجاد المهمة',
+            ],401,'error');
+        }
         $task->update([
             'user_id' => $request->user_id,
             'delegate_id' => $request->delegate_id,
