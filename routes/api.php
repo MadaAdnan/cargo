@@ -28,6 +28,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('orders', \App\Http\Controllers\Api\OrderController::class)->only(['index','show']);
         Route::apiResource('balances', \App\Http\Controllers\Api\BalanceController::class)->only(['index']);
 
+        Route::post('tasks/success/{id}',[\App\Http\Controllers\Api\TaskController::class,'confirmedTask']);
         Route::post('orders/success',[\App\Http\Controllers\Api\OrderController::class,'setToSuccess']);
         Route::post('orders/returned',[\App\Http\Controllers\Api\OrderController::class,'setToReturned']);
         Route::post('orders/confirmed',[\App\Http\Controllers\Api\OrderController::class,'setToConfirmedReturned']);
