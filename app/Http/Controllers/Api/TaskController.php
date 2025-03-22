@@ -73,7 +73,13 @@ class TaskController extends Controller
     public function confirmedTask(string $id)
     {
         $task = Task::find($id);
+
         if ($task == null) {
+            return ApiHelper::apiResponse([
+                'msg'=>'لم يتم إيجاد المهمة',
+            ],401,'error');
+        }
+        if($task->user_id!=auth()->id() && $task->delegate_id !=auth()->id()){
             return ApiHelper::apiResponse([
                 'msg'=>'لم يتم إيجاد المهمة',
             ],401,'error');
