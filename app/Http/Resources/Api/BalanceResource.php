@@ -22,7 +22,8 @@ class BalanceResource extends JsonResource
             'customerName'=>$this->customer_name,
             'currency'=>$this->currency_id==1?'$':'₺',
             'pending'=>(bool)$this->pending,
-            'createdAt'=>$this->created_at?->format('Y-m-d')
+            'createdAt'=>$this->created_at?->format('Y-m-d'),
+            'total'=>$this->total,
         ];
     }
 }

@@ -93,13 +93,11 @@ class BalabceTRResource extends Resource implements HasShieldPermissions
             ->columns([
                 Tables\Columns\TextColumn::make('credit')->label('مدين')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
                 Tables\Columns\TextColumn::make('debit')->label('دائن')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
-
                 Tables\Columns\TextColumn::make('info')->label('الملاحظات'),
                 Tables\Columns\TextColumn::make('customer_name')->label('الطرف المقابل'),
                 Tables\Columns\TextColumn::make('order.code')->label('الطلب'),
                 Tables\Columns\TextColumn::make('order.sender.name')->label('المرسل')->description(fn($record) => $record->order?->general_sender_name != null ? "{$record->order->general_sender_name}" : ""),
                 Tables\Columns\TextColumn::make('order.receive.name')->label('المستلم')->description(fn($record) => $record->order?->global_name != null ? " {$record->order->global_name}" : ""),
-
                 Tables\Columns\TextColumn::make('total')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state))->label('الرصيد'),
                 //H: get date and time and split them using two temporary columns
                 Tables\Columns\TextColumn::make('created_at_date')
