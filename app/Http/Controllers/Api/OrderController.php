@@ -54,9 +54,11 @@ class OrderController extends Controller
         }
 
         DB::beginTransaction();
+
+
         try {
+            $order->update(['given_id' => auth()->id(),'status' => OrderStatusEnum::SUCCESS->value]);
             HelperBalance::completeOrder($order);
-            $order->update(['status' => OrderStatusEnum::SUCCESS->value]);
             DB::commit();
             $order->refresh();
             return ApiHelper::apiResponse([
@@ -90,11 +92,15 @@ class OrderController extends Controller
         }
         DB::beginTransaction();
         try {
-            $dataUpdate = ['status' => OrderStatusEnum::RETURNED->value, 'canceled_info' => $request->msg];
+
+
+
+
             $user = User::where([
                 'level' => LevelUserEnum::BRANCH->value,
                 'branch_id' => $order->branch_source_id
             ])->first()?->id;
+            $dataUpdate['status'] = OrderStatusEnum::RETURNED->value;
             $dataUpdate['given_id'] = $user;
             $dataUpdate['returned_id'] = $order->pick_id;
             $order->update($dataUpdate);
