@@ -36,7 +36,8 @@ class OrderResource extends JsonResource
             'cityTarget'=>$this->cityTarget?->name,
             'branchTarget'=>$this->branchTarget?->name,
             'status'=>$this->status,
-            'qrCode'=>$this->qr_code
+            'qrCode'=>$this->qr_code,
+            'markers'=>MarkerResource::collection($this->markers)
         ];
     }
 }
