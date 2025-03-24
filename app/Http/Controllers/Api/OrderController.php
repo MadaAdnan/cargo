@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\OrderResource;
 
 use App\Http\Resources\Api\PaginateResource;
+use App\Models\Marker;
 use App\Models\Order;
 use App\Models\User;
 use DB;
@@ -192,11 +193,23 @@ class OrderController extends Controller
      */
     public function show(string $id)
     {
+        $userId=\request()->get('userId');
         $order = Order::where('qr_code', $id)->first();
+
         if ($order) {
             return ApiHelper::apiResponse([
                 'order' => new OrderResource($order),
             ]);
+        }
+
+        if(!empty($userId)){
+            $user=User::find($userId);
+            if(!$user){
+                Marker::create([
+                    'user_id'=>$user->id,
+                    'order_id'=>$order->id
+                ]);
+            }
         }
         return ApiHelper::apiResponse([
             'msg' => "لم يتم العثور على الشحنة",
