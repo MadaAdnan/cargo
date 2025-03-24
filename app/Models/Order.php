@@ -142,4 +142,9 @@ class Order extends Model implements HasMedia
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function markers(): HasMany
+    {
+        return $this->hasMany(Marker::class)->latest();
+    }
 }

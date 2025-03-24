@@ -894,6 +894,7 @@ class OrderResource extends Resource implements HasShieldPermissions
     {
         return [
             RelationManagers\AgenciesRelationManager::class,
+            RelationManagers\MarkersRelationManager::class
         ];
     }
 
