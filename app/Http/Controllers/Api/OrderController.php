@@ -193,7 +193,7 @@ class OrderController extends Controller
      */
     public function show(string $id)
     {
-        $userId=\request()->get('userId');
+        $userId=auth()->id();
         $order = Order::where('qr_code', $id)->first();
 
         if ($order) {
