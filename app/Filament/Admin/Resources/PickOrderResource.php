@@ -312,7 +312,7 @@ public static function shouldRegisterNavigation(): bool
                         ])->columnSpan(2),
                         Forms\Components\Grid::make()->schema([
 
-                            Forms\Components\Select::make('pick_id')->label('الموظف الملتقط')->options(User::where('level', LevelUserEnum::BRANCH->value)->orWhere('level', LevelUserEnum::STAFF->value)->orWhere('level', LevelUserEnum::ADMIN->value)->pluck('name', 'id'))->searchable()->required()->visible(fn($context) => $context === 'create'),
+                            Forms\Components\Select::make('pick_id')->label('الموظف الملتقط')->options(User::where('level', LevelUserEnum::BRANCH->value)->orWhere('level', LevelUserEnum::STAFF->value)->orWhere('level', LevelUserEnum::ADMIN->value)->pluck('name', 'id'))->searchable()->visible(fn($context) => $context === 'create'),
 
                         ]),
 
@@ -736,26 +736,7 @@ public static function shouldRegisterNavigation(): bool
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
 
-                   /* Tables\Actions\BulkAction::make('set_given_id') ->form([
-                        Forms\Components\Select::make('given_id')
-                            ->searchable()
-                            ->getSearchResultsUsing(fn(string $search) => User::active()->selectRaw('id,name')->whereIn('level', [
-                                LevelUserEnum::STAFF->value,
-                                LevelUserEnum::BRANCH->value,
-                                LevelUserEnum::ADMIN->value,
-                            ])->where('name', 'like', "%$search%")->take(10)->pluck('name', 'id'))
-                            ->label('موظف التسليم'),
-                    ])
-                        ->action(function ($records, $data) {
 
-                            foreach ($records as $record) {
-                                $record->update(['given_id' => $data['given_id'], 'status' => OrderStatusEnum::TRANSFER->value]);
-
-                            }
-                            Notification::make('success')->title('نجاح العملية')->body("تم تحديد موظف التسليم بنجاح ")->success()->send();
-
-                        })
-                        ->label('تحديد موظف التسليم')->color('info')->requiresConfirmation(),*/
                     //success Order
                     Tables\Actions\BulkAction::make('success_order')
                         ->form([
