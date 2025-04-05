@@ -36,5 +36,8 @@ Route::prefix('v1')->group(function () {
         Route::post('orders/canceled', [\App\Http\Controllers\Api\OrderController::class, 'setToCanceled']);
         Route::post('balances/push', [\App\Http\Controllers\Api\BalanceController::class, 'push']);
         Route::post('balances/push/confirmed/{id}', [\App\Http\Controllers\Api\BalanceController::class, 'pushConfirmed']);
+
+        Route::post('balances/pull', [\App\Http\Controllers\Api\BalanceController::class, 'pull']);
+
     });
 });

@@ -151,4 +151,71 @@ class BalanceController extends Controller
             'balance' => new BalanceResource($balance),
         ]);
     }
+
+    public function pull(Request $request)
+    {
+        \DB::beginTransaction();
+        try {
+            $user = User::find($request->userId);
+            if (!in_array($request->currencyId, [1, 2])) {
+                return ApiHelper::apiResponse([
+                    'msg' => 'يجب تحديد العملة 1 للدولار , 2 للتركي'
+                ], 401, 'error');
+            }
+            // amount
+            if ((double)$request->amount <= 0) {
+                return ApiHelper::apiResponse([
+                    'msg' => 'يرجى تحديد قيمة الدفعة'
+                ], 401, 'error');
+            }
+            if ($user == null) {
+                return ApiHelper::apiResponse([
+                    'msg' => 'يرجى تحديد الطرف المقابل'
+                ], 401, 'error');
+            }
+            if ($user?->id == auth()->id()) {
+
+                return ApiHelper::apiResponse([
+                    'msg' => 'لا يمكنك عمل سند لنفسك'
+                ], 401, 'error');
+            }
+            $uuid = \Str::uuid()->toString();
+            // currency
+            Balance::create([
+                'uuid' => $uuid,
+                'type' => BalanceTypeEnum::PUSH->value,
+                'user_id' => $user->id,
+                'debit' => $request->amount,
+                'credit' => 0,
+                'info' => $request->info,
+                'currency_id' => $request->currencyId,
+                'is_complete' => true,
+                'pending' => false,
+                'customer_name' => auth()->user()->name,
+            ]);
+            $balance = Balance::create([
+                'uuid' => $uuid,
+                'type' => BalanceTypeEnum::CATCH->value,
+                'user_id' => auth()->id(),
+                'debit' => 0,
+                'credit' => $request->amount,
+                'info' => $request->info,
+                'currency_id' => $request->currencyId,
+                'is_complete' => true,
+                'pending' => false,
+                'customer_name' => $user?->name,
+            ]);
+
+            \DB::commit();
+            return ApiHelper::apiResponse([
+                'msg' => 'تم إنشاء السند بنجاح',
+                'balance' => new BalanceResource($balance),
+            ]);
+        } catch (\Exception | \Error $e) {
+            \DB::rollBack();
+            return ApiHelper::apiResponse([
+                'msg' => $e->getMessage()
+            ], 401, 'error');
+        }
+    }
 }
