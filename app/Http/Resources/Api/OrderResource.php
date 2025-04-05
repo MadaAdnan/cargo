@@ -15,6 +15,7 @@ class OrderResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $currentMarker=$this->getCurrentMarker();
         /**
          * @var $this Order
          */
@@ -37,7 +38,8 @@ class OrderResource extends JsonResource
             'branchTarget'=>$this->branchTarget?->name,
             'status'=>$this->status,
             'qrCode'=>$this->qr_code,
-            'markers'=>MarkerResource::collection($this->markers)
+            'markers'=>MarkerResource::collection($this->markers),
+            'currentMarker'=>$currentMarker!=null?new MarkerResource($currentMarker):null,
         ];
     }
 }

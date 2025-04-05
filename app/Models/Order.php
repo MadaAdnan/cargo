@@ -147,4 +147,9 @@ class Order extends Model implements HasMedia
     {
         return $this->hasMany(Marker::class)->latest();
     }
+
+    public function getCurrentMarker()
+    {
+        return $this->markers->first();
+    }
 }
