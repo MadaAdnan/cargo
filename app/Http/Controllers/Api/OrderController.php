@@ -25,7 +25,7 @@ class OrderController extends Controller
     public function index()
     {
         $status = \request()->get('status');
-        $qr = \request()->get('qr');
+        $qr = \request()->get('qr_code');
         $me = \request()->get('only');
         $orders = Order::whereHas('markers', fn($query) => $query->where('markers.user_id', auth()->id()))
             ->when($me == 'me', fn($query) => $query->where('current_user', auth()->id()))
@@ -42,6 +42,7 @@ class OrderController extends Controller
 
     public function setToSuccess(Request $request)
     {
+        $msg=$request->msg;
         if (empty($request->qr_code)) {
             return ApiHelper::apiResponse([
                 'msg' => 'يرجى إدخال رقم الشحنة',
@@ -60,7 +61,7 @@ class OrderController extends Controller
 
 
         try {
-            $order->update(['given_id' => auth()->id(), 'status' => OrderStatusEnum::SUCCESS->value]);
+            $order->update(['given_id' => auth()->id(), 'status' => OrderStatusEnum::SUCCESS->value,'canceled_info'=>$msg]);
             HelperBalance::completeOrder($order);
             DB::commit();
             $order->refresh();
@@ -79,6 +80,7 @@ class OrderController extends Controller
 
     public function setToReturned(Request $request)
     {
+        $msg=$request->msg;
         if (empty($request->qr_code)) {
             return ApiHelper::apiResponse([
                 'msg' => 'يرجى إدخال رقم الشحنة',
@@ -104,6 +106,8 @@ class OrderController extends Controller
             $dataUpdate['status'] = OrderStatusEnum::RETURNED->value;
             $dataUpdate['given_id'] = $user;
             $dataUpdate['returned_id'] = $order->pick_id;
+            $dataUpdate['canceled_info'] = $msg;
+
             $order->update($dataUpdate);
             DB::commit();
             $order->refresh();
@@ -120,6 +124,8 @@ class OrderController extends Controller
 
     public function setToConfirmedReturned(Request $request)
     {
+        $msg=$request->msg;
+
         if (empty($request->qr_code)) {
             return ApiHelper::apiResponse([
                 'msg' => 'يرجى إدخال رقم الشحنة',
@@ -133,7 +139,7 @@ class OrderController extends Controller
         }
         DB::beginTransaction();
         try {
-            $order->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value]);
+            $order->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value,'canceled_info'=>$msg]);
             HelperBalance::confirmReturn($order);
             DB::commit();
             $order->refresh();

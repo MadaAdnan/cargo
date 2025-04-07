@@ -39,6 +39,7 @@ class OrderResource extends JsonResource
             'branchTarget'=>$this->branchTarget?->name,
             'status'=>$this->status,
             'qrCode'=>$this->qr_code,
+            'msg'=>$this->canceled_info,
             'markers'=>MarkerResource::collection($this->markers),
             'currentMarker'=>$currentMarker!=null?new UserResource($currentMarker):null,
         ];
