@@ -197,7 +197,6 @@ class OrderController extends Controller
         $order = Order::where('qr_code', $id)->first();
 
 
-
         if (!empty($userId) && $order) {
             $user = User::find($userId);
             if ($user) {
