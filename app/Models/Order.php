@@ -152,4 +152,8 @@ class Order extends Model implements HasMedia
     {
         return $this->markers->first();
     }
+    public function currentUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class,'current_user','id');
+    }
 }

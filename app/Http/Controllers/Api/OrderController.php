@@ -26,8 +26,10 @@ class OrderController extends Controller
     {
         $status = \request()->get('status');
         $qr = \request()->get('qr');
-        $orders = Order::whereHas('markers',fn($query)=>$query->where('markers.user_id',auth()->id()))
-        ->when(!empty($status), fn($query) => $query->where('status', $status))
+        $me = \request()->get('only');
+        $orders = Order::whereHas('markers', fn($query) => $query->where('markers.user_id', auth()->id()))
+            ->when($me == 'me', fn($query) => $query->where('current_user', auth()->id()))
+            ->when(!empty($status), fn($query) => $query->where('status', $status))
             ->when(!empty($qr), fn($query) => $query->where('qr_code', $qr))
             ->latest()
             ->with(['citySource', 'branchSource', 'cityTarget', 'branchTarget', 'unit', 'sender', 'createdBy'])
@@ -58,7 +60,7 @@ class OrderController extends Controller
 
 
         try {
-            $order->update(['given_id' => auth()->id(),'status' => OrderStatusEnum::SUCCESS->value]);
+            $order->update(['given_id' => auth()->id(), 'status' => OrderStatusEnum::SUCCESS->value]);
             HelperBalance::completeOrder($order);
             DB::commit();
             $order->refresh();
@@ -93,8 +95,6 @@ class OrderController extends Controller
         }
         DB::beginTransaction();
         try {
-
-
 
 
             $user = User::where([
@@ -193,23 +193,25 @@ class OrderController extends Controller
      */
     public function show(string $id)
     {
-        $userId=\request()->get('userId');
+        $userId = \request()->get('userId');
         $order = Order::where('qr_code', $id)->first();
 
+
+
+        if (!empty($userId) && $order) {
+            $user = User::find($userId);
+            if ($user) {
+                Marker::create([
+                    'user_id' => $user->id,
+                    'order_id' => $order->id
+                ]);
+                $order->update(['current_user' => $userId]);
+            }
+        }
         if ($order) {
             return ApiHelper::apiResponse([
-                'order' => new OrderResource($order),
+                'order' => new OrderResource($order->refresh()),
             ]);
-        }
-
-        if(!empty($userId)){
-            $user=User::find($userId);
-            if(!$user){
-                Marker::create([
-                    'user_id'=>$user->id,
-                    'order_id'=>$order->id
-                ]);
-            }
         }
         return ApiHelper::apiResponse([
             'msg' => "لم يتم العثور على الشحنة",

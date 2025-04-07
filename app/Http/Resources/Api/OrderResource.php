@@ -15,10 +15,11 @@ class OrderResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $currentMarker=$this->getCurrentMarker();
+
         /**
          * @var $this Order
          */
+        $currentMarker=$this->currentUser;
         return [
             'id' => $this->id,
             'shippingDate' => $this->shipping_date,
@@ -39,7 +40,7 @@ class OrderResource extends JsonResource
             'status'=>$this->status,
             'qrCode'=>$this->qr_code,
             'markers'=>MarkerResource::collection($this->markers),
-            'currentMarker'=>$currentMarker!=null?new MarkerResource($currentMarker):null,
+            'currentMarker'=>$currentMarker!=null?new UserResource($currentMarker):null,
         ];
     }
 }
