@@ -26,13 +26,8 @@ class OrderController extends Controller
     {
         $status = \request()->get('status');
         $qr = \request()->get('qr');
-        $orders = Order::/*where(fn($query)=>$query
-        ->where('pick_id',auth()->id)
-        ->orWhere('given_id',auth()->id)
-        ->orWhere('branch_source_id',auth()->user()->branch_id)
-        ->orWhere('branch_target_id',auth()->user()->branch_id)
-        )
-        ->*/when(!empty($status), fn($query) => $query->where('status', $status))
+        $orders = Order::whereHas('markers',fn($query)=>$query->where('markers.user_id',auth()->id()))
+        ->when(!empty($status), fn($query) => $query->where('status', $status))
             ->when(!empty($qr), fn($query) => $query->where('qr_code', $qr))
             ->latest()
             ->with(['citySource', 'branchSource', 'cityTarget', 'branchTarget', 'unit', 'sender', 'createdBy'])

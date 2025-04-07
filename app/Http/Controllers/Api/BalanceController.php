@@ -126,6 +126,8 @@ class BalanceController extends Controller
         }
     }
 
+
+
     public function pushConfirmed(string $id)
     {
         $balance = Balance::find($id);
@@ -151,6 +153,9 @@ class BalanceController extends Controller
             'balance' => new BalanceResource($balance),
         ]);
     }
+
+
+
 
     public function pull(Request $request)
     {

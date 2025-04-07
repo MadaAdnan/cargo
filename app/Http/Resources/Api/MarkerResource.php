@@ -16,6 +16,7 @@ class MarkerResource extends JsonResource
     {
         return [
             'userName'=>$this->user?->name,
+            'userId'=>$this->user_id,
             'createdAt'=>$this->created_at?->format('Y-m-d H:i'),
         ];
     }
