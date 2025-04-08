@@ -418,6 +418,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                     default => ['style' => ''],
                 }),
 
+
                 Tables\Columns\TextColumn::make('shipping_date')->date('y-m-d')->label('تاريخ الشحنة')->description(fn($record) => $record->created_at, 'above')->copyable()->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
                     'green' => ['style' => 'background-color:#55FF88;'],
 
