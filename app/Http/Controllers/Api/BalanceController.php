@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\BalanceTypeEnum;
+use App\Enums\LevelUserEnum;
 use App\Helper\ApiHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\BalanceResource;
@@ -64,6 +65,7 @@ class BalanceController extends Controller
         \DB::beginTransaction();
         try {
             $user = User::find($request->userId);
+            $isUser=$user->level==LevelUserEnum::USER->value;
             if (!in_array($request->currencyId, [1, 2])) {
                 return ApiHelper::apiResponse([
                     'msg' => 'يجب تحديد العملة 1 للدولار , 2 للتركي'
@@ -96,8 +98,8 @@ class BalanceController extends Controller
                 'credit' => $request->amount,
                 'info' => $request->info,
                 'currency_id' => $request->currencyId,
-                'is_complete' => false,
-                'pending' => true,
+                'is_complete' => $isUser,
+                'pending' => !$isUser,
                 'customer_name' => auth()->user()->name,
             ]);
             $balance = Balance::create([
@@ -108,8 +110,8 @@ class BalanceController extends Controller
                 'credit' => 0,
                 'info' => $request->info,
                 'currency_id' => $request->currencyId,
-                'is_complete' => false,
-                'pending' => false,
+                'is_complete' => $isUser,
+                'pending' => !$isUser,
                 'customer_name' => $user?->name,
             ]);
 
@@ -162,6 +164,7 @@ class BalanceController extends Controller
         \DB::beginTransaction();
         try {
             $user = User::find($request->userId);
+            $isUser=$user->level==LevelUserEnum::USER->value;
             if (!in_array($request->currencyId, [1, 2])) {
                 return ApiHelper::apiResponse([
                     'msg' => 'يجب تحديد العملة 1 للدولار , 2 للتركي'
@@ -194,8 +197,8 @@ class BalanceController extends Controller
                 'credit' => 0,
                 'info' => $request->info,
                 'currency_id' => $request->currencyId,
-                'is_complete' => true,
-                'pending' => false,
+                'is_complete' => $isUser,
+                'pending' => !$isUser,
                 'customer_name' => auth()->user()->name,
             ]);
             $balance = Balance::create([
