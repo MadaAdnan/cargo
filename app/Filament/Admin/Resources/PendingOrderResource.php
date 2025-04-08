@@ -410,7 +410,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                        ->placement('right')
                        ->content(fn($record) => \LaraZeus\Qr\Facades\Qr::render($record->code))
                        ->icon('heroicon-o-qr-code'),
-                Tables\Columns\TextColumn::make('qr_code')->label('QR-CODE')->copyable()->searchable(),
+                Tables\Columns\TextColumn::make('qr_code')->label('QR-CODE')->copyable()->searchable(isIndividual: true),
 
                 Tables\Columns\TextColumn::make('id')->searchable()->extraCellAttributes(fn(Model $record) => match ($record->color) {
                     'green' => ['style' => 'background-color:#55FF88;'],
@@ -455,12 +455,6 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                         }
                         return $list;
                     }),
-                // Tables\Columns\TextColumn::make('far_sender')->formatStateUsing(fn($state) => FarType::tryFrom($state)?->getLabel())
-                //     ->color(fn($state) => FarType::tryFrom($state)?->getColor())
-                //     ->icon(fn($state) => FarType::tryFrom($state)?->getIcon())
-                //     ->label('حالة الدفع')
-                //     ->description(fn($record) => $record->created_at->diffForHumans())
-                //     ->searchable(),
 
                 Tables\Columns\TextColumn::make('unit.name')->label('نوع الشحنة')->toggleable(isToggledHiddenByDefault: false),
 
@@ -895,6 +889,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                                 ->required()
                                 ->label('موظف التسليم'),
                         ])
+
                         ->action(function ($records, $data) {
                             foreach ($records as $record) {
 
