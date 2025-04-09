@@ -314,7 +314,7 @@ public static function shouldRegisterNavigation(): bool
 
                             Forms\Components\Select::make('pick_id')->label('الموظف الملتقط')->options(User::where('email', 'ahmadrakbi@gmail.com')->pluck('name', 'id'))
                                 ->default(User::where('email', 'ahmadrakbi@gmail.com')->first()?->id)
-                                ->visible(fn($context) => $context === 'create'),
+                                ->visible(fn($context) => $context === 'create')->required(),
 
 
                         ]),
