@@ -33,6 +33,10 @@ class OrderObserver
             'level' => LevelUserEnum::BRANCH->value,
             'branch_id' => $order->branch_target_id
         ])->first()?->id;
+        if ($given_id == null) {
+            $given_id=User::where('email', 'ahmadrakbi@gmail.com')->first()?->id;
+
+        }
         $order->given_id = $given_id;
         if ($given_id != null) {
             $order->status = OrderStatusEnum::TRANSFER;
