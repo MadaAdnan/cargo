@@ -111,7 +111,7 @@ class BalanceController extends Controller
                 'info' => $request->info,
                 'currency_id' => $request->currencyId,
                 'is_complete' => $isUser,
-                'pending' => !$isUser,
+                'pending' => false,
                 'customer_name' => $user?->name,
             ]);
 
@@ -209,7 +209,7 @@ class BalanceController extends Controller
                 'credit' => $request->amount,
                 'info' => $request->info,
                 'currency_id' => $request->currencyId,
-                'is_complete' => true,
+                'is_complete' => $isUser,
                 'pending' => false,
                 'customer_name' => $user?->name,
             ]);
