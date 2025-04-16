@@ -94,4 +94,24 @@ class TaskController extends Controller
             'task'=>new TaskResource($task)
         ]);
     }
+    public function incompleteCount()
+    {
+        $userId = auth()->id();
+
+        $tasksCount = Task::where('is_complete', 0)
+            ->where(function ($query) use ($userId) {
+                $query->where('user_id', $userId)
+                      ->orWhere('delegate_id', $userId);
+            }) ->count();
+
+        return ApiHelper::apiResponse([
+            'incompleteTaskCount' => $tasksCount,
+        ], 200, 'success');
+    }
+
+
+
 }
+
+
+
