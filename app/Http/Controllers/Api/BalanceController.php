@@ -226,4 +226,19 @@ class BalanceController extends Controller
             ], 401, 'error');
         }
     }
+
+    public function pendingBalancesCount(){
+        $user = auth()->user();
+
+        if (!$user) {
+            return ApiHelper::apiResponse([], 401, 'Unauthorized');
+        }
+
+        // $balanceCount = Balance::where('user_id', $user->id)
+        // ->where('pending',true)->count();
+        $balanceCount = $user->pendingBalances->count();
+        return ApiHelper::apiResponse([
+            'pendingBalancesCount'=>$balanceCount
+        ],200 , 'success');
+    }
 }
