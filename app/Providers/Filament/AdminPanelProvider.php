@@ -6,6 +6,7 @@ use App\Filament\Admin\Widgets\BalanceCustomerView;
 use App\Filament\Admin\Widgets\BalanceEmployeeView;
 use App\Filament\Admin\Widgets\BalanceView;
 use App\Filament\Admin\Widgets\OrdersOverview;
+use App\Filament\Admin\Widgets\DailyOverview;
 use App\Http\Middleware\IsBlockedUserMiddleware;
 use App\Http\Middleware\RedirectToPanelMiddleware;
 use App\Http\Middleware\StopMiddleware;
@@ -48,7 +49,7 @@ class AdminPanelProvider extends PanelProvider
                 FilamentApexChartsPlugin::make(),
                  ApiServicePlugin::make(),
 
-                
+
 
 
 
@@ -72,14 +73,16 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                // Pages\Dashboard::class,
+                // \App\Filament\Admin\Pages\Dashboard::class,
             ])
             ->widgets([
 
                 OrdersOverview::class,
                 BalanceView::class,
                 BalanceEmployeeView::class,
-                BalanceCustomerView::class
+                BalanceCustomerView::class,
+                DailyOverview::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->databaseNotifications()
