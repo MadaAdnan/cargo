@@ -78,6 +78,9 @@ class BalanceResource extends Resource implements HasShieldPermissions
     public static function table(Table $table): Table
     {
         return $table
+        ->modifyQueryUsing(function (Builder $query) {
+            $query->orderBy('created_at')->orderBy('order_id');
+        })
             ->columns([
                 Tables\Columns\TextColumn::make('credit')->label('مدين')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),
                 Tables\Columns\TextColumn::make('debit')->label('دائن')->formatStateUsing(fn($state) => HelperBalance::formatNumber($state)),

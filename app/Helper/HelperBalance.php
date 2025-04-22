@@ -6,6 +6,7 @@ use App\Enums\BalanceTypeEnum;
 use App\Models\Balance;
 use App\Models\Order;
 use App\Models\User;
+use Str;
 
 
 class HelperBalance
@@ -208,7 +209,7 @@ class HelperBalance
 
     public static function completeOrder(Order $order)
     {
-
+        $uuid = Str::uuid();
         $sender = User::find($order->sender_id);
         $staff = User::find($order->given_id);
         $receive = User::find($order->receive_id);
@@ -217,6 +218,7 @@ class HelperBalance
                 if ($order->far > 0) {
 
                     Balance::create([
+                        'uuid'=>$uuid,
                         'credit' => 0,
                         'debit' => $order->far,
                         'order_id' => $order->id,
@@ -228,6 +230,7 @@ class HelperBalance
                     ]); // put 10 $ in system
 
                     Balance::create([
+                        'uuid'=>$uuid,
                         'credit' => $order->far,
                         'debit' => 0,
                         'order_id' => $order->id,
@@ -242,6 +245,7 @@ class HelperBalance
 
 
                     Balance::create([
+                        'uuid'=>$uuid,
                         'credit' => $order->far,
                         'debit' => 0,
                         'order_id' => $order->id,
@@ -255,6 +259,7 @@ class HelperBalance
 //
                 if ($order->far_tr > 0) {
                     Balance::create([
+                        'uuid'=>$uuid,
                         'credit' => $order->far_tr,
                         'debit' => 0,
                         'order_id' => $order->id,
@@ -266,6 +271,7 @@ class HelperBalance
                     ]);
 
                     Balance::create([
+                        'uuid'=>$uuid,
                         'credit' => 0,
                         'debit' => $order->far_tr,
                         'order_id' => $order->id,
@@ -277,6 +283,7 @@ class HelperBalance
                     ]);
 
                     Balance::create([
+                        'uuid'=>$uuid,
                         'credit' => $order->far_tr,
                         'debit' => 0,
                         'order_id' => $order->id,
@@ -291,6 +298,7 @@ class HelperBalance
             }
             if ($order->price > 0) {
                 Balance::create([
+                    'uuid'=>$uuid,
                     'credit' => 0,
                     'debit' => $order->price,
                     'order_id' => $order->id,
@@ -303,6 +311,7 @@ class HelperBalance
                 ]); // المرسل اودع 100 قيمة الشحنة عند النسلم
 
                 Balance::create([
+                    'uuid'=>$uuid,
                     'credit' => $order->price,
                     'debit' => 0,
                     'order_id' => $order->id,
@@ -315,6 +324,7 @@ class HelperBalance
 
 
                 Balance::create([
+                    'uuid'=>$uuid,
                     'credit' => 0,
                     'debit' => $order->price,
                     'order_id' => $order->id,
@@ -328,6 +338,7 @@ class HelperBalance
 
 
                 Balance::create([
+                    'uuid'=>$uuid,
                     'credit' => $order->price,
                     'debit' => 0,
                     'order_id' => $order->id,
@@ -342,6 +353,7 @@ class HelperBalance
             }
             if ($order->price_tr > 0) {
                 Balance::create([
+                    'uuid'=>$uuid,
                     'credit' => $order->price_tr,
                     'debit' => 0,
                     'order_id' => $order->id,
@@ -353,6 +365,7 @@ class HelperBalance
                 ]);
 
                 Balance::create([
+                    'uuid'=>$uuid,
                     'credit' => 0,
                     'debit' => $order->price_tr,
                     'order_id' => $order->id,
@@ -364,6 +377,7 @@ class HelperBalance
                 ]);
 
                 Balance::create([
+                    'uuid'=>$uuid,
                     'credit' => $order->price_tr,
                     'debit' => 0,
                     'order_id' => $order->id,
@@ -376,6 +390,7 @@ class HelperBalance
                 ]);
 
                 Balance::create([
+                    'uuid'=>$uuid,
                     'credit' => 0,
                     'debit' => $order->price_tr,
                     'order_id' => $order->id,
@@ -398,7 +413,7 @@ class HelperBalance
 
     public static function pendingBalancePick(Order $order)
     {
-
+        $uuid = Str::uuid();
         $sender = User::find($order->sender_id);
         $staff = User::find($order->pick_id);
         $receive = User::find($order->receive_id);
@@ -410,6 +425,7 @@ class HelperBalance
                     Balance::create([
                         'user_id' => $receive->id,
                         'debit' => 0,
+                        'uuid'=>$uuid,
                         'credit' => $order->far,
                         'info' => 'اجور شحن الطلب #' . $order->id,
                         'pending' => true,
@@ -419,6 +435,7 @@ class HelperBalance
                 }
                 if ($order->far_tr > 0) {
                     Balance::create([
+                        'uuid'=>$uuid,
                         'user_id' => $receive->id,
                         'debit' => 0,
                         'credit' => $order->far_tr,
@@ -433,6 +450,7 @@ class HelperBalance
 
             if ($order->price > 0) {
                 Balance::create([
+                    'uuid'=>$uuid,
                     'user_id' => $receive->id,
                     'debit' => 0,
                     'credit' => $order->price,
@@ -443,6 +461,7 @@ class HelperBalance
                 ]);
 
                 Balance::create([
+                    'uuid'=>$uuid,
                     'user_id' => $sender->id,
                     'debit' => $order->price,
                     'credit' => 0,
@@ -455,6 +474,7 @@ class HelperBalance
 
             if ($order->price_tr > 0) {
                 Balance::create([
+                    'uuid'=>$uuid,
                     'user_id' => $receive->id,
                     'debit' => 0,
                     'credit' => $order->price_tr,
@@ -465,6 +485,7 @@ class HelperBalance
                 ]);
 
                 Balance::create([
+                    'uuid'=>$uuid,
                     'user_id' => $sender->id,
                     'debit' => $order->price_tr,
                     'credit' => 0,
