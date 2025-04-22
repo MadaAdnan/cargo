@@ -183,7 +183,22 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
         return  HelperBalance::formatNumber($total);
     }
 
-
+    public function getTotalBalanceSypAttribute(): float
+    {
+        $total = DB::table('balances')->where('user_id', $this->id)->where('is_complete', true)
+                ->where('currency_id',3)
+                ->where('pending', '!=', true)
+                ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
+        return  HelperBalance::formatNumber($total);
+    }
+    public function getTotalBalanceSypPendingAttribute(): float
+    {
+        $total = DB::table('balances')->where('user_id', $this->id)->where('is_complete', true)
+            ->where('currency_id', 3)
+            ->where('pending', true)
+            ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
+        return  HelperBalance::formatNumber($total);
+    }
 
     public function getIbanNameAttribute(): string
     {
