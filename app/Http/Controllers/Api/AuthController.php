@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -108,10 +109,38 @@ class AuthController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-       return User::select('id','name')->get()->map(fn($el)=>['id'=>$el->id,'name'=>$el->name]);
+   /**
+ * Get list of users with optional level filter
+ *
+ * @queryParam level string Filter users by level (admin,user,manager). No-example
+ */
+public function index(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'level' => 'nullable|in:admin,user'
+    ], [
+        'level.in' => 'قيمة الحقل level يجب أن تكون admin أو user'
+    ]);
+
+    if ($validator->fails()) {
+        return ApiHelper::apiResponse([
+            'msg' => $validator->errors()->first(), // أول رسالة خطأ
+        ], 422, 'error'); // 422 هو رمز خطأ التحقق
     }
+    $validated = $validator->validated();
+    return User::query()
+        ->select('id', 'name')
+        ->when($validated['level'] ?? null, function ($query, $level) {
+            $query->where('level', $level);
+        })
+        ->get()
+        ->map(fn($user) => [
+            'id' => $user->id,
+            'name' => $user->name
+        ]);
+        // return User::select('id','name')->get()->map(fn($el)=>['id'=>$el->id,'name'=>$el->name]);
+}
+
 
     /**
      * Store a newly created resource in storage.
