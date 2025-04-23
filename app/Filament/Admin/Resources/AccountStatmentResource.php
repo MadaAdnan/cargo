@@ -83,7 +83,13 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
         return $table
             //  ->poll(10)
             ->columns([
-                Tables\Columns\TextColumn::make('id')->label('رقم  الفاتورة'),
+                Tables\Columns\TextColumn::make('id')->label('رقم  الفاتورة')
+                ->extraCellAttributes(fn(Model $record) => match ($record->color) {
+                    'green' => ['style' => 'background-color:#55FF88;'],
+                    'red' =>   ['style' =>'background-color: #FF8888'],
+                    null  => ['style'=> ''],
+                    default => ['style' => ''],
+                }),
                 Tables\Columns\TextColumn::make('credit')->label('مدين'),
                 Tables\Columns\TextColumn::make('debit')->label('دائن'),
                 Tables\Columns\TextColumn::make('currency.code')->label('العملة'),
@@ -168,7 +174,29 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                    Tables\Actions\ActionGroup::make([
+                      // زر التلوين الأخضر
+                    Tables\Actions\Action::make('check_green')
+                    ->action(fn($record) => $record->update(['color' => 'green']))
+                    ->label('تعيين باللون الاخضر')
+                    ->visible(fn($record) => $record->color == null)
+                    ->color('success'),
 
+                    // زر التلوين الأحمر
+
+                    Tables\Actions\Action::make('check_red')
+                    ->action(fn($record) => $record->update(['color' => 'red']))
+                    ->label('تعيين باللون الأحمر')
+                    ->visible(fn($record) => $record->color != 'red')
+                    ->color('danger'),
+                      // زر إزالة التلوين
+                    Tables\Actions\Action::make('remove_color')
+                    ->action(fn($record) => $record->update(['color' => null]))
+                    ->label('إزالة التلوين')
+                    ->visible(fn($record) => $record->color != null)
+                    ->color('gray')
+
+                    ])
 
             ])
             ->bulkActions([
