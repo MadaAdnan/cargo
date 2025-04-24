@@ -8,6 +8,13 @@ use Illuminate\Support\Facades\Schema;
 
 class BalanceObserver
 {
+
+
+    public function creating(Balance $balance): void
+    {
+        // إنشاء كود FR فريد
+        $balance->code = "FR" . now()->format('YmdHis');
+    }
     /**
      * Handle the Balance "created" event.
      */

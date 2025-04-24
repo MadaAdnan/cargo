@@ -125,7 +125,33 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
 
                 Tables\Columns\TextColumn::make('info')->label('الملاحظات'),
                 Tables\Columns\TextColumn::make('customer_name')->label('الطرف المقابل')->searchable(),
-                Tables\Columns\TextColumn::make('order.id')->description(fn($record) => $record->order?->code)->label('الطلب')->searchable(),
+                // Tables\Columns\TextColumn::make('order.id')->description(fn($record) => $record->order?->code)->label('الطلب')->searchable(),
+                Tables\Columns\TextColumn::make('order.id')
+                ->label('الطلب')
+                ->getStateUsing(function ($record) {
+                    // النص الرئيسي: order.id إذا موجود أو 'N/A' إذا غير موجود
+                    return $record->order_id ? $record->order->id : 'N/A';
+                })
+                ->description(function ($record) {
+                    // الوصف: order.code إذا كان هناك order_id، أو balance.code إذا لم يكن
+                    if ($record->order_id) {
+                        return $record->order?->code ?? 'لا يوجد كود طلب';
+                    }
+                    return $record->code ?? 'لا يوجد كود رصيد';
+                })
+                ->copyable()
+                ->copyableState(function ($record) {
+                    if ($record->order_id) {
+                        return $record->order?->code ?? 'لا يوجد كود طلب';
+                    }
+                    return $record->code ?? 'لا يوجد كود رصيد';
+                })
+                ->copyMessage('تم نسخ الكود بنجاح')
+                ->tooltip('انقر لنسخ الكود')
+                ->searchable(),
+
+
+
                 Tables\Columns\TextColumn::make('order.sender.name')->label('المرسل')->description(fn($record) => $record->order?->general_sender_name != null ? "{$record->order->general_sender_name}" : "")->searchable(),
                 Tables\Columns\TextColumn::make('order.global_name')->label('المستلم'),
                 Tables\Columns\TextColumn::make('order.status')->label('حالة الطلب'),
