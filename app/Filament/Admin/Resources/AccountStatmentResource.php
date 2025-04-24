@@ -22,6 +22,9 @@ use Filament\Forms\Components\Textarea;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
+use App\Enums\OrderTypeEnum;
+use App\Enums\OrderStatusEnum;
+use App\Enums\FarType;
 
 class AccountStatmentResource extends Resource implements HasShieldPermissions
 {
@@ -157,6 +160,33 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
 
                 Tables\Columns\TextColumn::make('order.sender.name')->label('المرسل')->description(fn($record) => $record->order?->general_sender_name != null ? "{$record->order->general_sender_name}" : "")->searchable(),
                 Tables\Columns\TextColumn::make('order.global_name')->label('المستلم'),
+                Tables\Columns\TextColumn::make('order.far_sender')
+                ->formatStateUsing(fn($state) => FarType::tryFrom($state)?->getLabel())
+                ->color(fn($state) => FarType::tryFrom($state)?->getColor())
+                ->icon(fn($state) => FarType::tryFrom($state)?->getIcon())
+                ->label('حالة الدفع')
+                ->description(fn($record) => $record->status?->getLabel())
+                ->extraCellAttributes(function ($record) {
+                    $list = [];
+                    switch ($record->status) {
+                        case OrderStatusEnum::PICK:
+                            $list = ['style' => 'background-color:yellow'];
+                            break;
+                        case OrderStatusEnum::TRANSFER:
+                            $list = ['style' => 'background-color:orange'];
+                            break;
+                        case OrderStatusEnum::RETURNED:
+                            $list = ['style' => 'background-color:red'];
+                            break;
+                        case OrderStatusEnum::CANCELED:
+                            $list = ['style' => 'background-color:gray;color:black'];
+                            break;
+                        case OrderStatusEnum::SUCCESS:
+                            $list = ['style' => 'background-color:green;color:black'];
+                            break;
+                    }
+                    return $list;
+                }),
                 Tables\Columns\TextColumn::make('order.status')->label('حالة الطلب'),
                 Tables\Columns\TextColumn::make('createdBy.name')->label('أنشئ بواسطة'),
                 Tables\Columns\TextColumn::make('order.cityTarget.name')->label('المدينة'),
