@@ -18,7 +18,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-
+use Filament\Forms\Components\Textarea;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
@@ -74,7 +74,10 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
     {
         return $form
             ->schema([
-                //
+                Forms\Components\Textarea::make('info')
+                ->label('الملاحظات')
+                ->columnSpanFull()
+                ->visible(fn ($operation): bool => $operation === 'edit') // يظهر فقط في التعديل
             ]);
     }
 
@@ -199,7 +202,13 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                 ])
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                ->form([
+                    \Filament\Forms\Components\Textarea::make('info')
+                        ->label('الملاحظات')
+                        ->columnSpanFull()
+                ]),
                     Tables\Actions\ActionGroup::make([
                       // زر التلوين الأخضر
                     Tables\Actions\Action::make('check_green')
@@ -227,7 +236,58 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    // Tables\Actions\DeleteBulkAction::make(),
+            //         Tables\Actions\DeleteBulkAction::make()
+            // ->action(function ($records) {
+            //     $records->filter(fn($record) => $record->order_id === null)
+            //            ->each->delete();
+            // })
+            // ->deselectRecordsAfterCompletion(),
+            // Tables\Actions\DeleteBulkAction::make()
+            // ->action(function ($records) {
+            //     $filteredRecords = $records->filter(fn($record) => $record->order_id === null);
+
+            //     if ($filteredRecords->count() < $records->count()) {
+            //         Notification::make()
+            //             ->title('تنبيه')
+            //             ->body('تم تخطي بعض السجلات لأنها مرتبطة بدُفعات')
+            //             ->warning()
+            //             ->send();
+            //     }
+
+            //     $filteredRecords->each->delete();
+            // })
+            // ->deselectRecordsAfterCompletion()
+            // ->requiresConfirmation()
+            // ->modalHeading('حذف السجلات المحددة')
+            // ->modalSubheading('هل أنت متأكد من أنك تريد حذف هذه السجلات؟ سيتم تخطي السجلات المرتبطة بدُفعات.')
+            // ->modalButton('نعم، احذف'),
+            Tables\Actions\DeleteBulkAction::make()
+            ->action(function ($records) {
+                $recordsToDelete = $records->filter(fn($record) => $record->order_id === null);
+                $skippedRecords = $records->count() - $recordsToDelete->count();
+
+                if ($skippedRecords > 0) {
+                    Notification::make()
+                        ->title('لا يمكن حذف بعض السجلات')
+                        ->body("تم تخطي $skippedRecords سجل(ات) لأنها مرتبطة بدفعات")
+                        ->warning()
+                        ->send();
+                }
+
+                $recordsToDelete->each->delete();
+            })
+            ->deselectRecordsAfterCompletion()
+            ->requiresConfirmation()
+            ->modalHeading('حذف السجلات المحددة')
+            ->modalSubheading(function ($records) {
+                $hasLinkedRecords = $records->contains(fn($record) => $record->order_id !== null);
+                return $hasLinkedRecords
+                    ? 'سيتم تخطي السجلات المرتبطة بدفعات'
+                    : 'هل أنت متأكد من أنك تريد حذف هذه السجلات؟';
+            })
+            ->modalButton('نعم، احذف'),
+
                     ExportBulkAction::make()->exports([
                         ExcelExport::make()->withChunkSize(300)
                     ])
