@@ -238,7 +238,7 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                     \Filament\Forms\Components\Textarea::make('info')
                         ->label('الملاحظات')
                         ->columnSpanFull()
-                ]),
+                 ]),
                     Tables\Actions\ActionGroup::make([
                       // زر التلوين الأخضر
                     Tables\Actions\Action::make('check_green')
@@ -267,31 +267,30 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     // Tables\Actions\DeleteBulkAction::make(),
-            //         Tables\Actions\DeleteBulkAction::make()
-            // ->action(function ($records) {
-            //     $records->filter(fn($record) => $record->order_id === null)
-            //            ->each->delete();
-            // })
-            // ->deselectRecordsAfterCompletion(),
-            // Tables\Actions\DeleteBulkAction::make()
-            // ->action(function ($records) {
-            //     $filteredRecords = $records->filter(fn($record) => $record->order_id === null);
+             // إجراء تعيين اللون الأخضر جماعيًا
+        Tables\Actions\BulkAction::make('bulk_green')
+        ->action(fn($records) => $records->each->update(['color' => 'green']))
+        ->label('تعيين الأخضر للمحدد')
+        ->deselectRecordsAfterCompletion()
+        ->color('success')
+        ->icon('heroicon-o-check-circle'),
 
-            //     if ($filteredRecords->count() < $records->count()) {
-            //         Notification::make()
-            //             ->title('تنبيه')
-            //             ->body('تم تخطي بعض السجلات لأنها مرتبطة بدُفعات')
-            //             ->warning()
-            //             ->send();
-            //     }
+    // إجراء تعيين اللون الأحمر جماعيًا
+    Tables\Actions\BulkAction::make('bulk_red')
+        ->action(fn($records) => $records->each->update(['color' => 'red']))
+        ->label('تعيين الأحمر للمحدد')
+        ->deselectRecordsAfterCompletion()
+        ->color('danger')
+        ->icon('heroicon-o-x-circle'),
 
-            //     $filteredRecords->each->delete();
-            // })
-            // ->deselectRecordsAfterCompletion()
-            // ->requiresConfirmation()
-            // ->modalHeading('حذف السجلات المحددة')
-            // ->modalSubheading('هل أنت متأكد من أنك تريد حذف هذه السجلات؟ سيتم تخطي السجلات المرتبطة بدُفعات.')
-            // ->modalButton('نعم، احذف'),
+    // إجراء إزالة الألوان جماعيًا
+    Tables\Actions\BulkAction::make('bulk_remove_color')
+        ->action(fn($records) => $records->each->update(['color' => null]))
+        ->label('إزالة الألوان')
+        ->deselectRecordsAfterCompletion()
+        ->color('gray')
+        ->icon('heroicon-o-trash'),
+
             Tables\Actions\DeleteBulkAction::make()
             ->action(function ($records) {
                 $recordsToDelete = $records->filter(fn($record) => $record->order_id === null);

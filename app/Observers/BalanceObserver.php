@@ -14,6 +14,11 @@ class BalanceObserver
     {
         // إنشاء كود FR فريد
         $balance->code = "FR" . now()->format('YmdHis');
+          // التحقق من وجود order_id وإسناد اللون الأخضر
+    if (!is_null($balance->order_id)) {
+        $balance->color = 'green';
+    }
+
     }
     /**
      * Handle the Balance "created" event.
