@@ -221,6 +221,9 @@ class HelperBalance
         $sender = User::find($order->sender_id);
         $staff = User::find($order->given_id);
         $receive = User::find($order->receive_id);
+
+        $color = Balance::where('order_id', $order->id)->where('color', 'green')->first();
+
         try {
             if ($order->far_sender == false) {
                 if ($order->far > 0) {
@@ -236,6 +239,7 @@ class HelperBalance
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'created_at'=>$order->created_at,
+                        'color'=> $color,
                     ]); // put 10 $ in system
 
                     Balance::create([
@@ -249,6 +253,7 @@ class HelperBalance
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'created_at'=>$order->created_at,
+                        'color'=> $color,
                     ]); // ظف الاسستلام سحب 10 السايقة لصالح مو
 
 
@@ -265,6 +270,7 @@ class HelperBalance
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'created_at'=>$order->created_at,
+                        'color'=> $color,
                     ]); // استقبال 10 الاجور
                 }
 //
@@ -280,6 +286,7 @@ class HelperBalance
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'created_at'=>$order->created_at,
+                        'color'=> $color,
                     ]);
 
                     Balance::create([
@@ -293,6 +300,7 @@ class HelperBalance
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'created_at'=>$order->created_at,
+                        'color'=> $color,
                     ]);
 
                     Balance::create([
@@ -306,6 +314,7 @@ class HelperBalance
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
                         'created_at'=>$order->created_at,
+                        'color'=> $color,
                     ]);
                 }
 //
@@ -322,6 +331,7 @@ class HelperBalance
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                     'created_at'=>$order->created_at,
+                    'color'=> $color,
                 ]); // المرسل اودع 100 قيمة الشحنة عند النسلم
 
                 Balance::create([
@@ -335,6 +345,7 @@ class HelperBalance
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                     'created_at'=>$order->created_at,
+                    'color'=> $color,
                 ]);//  المستلم عليه دين 100 للمرسل قيمة الشحنة
 
 
@@ -349,6 +360,7 @@ class HelperBalance
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                     'created_at'=>$order->created_at,
+                    'color'=> $color,
                 ]); // المستبم دفع 100 يلي عليه دين لموظف التسليم
 
 
@@ -364,6 +376,7 @@ class HelperBalance
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                     'created_at'=>$order->created_at,
+                    'color'=> $color,
                 ]); // موظف التسليم احد 100 من المستلم
 
 
@@ -380,6 +393,7 @@ class HelperBalance
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                     'created_at'=>$order->created_at,
+                    'color'=> $color,
                 ]);
 
                 Balance::create([
@@ -393,6 +407,7 @@ class HelperBalance
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                     'created_at'=>$order->created_at,
+                    'color'=> $color,
                 ]);
 
                 Balance::create([
@@ -406,6 +421,7 @@ class HelperBalance
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                     'created_at'=>$order->created_at,
+                    'color'=> $color,
 
                 ]);
 
@@ -420,6 +436,7 @@ class HelperBalance
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
                     'created_at'=>$order->created_at,
+                    'color'=> $color,
                 ]);
             }
             Balance::where('order_id', $order->id)->where('pending', true)->delete();
@@ -538,6 +555,7 @@ class HelperBalance
     {
         $customer = $order->sender;
         $staff = $order->returned;
+        $color = Balance::where('order_id', $order->id)->where('color', 'green')->first();
         try {
             // add Far
             if ($order->far_sender == false) {
@@ -551,7 +569,8 @@ class HelperBalance
                         'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
-                        'created_at'=>$order->created_at
+                        'created_at'=>$order->created_at,
+                        'color'=> $color,
                     ]);
                 }
 //
@@ -565,7 +584,8 @@ class HelperBalance
                         'info' => 'أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
-                        'created_at'=>$order->created_at
+                        'created_at'=>$order->created_at,
+                        'color'=> $color,
                     ]);
                 }
 //
@@ -581,7 +601,8 @@ class HelperBalance
                     'info' => 'أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
-                    'created_at'=>$order->created_at
+                    'created_at'=>$order->created_at,
+                    'color'=> $color,
                 ]);
 
               Balance::create([
@@ -593,7 +614,8 @@ class HelperBalance
                     'info' => 'دفع أجور تحصيل  #' . $order->code,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
-                  'created_at'=>$order->created_at
+                  'created_at'=>$order->created_at,
+                  'color'=> $color,
                 ]);
             }
             if ($order->price_tr > 0) {
@@ -606,7 +628,8 @@ class HelperBalance
                     'info' => 'أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
-                    'created_at'=>$order->created_at
+                    'created_at'=>$order->created_at,
+                    'color'=> $color,
                 ]);
 
                Balance::create([
@@ -618,7 +641,8 @@ class HelperBalance
                     'info' => 'دفع أجور تحصيل  #' . $order->code,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
-                   'created_at'=>$order->created_at
+                   'created_at'=>$order->created_at,
+                   'color'=> $color,
                 ]);
             }
             Balance::where('order_id', $order->id)->where('pending', true)->delete();
