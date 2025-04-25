@@ -222,7 +222,7 @@ class HelperBalance
         $staff = User::find($order->given_id);
         $receive = User::find($order->receive_id);
 
-        $orderBalance = Balance::where('order_id', $order->id)->first();
+        $orderBalance = Balance::where('order_id', $order->id)->whereNotNull('color')->first();
 
         try {
             if ($order->far_sender == false) {
@@ -554,7 +554,7 @@ class HelperBalance
     {
         $customer = $order->sender;
         $staff = $order->returned;
-        $orderBalance = Balance::where('order_id', $order->id)->first();
+        $orderBalance = Balance::where('order_id', $order->id)->whereNotNull('color')->first();
 
         // $existingBalanceColor = Balance::where('order_id', $order->id)->where('color', 'green')->first();
         try {
