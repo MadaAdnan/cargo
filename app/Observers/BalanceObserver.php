@@ -17,7 +17,7 @@ class BalanceObserver
           // التحقق من وجود order_id وإسناد اللون الأخضر
     // if (!is_null($balance->order_id)) {
     //     $balance->color = 'green';
-    }
+    //}
 
     }
     /**
