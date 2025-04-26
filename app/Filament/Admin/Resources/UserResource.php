@@ -417,15 +417,15 @@ Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->re
     }
 })->live()->debounce(1000),
 Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->numeric()->default(1)->required()
-->minValue(0.0001) // منع الصفر
-    ->rules([
-        'gt:0', // يجب أن تكون القيمة أكبر من صفر
-        'regex:/^\d+(\.\d{1,4})?$/' // يتحقق من التنسيق (أرقام مع 4 خانات عشرية كحد أقصى)
-    ])
-    ->validationMessages([
-        'gt' => 'سعر الصرف يجب أن يكون أكبر من الصفر',
-        'regex' => 'يجب أن يكون السعر رقمًا صحيحًا أو عشريًا'
-    ])
+// ->minValue(0.0001) // منع الصفر
+//     ->rules([
+//         'gt:0', // يجب أن تكون القيمة أكبر من صفر
+//         // 'regex:/^\d+(\.\d{1,4})?$/' // يتحقق من التنسيق (أرقام مع 4 خانات عشرية كحد أقصى)
+//     ])
+//     ->validationMessages([
+//         'gt' => 'سعر الصرف يجب أن يكون أكبر من الصفر',
+//         // 'regex' => 'يجب أن يكون السعر رقمًا صحيحًا أو عشريًا'
+//     ])
 ->afterStateUpdated(function ($get, $set) {
     $amount = HelperBalance::formatNumber((double)$get('amount'));
     $exchange = HelperBalance::formatNumber((double)$get('exchange'));
