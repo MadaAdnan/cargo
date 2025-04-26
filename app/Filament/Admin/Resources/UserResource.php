@@ -351,7 +351,7 @@ Forms\Components\Radio::make('currency_id')->options([
     ->label('نوع التحويل')->default(1)->required()
     ->afterStateUpdated(function ($get, $set) {
         $amount = HelperBalance::formatNumber((double)$get('amount'));
-        $exchange = HelperBalance::formatNumber((double)$get('exchange'));
+        $exchange = (double)$get('exchange');
 
         switch ($get('currency_id')) {
             case 1: // USD → TRY
@@ -385,7 +385,7 @@ Forms\Components\Radio::make('currency_id')->options([
 Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required()->default(1)
 ->afterStateUpdated(function ($get, $set) {
     $amount = HelperBalance::formatNumber((double)$get('amount'));
-    $exchange = HelperBalance::formatNumber((double)$get('exchange'));
+    $exchange = (double)$get('exchange');
 
     switch ($get('currency_id')) {
         case 1: // USD → TRY
@@ -428,7 +428,7 @@ Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->nu
 //     ])
 ->afterStateUpdated(function ($get, $set) {
     $amount = HelperBalance::formatNumber((double)$get('amount'));
-    $exchange = HelperBalance::formatNumber((double)$get('exchange'));
+    $exchange = (double)$get('exchange');
 
     switch ($get('currency_id')) {
         case 1: // USD → TRY
@@ -473,7 +473,7 @@ Forms\Components\TextInput::make('result')->dehydrated(false)->label('الإجم
     ];
 
     $amount = HelperBalance::formatNumber((double)$data['amount']);
-    $exchange = HelperBalance::formatNumber((double)$data['exchange']);
+    $exchange = (double)$data['exchange'];
 
     switch ($data['currency_id']) {
         case 1: // USD → TRY
