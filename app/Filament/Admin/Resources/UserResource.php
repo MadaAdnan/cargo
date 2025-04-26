@@ -377,7 +377,7 @@ Forms\Components\Radio::make('currency_id')->options([
         }
 
         try {
-            $set('result', HelperBalance::formatNumber($result));
+            $set('result', $result);
         } catch (\Exception | \DivisionByZeroError $e) {
             $set('result', 0);
         }
@@ -411,7 +411,7 @@ Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->re
     }
 
     try {
-        $set('result', HelperBalance::formatNumber($result));
+        $set('result',$result);
     } catch (\Exception | \DivisionByZeroError $e) {
         $set('result', 0);
     }
@@ -454,7 +454,7 @@ Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->nu
     }
 
     try {
-        $set('result', HelperBalance::formatNumber($result));
+        $set('result',$result);
     } catch (\Exception | \DivisionByZeroError $e) {
         $set('result', 0);
     }
@@ -499,7 +499,7 @@ Forms\Components\TextInput::make('result')->dehydrated(false)->label('الإجم
     }
 
     try {
-        $result=  HelperBalance::formatNumber((double)$result);
+        $result = $result;
     } catch (\Exception | \DivisionByZeroError $e) {
         $result=0;
     }
