@@ -18,11 +18,15 @@ class BalanceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $balances=Balance::where('user_id',auth()->id())->latest()->paginate(30);
+        $query = Balance::where("user_id", auth()->id());
+        // $balances=Balance::where('user_id',auth()->id())->latest()->paginate(30);
+        if($request->pending !== null){
+            $query->where("pending", $request->pending);
+        }
+        $balances = $query->latest()->paginate(30);
         return ApiHelper::apiResponse([
-
             'balance' => BalanceResource::collection($balances),
             'paginate' => new PaginateResource($balances)
         ]);

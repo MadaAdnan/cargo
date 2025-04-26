@@ -14,10 +14,28 @@ class TaskController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    // public function index(Request $request)
+    // {
+    //     $page = \request()->get('page') ?? 1;
+    //     $tasks = Task::orWhere(['user_id' => auth()->id(), 'delegate_id' => auth()->id()])->latest()->paginate(15, ['*'], 'page', $page);;
+    //     return ApiHelper::apiResponse([
+    //         'tasks' => TaskResource::collection($tasks),
+    //         'paginate' => new PaginateResource($tasks)
+    //     ]);
+    // }
+    public function index(Request $request)
     {
-        $page = \request()->get('page') ?? 1;
-        $tasks = Task::orWhere(['user_id' => auth()->id(), 'delegate_id' => auth()->id()])->latest()->paginate(15, ['*'], 'page', $page);;
+        $page = $request->get('page') ?? 1;
+        $isComplete = $request->get('is_complete');
+
+        $query = Task::orWhere(['user_id' => auth()->id(), 'delegate_id' => auth()->id()]);
+
+        if ($isComplete !== null) {
+            $query->where('is_complete', (bool)$isComplete);
+        }
+
+        $tasks = $query->latest()->paginate(15, ['*'], 'page', $page);
+
         return ApiHelper::apiResponse([
             'tasks' => TaskResource::collection($tasks),
             'paginate' => new PaginateResource($tasks)
