@@ -200,6 +200,12 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
         return  HelperBalance::formatNumber($total);
     }
 
+    public function getTotalBalanceSypSumAttribute(): float  // to Show Sum Syp In Table Users
+{
+    return (double) $this->total_balance_syp + (double) $this->total_balance_syp_pending;
+}
+
+
     public function getIbanNameAttribute(): string
     {
         return $this->iban . ' - ' . $this->name;

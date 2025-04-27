@@ -219,7 +219,8 @@ class UserResource extends Resource
 
                 Tables\Columns\TextColumn::make('total_balance_syp')->label('الرصيد SYP'),
                 Tables\Columns\TextColumn::make('total_balance_syp_pending')->label('الرصيد SYP قيد التحصيل'),
-                // Tables\Columns\TextColumn::make('type_account')->formatStateUsing(fn($record)=>(double)$record->total_balance_syp+(double)$record->total_balance_syp_pending)->label('محصلة SYP'),
+                Tables\Columns\TextColumn::make('total_balance_syp_sum') ->label('محصلة SYP'),
+
 
                 ])->defaultSort('created_at', 'desc')
             ->filters([
