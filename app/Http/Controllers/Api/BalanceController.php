@@ -201,8 +201,8 @@ class BalanceController extends Controller
                 'credit' => 0,
                 'info' => $request->info,
                 'currency_id' => $request->currencyId,
-                'is_complete' => $isUser,
-                'pending' => !$isUser,
+                'is_complete' => true,
+                'pending' =>false,
                 'customer_name' => auth()->user()->name,
             ]);
             $balance = Balance::create([
@@ -213,7 +213,7 @@ class BalanceController extends Controller
                 'credit' => $request->amount,
                 'info' => $request->info,
                 'currency_id' => $request->currencyId,
-                'is_complete' => $isUser,
+                'is_complete' => true,
                 'pending' => false,
                 'customer_name' => $user?->name,
             ]);

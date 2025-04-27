@@ -269,7 +269,7 @@ class HelperBalance
                         'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
-                        'created_at'=>$order->created_at,
+                        // 'created_at'=>$order->created_at,
                         'color' => $orderBalance?->color,
                     ]); // استقبال 10 الاجور
                 }
@@ -313,7 +313,7 @@ class HelperBalance
                         'info' => 'دفع أجور شحن  #' . $order->id,
                         'type' => BalanceTypeEnum::CATCH->value,
                         'is_complete' => true,
-                        'created_at'=>$order->created_at,
+                        // 'created_at'=>$order->created_at,
                         'color' => $orderBalance?->color,
                     ]);
                 }
@@ -375,7 +375,7 @@ class HelperBalance
                     'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
-                    'created_at'=>$order->created_at,
+                    // 'created_at'=>$order->created_at,
                     'color' => $orderBalance?->color,
                 ]); // موظف التسليم احد 100 من المستلم
 
@@ -420,7 +420,7 @@ class HelperBalance
                     'info' => 'دفع أجور تحصيل  #' . $order->id,
                     'type' => BalanceTypeEnum::CATCH->value,
                     'is_complete' => true,
-                    'created_at'=>$order->created_at,
+                    // 'created_at'=>$order->created_at,
                     'color' => $orderBalance?->color,
                 ]);
 
