@@ -27,8 +27,8 @@ class ListAccounts extends ListRecords
         return [
             Actions\CreateAction::make(),
             Actions\Action::make('quid_usd')->form([
-                Select::make('source_id')->options(User::WithAccount()->active()->where('status', '!=', ActivateStatusEnum::BLOCK->value)->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
-                Select::make('target_id')->options(User::WithAccount()->active()->where('status', '!=', ActivateStatusEnum::BLOCK->value)->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
+                Select::make('source_id')->options(User::WithAccount()->active()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
+                Select::make('target_id')->options(User::WithAccount()->active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
                 TextInput::make('amount')->required()->numeric()->rules([
                     fn(): Closure => function (string $attribute, $value, Closure $fail) {
                         if ($value <= 0) {
@@ -76,8 +76,8 @@ class ListAccounts extends ListRecords
                     }
                 })->label('سند قيدUSD'),
             Actions\Action::make('quid_try')->form([
-                Select::make('source_id')->options(User::hideGlobal()->active()->where('status', '!=', ActivateStatusEnum::BLOCK->value)->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
-                Select::make('target_id')->options(User::active()->hideGlobal()->where('status', '!=', ActivateStatusEnum::BLOCK->value)->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
+                Select::make('source_id')->options(User::hideGlobal()->active()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
+                Select::make('target_id')->options(User::active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
                 TextInput::make('amount')->required()->numeric()->rules([
                     fn(): Closure => function (string $attribute, $value, Closure $fail) {
                         if ($value <= 0) {
@@ -124,6 +124,58 @@ class ListAccounts extends ListRecords
                         Notification::make('error')->danger()->title('خطأ في العملية')->body($e->getMessage())->send();
                     }
                 })->label('سند قيدTRY'),
+
+                // سند قيد الليرة السورية
+
+                Actions\Action::make('quid_syp')->form([
+                    Select::make('source_id')->options(User::hideGlobal()->active()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
+                    Select::make('target_id')->options(User::active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
+                    TextInput::make('amount')->required()->numeric()->rules([
+                        fn(): Closure => function (string $attribute, $value, Closure $fail) {
+                            if ($value <= 0) {
+                                $fail('يجب ان تكون القيمة أكبر من 0');
+                            }
+                        },
+                    ])->required()->label('القيمة'),
+                    TextInput::make('info')->label('ملاحظات')
+                ])
+                    ->action(function ($data) {
+                        DB::beginTransaction();
+                        try {
+                            $uuid = \Str::uuid();
+                            Balance::create([
+                                'user_id' => $data['target_id'],
+                                'currency_id' => 3,
+                                'pending' => false,
+                                'is_complete' => true,
+                                'info' => $data['info'],
+                                'uuid' => $uuid,
+                                'type' => BalanceTypeEnum::PUSH->value,
+                                'credit' => $data['amount'],
+                                'debit' => 0,
+                                'customer_name' => User::find($data['source_id'])?->name,
+                            ]);
+
+                            Balance::create([
+                                'user_id' => $data['source_id'],
+                                'currency_id' => 3,
+                                'pending' => false,
+                                'is_complete' => true,
+                                'info' => $data['info'],
+                                'uuid' => $uuid,
+                                'type' => BalanceTypeEnum::CATCH->value,
+                                'credit' => 0,
+                                'debit' => $data['amount'],
+                                'customer_name' => User::find($data['target_id'])?->name,
+                            ]);
+
+                            DB::commit();
+                            Notification::make('error')->success()->title('نجاح العملية')->body('تم إضافة السند بنجاح')->send();
+                        } catch (\Exception | \Error $e) {
+                            DB::rollBack();
+                            Notification::make('error')->danger()->title('خطأ في العملية')->body($e->getMessage())->send();
+                        }
+                    })->label('سند قيد SYP'),
            /* Actions\Action::make('multi_Tr')->form([
 
                 Repeater::make('balances')->schema([
@@ -287,7 +339,7 @@ class ListAccounts extends ListRecords
             Actions\Action::make('multi_Tr')->form([
                 Repeater::make('balances')->schema([
                     Grid::make(4)->schema([
-                        Select::make('user_id')->options(User::withAccount()->where('status', '!=', ActivateStatusEnum::BLOCK->value)->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
+                        Select::make('user_id')->options(User::withAccount()->active()->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
                         TextInput::make('info')->label('البيان'),
                         TextInput::make('credit')->label('مدين')->default(0)->numeric(),
                         TextInput::make('debit')->label('دائن')->default(0)->numeric(),
@@ -345,7 +397,7 @@ class ListAccounts extends ListRecords
                 ]),*/
                 Repeater::make('balances')->schema([
                     Grid::make(4)->schema([
-                        Select::make('user_id')->options(User::withAccount()->where('status', '!=', ActivateStatusEnum::BLOCK->value)->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
+                        Select::make('user_id')->options(User::withAccount()->active()->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
                         TextInput::make('info')->label('البيان'),
                         TextInput::make('credit')->label('مدين')->default(0)->numeric(),
                         TextInput::make('debit')->label('دائن')->default(0)->numeric(),
@@ -396,6 +448,62 @@ class ListAccounts extends ListRecords
                         DB::rollBack();
                     }
                 })->label('سند دولار متعدد'),
+                // سند سوري متعددد
+                Actions\Action::make('multi_Syp')->form([
+                    Repeater::make('balances')->schema([
+                        Grid::make(4)->schema([
+                            Select::make('user_id')->options(User::withAccount()->active()->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
+                            TextInput::make('info')->label('البيان'),
+                            TextInput::make('credit')->label('مدين')->default(0)->numeric(),
+                            TextInput::make('debit')->label('دائن')->default(0)->numeric(),
+
+                        ]),
+
+                    ])->defaultItems(10)->label('قيد متعدد SYP')
+                        ->rules([
+                            fn(): Closure => function (string $attribute, $value, Closure $fail) {
+                                $credit = 0;
+                                $debit = 0;
+                                foreach ($value as $item) {
+
+
+                                    $debit += $item['debit'];
+                                    $credit += $item['credit'];
+
+                                }
+                                if ($credit != $debit) {
+                                    $fail(" القيد غير متوازن");
+                                }
+                            }
+
+                        ])
+                ])
+                    ->action(function ($data) {
+                        \DB::beginTransaction();
+                        try{
+                            $uuid=\Str::uuid();
+                            $currency=3;//SYP
+                            foreach ($data['balances'] as $item){
+                                if($item['credit']==0 && $item['debit']==0){
+                                    continue;
+                                }
+                                Balance::create([
+                                    'uuid'=>$uuid,
+                                    'currency_id'=>$currency,
+                                    'debit'=>$item['debit'],
+                                    'credit'=>$item['credit'],
+                                    'info'=>$item['info'],
+                                    'user_id'=>$item['user_id'],
+                                    'pending'=>false,
+                                    'is_complete'=>true,
+                                ]);
+                            }
+
+                            DB::commit();
+                        }catch (\Exception|\Error $e){
+                            DB::rollBack();
+                        }
+                    })->label('سند سوري متعدد'),
         ];
     }
 }
