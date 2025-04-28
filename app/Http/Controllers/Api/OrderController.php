@@ -22,15 +22,43 @@ class OrderController extends Controller
     /**
      * Display a listing of the resource.
      */
+    // public function index()
+    // {
+    //     $status = \request()->get('status');
+    //     $qr = \request()->get('qr_code');
+    //     $me = \request()->get('only');
+    //     $orders = Order::whereHas('markers', fn($query) => $query->where('markers.user_id', auth()->id()))
+    //         ->when($me == 'me', fn($query) => $query->where('current_user', auth()->id()))
+    //         ->when(!empty($status), fn($query) => $query->where('status', $status))
+    //         ->when(!empty($qr), fn($query) => $query->where('qr_code', $qr))
+    //         ->latest()
+    //         ->with(['citySource', 'branchSource', 'cityTarget', 'branchTarget', 'unit', 'sender', 'createdBy'])
+    //         ->paginate(15);
+    //     return ApiHelper::apiResponse([
+    //         'orders' => OrderResource::collection($orders),
+    //         'paginate' => new PaginateResource($orders)
+    //     ]);
+    // }
+
     public function index()
     {
         $status = \request()->get('status');
         $qr = \request()->get('qr_code');
         $me = \request()->get('only');
+        $branchSource = \request()->get('branch_source_id'); // الفرع المرسل
+        $branchTarget = \request()->get('branch_target_id'); // الفرع المستقبل
+        $shipmentDate = \request()->get('shipment_date'); // تاريخ الشحنة
         $orders = Order::whereHas('markers', fn($query) => $query->where('markers.user_id', auth()->id()))
             ->when($me == 'me', fn($query) => $query->where('current_user', auth()->id()))
             ->when(!empty($status), fn($query) => $query->where('status', $status))
             ->when(!empty($qr), fn($query) => $query->where('qr_code', $qr))
+            //الفرع المرسل
+            ->when(!empty($branchSource), fn($query) => $query->where('branch_source_id', $branchSource))
+            // الفرع المستقبل
+            ->when(!empty($branchTarget), fn($query) => $query->where('branch_target_id', $branchTarget))
+            // تاريخ الشحنة
+            ->when(!empty($shipmentDate), fn($query) => $query->where('shipping_date', $shipmentDate))
+
             ->latest()
             ->with(['citySource', 'branchSource', 'cityTarget', 'branchTarget', 'unit', 'sender', 'createdBy'])
             ->paginate(15);
