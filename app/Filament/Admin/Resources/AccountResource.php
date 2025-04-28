@@ -20,7 +20,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-
+use App\Enums\ActivateStatusEnum;
 class AccountResource extends Resource implements HasShieldPermissions
 {
     public static function getPermissionPrefixes(): array
@@ -102,6 +102,13 @@ class AccountResource extends Resource implements HasShieldPermissions
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('اسم الحساب')->searchable(),
                 Tables\Columns\TextColumn::make('iban')->label('كود الحساب')->searchable(),
+                Tables\Columns\SelectColumn::make('status')->label('حالة المستخدم')
+                ->options([
+                    ActivateStatusEnum::ACTIVE->value => ActivateStatusEnum::ACTIVE->getLabel(),
+                    ActivateStatusEnum::PENDING->value => ActivateStatusEnum::PENDING->getLabel(),
+                    ActivateStatusEnum::BLOCK->value => ActivateStatusEnum::BLOCK->getLabel()
+
+                ])->default( ActivateStatusEnum::ACTIVE->value),
                 Tables\Columns\TextColumn::make('type_account')->label('نوع الحساب'),
                 Tables\Columns\TextColumn::make('currency.name')->label('عملة الحساب')->searchable(),
                 Tables\Columns\TextColumn::make('branch.name')->label('الفرع')->searchable(),
@@ -139,8 +146,24 @@ class AccountResource extends Resource implements HasShieldPermissions
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
 //                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+
+                Tables\Actions\BulkAction::make('Active')
+                ->action(fn($records) => $records->each->update(['status' => ActivateStatusEnum::ACTIVE->value]))
+                ->label('تفعيل الحسابات المحددة')
+                ->deselectRecordsAfterCompletion()
+                ->color('success')
+                ->icon('heroicon-o-arrow-path'),
+
+                // إجراء إزالة الألوان جماعيًا
+                Tables\Actions\BulkAction::make('bulk_remove_color')
+                ->action(fn($records) => $records->each->update(['status' => ActivateStatusEnum::BLOCK->value]))
+                ->label('حظر الحسابات المحددة')
+                ->deselectRecordsAfterCompletion()
+                ->color('danger')
+                ->icon('heroicon-o-no-symbol'),
+
+            ]),
+             ]);
     }
 
     public static function getRelations(): array

@@ -16,6 +16,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\DB;
+use App\Enums\ActivateStatusEnum;
 
 class ListAccounts extends ListRecords
 {
@@ -26,8 +27,8 @@ class ListAccounts extends ListRecords
         return [
             Actions\CreateAction::make(),
             Actions\Action::make('quid_usd')->form([
-                Select::make('source_id')->options(User::WithAccount()->active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
-                Select::make('target_id')->options(User::WithAccount()->active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
+                Select::make('source_id')->options(User::WithAccount()->active()->where('status', '!=', ActivateStatusEnum::BLOCK->value)->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
+                Select::make('target_id')->options(User::WithAccount()->active()->where('status', '!=', ActivateStatusEnum::BLOCK->value)->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
                 TextInput::make('amount')->required()->numeric()->rules([
                     fn(): Closure => function (string $attribute, $value, Closure $fail) {
                         if ($value <= 0) {
@@ -75,8 +76,8 @@ class ListAccounts extends ListRecords
                     }
                 })->label('سند قيدUSD'),
             Actions\Action::make('quid_try')->form([
-                Select::make('source_id')->options(User::hideGlobal()->active()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
-                Select::make('target_id')->options(User::active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
+                Select::make('source_id')->options(User::hideGlobal()->active()->where('status', '!=', ActivateStatusEnum::BLOCK->value)->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
+                Select::make('target_id')->options(User::active()->hideGlobal()->where('status', '!=', ActivateStatusEnum::BLOCK->value)->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
                 TextInput::make('amount')->required()->numeric()->rules([
                     fn(): Closure => function (string $attribute, $value, Closure $fail) {
                         if ($value <= 0) {
@@ -286,7 +287,7 @@ class ListAccounts extends ListRecords
             Actions\Action::make('multi_Tr')->form([
                 Repeater::make('balances')->schema([
                     Grid::make(4)->schema([
-                        Select::make('user_id')->options(User::withAccount()->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
+                        Select::make('user_id')->options(User::withAccount()->where('status', '!=', ActivateStatusEnum::BLOCK->value)->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
                         TextInput::make('info')->label('البيان'),
                         TextInput::make('credit')->label('مدين')->default(0)->numeric(),
                         TextInput::make('debit')->label('دائن')->default(0)->numeric(),
@@ -344,7 +345,7 @@ class ListAccounts extends ListRecords
                 ]),*/
                 Repeater::make('balances')->schema([
                     Grid::make(4)->schema([
-                        Select::make('user_id')->options(User::withAccount()->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
+                        Select::make('user_id')->options(User::withAccount()->where('status', '!=', ActivateStatusEnum::BLOCK->value)->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
                         TextInput::make('info')->label('البيان'),
                         TextInput::make('credit')->label('مدين')->default(0)->numeric(),
                         TextInput::make('debit')->label('دائن')->default(0)->numeric(),
