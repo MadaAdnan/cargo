@@ -24,17 +24,10 @@ class UserResource extends JsonResource
     public function toArray(Request $request): array
     {
 
-    //    // استخدم القيمة المخصصة إذا كانت موجودة (حتى لو كانت 'مستلم غير معروف')
-    // if (array_key_exists('display_name', $this->customData)) {
-    //     $name = $this->customData['display_name'];
-    // } else {
-    //     $name = $this->name;
-    // }
-    //         // ضمان عدم وجود قيم فارغة
-    //         $name = $name ?? 'مستخدم غير معروف';
 
            // استخدم القيمة المخصصة إذا كانت موجودة (حتى لو كانت 'مستلم غير معروف')
-           if ($this->customData['display_name']!=null) {
+           if (isset($this->customData['display_name']) && $this->customData['display_name'] !== null)
+            {
             $name = $this->customData['display_name'];
         } else {
             $name = $this->name;

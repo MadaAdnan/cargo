@@ -39,7 +39,7 @@ class AuthController extends Controller
         }
         $token = $user->createToken('token')->plainTextToken;
         return ApiHelper::apiResponse([
-            'user' => new UserResource($user),
+            'user' => new UserResource($user ),
             'token' => $token
         ]);
     }

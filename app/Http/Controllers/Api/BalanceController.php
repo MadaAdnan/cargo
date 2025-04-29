@@ -161,6 +161,31 @@ class BalanceController extends Controller
     }
 
 
+    public function pushCancel(string $id)
+    {
+        $balance = Balance::find($id);
+        if ($balance == null) {
+            return ApiHelper::apiResponse([
+                'msg' => 'لم يتم العثور على القيد'
+            ], 401, 'error');
+        }
+        if($balance->pending == false || $balance->is_complete == 1){
+            return ApiHelper::apiResponse([
+                'msg' => 'لا يمكن حذف قيد تمت الموافقة عليه'
+            ], 401, 'error');
+        }
+        if(!empty($balance->uuid)){
+            Balance::where('uuid',$balance->uuid)->delete();
+        }else{
+            $balance->delete();
+        }
+        return ApiHelper::apiResponse([
+            'msg' => 'تم تاكيد الدفعة',
+            // 'balance' => new BalanceResource($balance),
+        ],200 ,'success');
+    }
+
+
 
 
     public function pull(Request $request)
