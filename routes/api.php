@@ -44,7 +44,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('balances', \App\Http\Controllers\Api\BalanceController::class)->only(['index']);
         Route::post('balances/push', [\App\Http\Controllers\Api\BalanceController::class, 'push']);
         Route::post('balances/push/confirmed/{id}', [\App\Http\Controllers\Api\BalanceController::class, 'pushConfirmed']);
-        Route::get('balances/push/cancel/{id}',[BalanceController::class,'pushCancel']);
+        Route::Post('balances/push/cancel/{id}',[BalanceController::class,'pushCancel']);
         Route::post('balances/pull', [\App\Http\Controllers\Api\BalanceController::class, 'pull']);
         Route::get('balances/pendingbalance-count',[BalanceController::class,'pendingBalancesCount']);
 
