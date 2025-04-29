@@ -171,7 +171,11 @@ class OrderController extends Controller
         }
         DB::beginTransaction();
         try {
-            $order->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value,'canceled_info'=>$msg]);
+            $order->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value,'canceled_info'=>$msg , 'current_user' => $order?->sender_id]);
+            Marker::create([
+                'user_id' => $order?->sender_id,
+                'order_id' => $order->id
+            ]);
             HelperBalance::confirmReturn($order);
             DB::commit();
             $order->refresh();
