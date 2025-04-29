@@ -12,11 +12,41 @@ class UserResource extends JsonResource
      *
      * @return array<string, mixed>
      */
+
+    protected $customData = [];
+
+    public function __construct($resource, array $customData = [])
+    {
+        parent::__construct($resource);
+        $this->customData = $customData;
+    }
+
     public function toArray(Request $request): array
     {
+
+    //    // استخدم القيمة المخصصة إذا كانت موجودة (حتى لو كانت 'مستلم غير معروف')
+    // if (array_key_exists('display_name', $this->customData)) {
+    //     $name = $this->customData['display_name'];
+    // } else {
+    //     $name = $this->name;
+    // }
+    //         // ضمان عدم وجود قيم فارغة
+    //         $name = $name ?? 'مستخدم غير معروف';
+
+           // استخدم القيمة المخصصة إذا كانت موجودة (حتى لو كانت 'مستلم غير معروف')
+           if ($this->customData['display_name']!=null) {
+            $name = $this->customData['display_name'];
+        } else {
+            $name = $this->name;
+        }
+                // ضمان عدم وجود قيم فارغة
+                // $name = $name ?? 'مستخدم غير معروف';
+
+
         return [
             'id' => $this->id,
-            'name' => $this->name,
+            // 'name' => $this->name,
+            'name' => $name,
             'email' => $this->email,
             'level' => $this->level,
             'totalBalanceUsd' => $this->total_balance,

@@ -5,7 +5,7 @@ namespace App\Http\Resources\Api;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-
+use App\Enums\OrderStatusEnum;
 class OrderResource extends JsonResource
 {
     /**
@@ -20,7 +20,18 @@ class OrderResource extends JsonResource
          * @var $this Order
          */
         $currentMarker=$this->currentUser;
+        $displayName = null;
+
+        if ($this->status === OrderStatusEnum::SUCCESS) {
+            $displayName = $this->global_name ?? 'مستلم غير معروف';
+        } elseif ($this->status === OrderStatusEnum::CONFIRM_RETURNED) {
+            $displayName = $this->general_sender_name ?? 'مرسل غير معروف';
+        }else {
+            $displayName = null;
+        }
+
         return [
+            // 'display_name'=>$displayName,
             'id' => $this->id,
             'shippingDate' => $this->shipping_date,
             'createdBy' => $this->createdBy?->name,
@@ -30,7 +41,8 @@ class OrderResource extends JsonResource
             'shippingFeesTr' => (double)$this->far_tr,
             'price' => (double)$this->price,
             'priceTr' => (double)$this->price_tr,
-            'senderName'=>$this->sender?->full_name,
+            // 'senderName'=>$this->sender?->full_name,
+            'senderName'=>$this->general_sender_name,
             'receiveName'=>$this->global_name,
             'receivePhone'=>$this->receive_phone,
             'citySource'=>$this->citySource?->name,
@@ -43,7 +55,10 @@ class OrderResource extends JsonResource
             'qrCode'=>$this->qr_code,
             'msg'=>$this->canceled_info,
             'markers'=>MarkerResource::collection($this->markers),
-            'currentMarker'=>$currentMarker!=null?new UserResource($currentMarker):null,
+            // 'currentMarker'=>$currentMarker!=null?new UserResource($currentMarker ,$sender_name ,$recevier_name ):null,
+            'currentMarker' => $currentMarker != null
+            ? new UserResource($currentMarker, ['display_name' => $displayName]): null,
+
         ];
     }
 }

@@ -89,7 +89,11 @@ class OrderController extends Controller
 
 
         try {
-            $order->update(['given_id' => auth()->id(), 'status' => OrderStatusEnum::SUCCESS->value,'canceled_info'=>$msg]);
+            $order->update(['given_id' => auth()->id(), 'status' => OrderStatusEnum::SUCCESS->value,'canceled_info'=>$msg , 'current_user' => $order?->receive_id]);
+            Marker::create([
+                'user_id' => $order?->receive_id,
+                'order_id' => $order->id
+            ]);
             HelperBalance::completeOrder($order);
             DB::commit();
             $order->refresh();
