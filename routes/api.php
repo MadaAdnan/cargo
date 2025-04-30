@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\BalanceController;
+use App\Http\Controllers\Api\BranchController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -48,6 +49,8 @@ Route::prefix('v1')->group(function () {
         Route::post('balances/pull', [\App\Http\Controllers\Api\BalanceController::class, 'pull']);
         Route::get('balances/pendingbalance-count',[BalanceController::class,'pendingBalancesCount']);
 
+        // Branchs
+        Route::apiResource('branches',BranchController::class)->only(['index']);
 
     });
 });
