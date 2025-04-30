@@ -527,7 +527,7 @@ class OrderResource extends Resource implements HasShieldPermissions
 
 
             ])
-            ->paginated([10, 25, 50, 100 , 'all'])
+            ->paginated([10, 25, 50, 100 ,200, 'all'])
             ->defaultSort('created_at', 'desc')
             ->filters([
                 //
