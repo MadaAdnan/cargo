@@ -960,6 +960,15 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                         ->form(fn($records) => static::getReportForm($records))
                         ->action(fn($records) => static::generateReport($records)),*/
                 ]),
+
+                Tables\Actions\BulkAction::make('generateReport')
+                    ->label('تقرير الشحنات')
+                    ->requiresConfirmation()
+                    ->modalHeading('تقرير الشحنات')
+                    ->modalDescription('عرض تقرير الشحنات.')
+                    ->modalSubmitActionLabel('إغلاق')
+                    ->form(fn($records) => static::getReportForm($records))
+                    // ->action(fn($records) => static::generateReport($records)),
             ]);
     }
 
