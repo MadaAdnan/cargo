@@ -55,15 +55,34 @@ class EditUser extends EditRecord
         $temp = City::where('id', $data['city_id'])->pluck('branch_id')->first();
 
 
-
-        $data['phone'] = $data['country_code'] . $data['phone_number'];
+        if (!empty($data['phone_number'])) {
+        $data['phone'] ='+'.$data['country_code'] . $data['phone_number'];
+        }
+        else{
         unset($data['country_code'], $data['phone_number']); // حذف الحقول المنفصلة بعد الجمع
-
+        }
 
         return $data;
 
 
     }
+
+//     protected function mutateFormDataBeforeSave(array $data): array
+// {
+//     $temp = City::where('id', $data['city_id'])->pluck('branch_id')->first();
+
+//     // تحقق مما إذا كان تم إدخال رقم جديد
+//     if (!empty($data['phone_number'])) {
+//         $data['phone'] = $data['country_code'] . $data['phone_number'];
+//     } else {
+//         unset($data['phone']); // لا نغير الرقم القديم إطلاقًا
+//     }
+
+//     // احذف الحقول المؤقتة
+//     unset($data['country_code'], $data['phone_number']);
+
+//     return $data;
+// }
 
     protected function getRedirectUrl(): string
     {

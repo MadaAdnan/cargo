@@ -35,9 +35,11 @@ class CreateUser extends CreateRecord
         }
 
 
-
+        if (!empty($data['phone_number'])) {
         $data['phone'] = '+'.$data['country_code'] . $data['phone_number'];
+        }else{
         unset($data['country_code'], $data['phone_number']); // حذف الحقول المنفصلة بعد الجمع
+        }
         return $data;
 
 

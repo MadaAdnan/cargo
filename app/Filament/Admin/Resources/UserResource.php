@@ -5,7 +5,7 @@
 /** @noinspection PhpUndefinedClassInspection */
 
 namespace App\Filament\Admin\Resources;
-
+use Illuminate\Validation\Rule;
 use App\Enums\BalanceTypeEnum;
 use App\Filament\Admin\Resources\UserResource\Pages;
 use App\Filament\Admin\Resources\UserResource\RelationManagers;
@@ -66,27 +66,49 @@ class UserResource extends Resource
                                 //                                Forms\Components\TextInput::make('phone')->label('الهاتف')->tel()->required(),
                                 Forms\Components\Grid::make(2) // تقسيم الحقول إلى صفين
                                 ->schema([
-
                                     Forms\Components\TextInput::make('phone_number')
-                                        ->label('رقم الهاتف')
-                                        ->placeholder('1234567890')
-                                        ->numeric() // التأكد أن الحقل يقبل الأرقام فقط
-                                        ->maxLength(15)
-                                        ->nullable()
-                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
-                                        ->tel()
-                                        ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),
+                                    ->label('رقم الهاتف')
+                                    ->placeholder('1234567890')
+                                    ->nullable()
+                                    ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
+                                    ->tel()
+                                    ->rules([
+                                        'nullable',
+                                        'max:15',
+                                        Rule::when(filled('phone_number'), ['regex:/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/']),
+                                    ]),
+                                    // Forms\Components\TextInput::make('phone_number')
+                                    //     ->label('رقم الهاتف')
+                                    //     ->placeholder('1234567890')
+                                    //     ->numeric() // التأكد أن الحقل يقبل الأرقام فقط
+                                    //     ->maxLength(15)
+                                    //     ->nullable()
+                                    //     ->extraAttributes(['style' => 'text-align: left; direction: ltr;'])
+                                    //     ->tel()
+                                    //     ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/'),
                                     // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
                                     // الحد الأقصى لطول الرق,
 
-                                    Forms\Components\TextInput::make('country_code')
-                                        ->label('رمز الدولة')
-                                        ->placeholder('963')
-                                        ->prefix('+')
-                                        ->maxLength(3)
-                                        ->numeric()
-                                        ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']),
+                                    // Forms\Components\TextInput::make('country_code')
+                                    //     ->label('رمز الدولة')
+                                    //     ->placeholder('963')
+                                    //     ->prefix('+')
+                                    //     ->maxLength(3)
+                                    //     ->numeric()
+                                    //     ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;']),
                                     // تخصيص عرض حقل الرمز ومحاذاة النص لليسار
+                                    Forms\Components\TextInput::make('country_code')
+                                    ->label('رمز الدولة')
+                                    ->placeholder('963')
+                                    ->prefix('+')
+                                    ->nullable()
+                                    ->extraAttributes(['style' => 'text-align: left; direction: ltr; width: 100px;'])
+                                    ->rules([
+                                        'nullable',
+                                        'max:3',
+                                        Rule::when(filled('country_code'), ['regex:/^[0-9]{1,3}$/']),
+                                    ]),
+
                                 ]),
 
 
