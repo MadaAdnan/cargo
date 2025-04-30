@@ -125,7 +125,8 @@ class OrderResource extends Resource implements HasShieldPermissions
                                 Forms\Components\Select::make('sender_id')
                                     // ->relationship('sender', 'name', fn($query) => $query->active())
                                     ->options(function () {
-                                        $users = User::where('level', LevelUserEnum::USER->value)->get();
+                                        $users = User::where('level', LevelUserEnum::USER->value)
+                                        ->where('status','!=',ActivateStatusEnum::BLOCK->value)->get();
                                         foreach ($users as $user) {
                                             $options[$user->id] = $user->name;
                                         }
