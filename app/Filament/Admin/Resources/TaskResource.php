@@ -55,6 +55,7 @@ class TaskResource extends Resource
             ]);
     }
 
+
     public static function table(Table $table): Table
     {
         return $table
@@ -69,10 +70,25 @@ class TaskResource extends Resource
                 Tables\Columns\TextColumn::make('from')->label('إستلام من')->color(fn($record) => $record->is_sender ? 'danger' : null)->sortable(),
                 Tables\Columns\TextColumn::make('to')->label('التسليم لـ')->color(fn($record) => $record->is_receive ? 'danger' : null)->sortable(),
                 Tables\Columns\TextColumn::make('task')->label('المهمة'),
-                Tables\Columns\TextColumn::make('is_complete')->label('الحالة')->formatStateUsing(fn($state) => $state ? 'تم' : 'بالإنتظار')
-                    ->color(fn($state) => $state ? 'success' : 'danger')->sortable()
-                ,
+                // Tables\Columns\TextColumn::make('is_complete')->label('الحالة')->formatStateUsing(fn($state) => $state ? 'تم' : 'بالإنتظار')
+                //     ->color(fn($state) => $state ? 'success' : 'danger')->sortable()
+                Tables\Columns\TextColumn::make('is_complete')
+                ->label('الحالة')
+                ->formatStateUsing(function ($record) {
+                    if ($record->is_canceled) {
+                        return 'ملغاة';
+                    }
+                    return $record->is_complete ? 'تم' : 'بالإنتظار';
+                })
+                ->color(function ($record) {
+                    if ($record->is_canceled) {
+                        return 'danger';
+                    }
+                    return $record->is_complete ? 'success' : 'warning';
+                })
+                ->sortable(),
 
+                Tables\Columns\TextColumn::make('cancel_info')->label('سبب الالغاء'),
                 Tables\Columns\TextColumn::make('created_at')->since()->label('منذ')->sortable(),
 
 
@@ -90,7 +106,28 @@ class TaskResource extends Resource
                 Tables\Actions\EditAction::make(),
 
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('complete')->action(fn($record)=>$record->update(['is_complete'=>1]))->requiresConfirmation()->label('إنهاء المهمة'),
+                    Tables\Actions\Action::make('complete')
+                    ->action(fn($record)=>$record->update(['is_complete'=>1]))
+                    ->requiresConfirmation()->label('إتمام المهمة')
+                    ->hidden(fn ($record) => $record->is_complete || $record->is_canceled)
+                    ->color('success'),
+                    Tables\Actions\Action::make('cancel')
+                    ->label('إلغاء المهمة')
+                    ->requiresConfirmation()
+                    ->form([
+                        Forms\Components\Textarea::make('cancel_info')
+                            ->label('سبب الإلغاء')
+                            ->required()
+                    ])
+                    ->action(function ($record, array $data) {
+                        $record->update([
+                            'is_canceled' => true,
+                            'cancel_info' => $data['cancel_info']
+                        ]);
+                    })
+                    ->color('danger')
+
+                    ->hidden(fn ($record) => $record->is_complete || $record->is_canceled), // سيخفي الزر إذا كانت المهمة مكتملة,
                   Tables\Actions\DeleteAction::make(),
                 ])
             ])
