@@ -20,7 +20,12 @@ class BalanceResource extends JsonResource
             'debit'=>$this->debit,
             'info'=>$this->info,
             'customerName'=>$this->customer_name,
-            'currency'=>$this->currency_id==1?'$':'₺',
+            // 'currency'=>$this->currency_id==1?'$':'₺',
+            'currency' => match($this->currency_id) {
+            '1' => '$',       // دولار
+            '2' => '₺',       // ليرة تركية
+            '3' => 'ل.س',     // ليرة سورية
+        },
             'pending'=>(bool)$this->pending,
             'createdAt'=>$this->created_at?->format('Y-m-d'),
             'total'=>$this->total,

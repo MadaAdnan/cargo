@@ -70,9 +70,9 @@ class BalanceController extends Controller
         try {
             $user = User::find($request->userId);
             $isUser=$user->level==LevelUserEnum::USER->value;
-            if (!in_array($request->currencyId, [1, 2])) {
+            if (!in_array($request->currencyId, [1,2,3])) {
                 return ApiHelper::apiResponse([
-                    'msg' => 'يجب تحديد العملة 1 للدولار , 2 للتركي'
+                    'msg' =>  '  يجب تحديد العملة 1 للدولار , 2 للتركي , 3 للسوري'
                 ], 401, 'error');
             }
             // amount
