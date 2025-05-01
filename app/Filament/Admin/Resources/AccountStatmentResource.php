@@ -321,6 +321,15 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                         ExcelExport::make()->withChunkSize(300)
                     ])
                 ]),
+
+                Tables\Actions\BulkAction::make('generateReport')
+                ->label('تقرير الرصيد')
+                ->requiresConfirmation()
+                ->modalHeading('تقرير الرصيد')
+                ->modalDescription('عرض تقرير الرصيد.')
+                ->modalSubmitActionLabel('إغلاق')
+                ->form(fn($records) => static::getReportBalanceForm($records))
+                // ->action(fn($records) => static::generateReport($records)),
             ]);
     }
 
@@ -337,6 +346,49 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
             'index' => Pages\ListAccountStatments::route('/'),
             'create' => Pages\CreateAccountStatment::route('/create'),
             'edit' => Pages\EditAccountStatment::route('/{record}/edit'),
+        ];
+    }
+
+    protected static function getReportBalanceForm($records): array
+    {
+        $balances = Balance::whereIn('id', $records->pluck('id'))->get();
+        $totalDebitDollar = $balances->where('currency_id',1)->sum('debit') ?? 0 ;
+        $totalCreditDollar = $balances->where('currency_id',1)->sum('credit') ?? 0;
+        $balanceBetweenDollar = $totalDebitDollar - $totalCreditDollar ?? 0 ;
+
+        $totalDebitTry = $balances->where('currency_id',2)->sum('debit') ?? 0 ;
+        $totalCreditTry = $balances->where('currency_id',2)->sum('credit') ?? 0;
+        $balanceBetweenTry = $totalDebitTry - $totalCreditTry ?? 0 ;
+
+        $totalDebitSyp = $balances->where('currency_id',operator: 3)->sum('debit') ?? 0 ;
+        $totalCreditSyp = $balances->where('currency_id',3)->sum('credit') ?? 0;
+        $balanceBetweenSyp = $totalDebitSyp - $totalCreditSyp ?? 0 ;
+
+
+
+        $reportText  = "====================\n";
+        $reportText .= "🔹 عدد السندات : {$balances->count()}\n";
+        $reportText .= "---------------------\n";
+        $reportText .= "🔹 اجمالي دائن دولار : " . number_format($totalDebitDollar, 2) . " $\n";
+        $reportText .= "🔹 اجمالي مدين دولار : " . number_format( $totalCreditDollar, 2) . " $\n";
+        $reportText .= "🔹  الرصيد بينهما  : " . number_format( $balanceBetweenDollar, 2) . " $\n";
+        $reportText .= "---------------------\n";
+        $reportText .= "🔹 اجمالي دائن تركي : " . number_format($totalDebitTry, 2) . " ₺\n";
+        $reportText .= "🔹 اجمالي مدين تركي : " . number_format( $totalCreditTry, 2) . " ₺\n";
+        $reportText .= "🔹  الرصيد بينهما  : " . number_format( $balanceBetweenTry, 2) . " ₺\n";
+        $reportText .= "---------------------\n";
+        $reportText .= "🔹 اجمالي دائن سوري : " . number_format($totalDebitSyp, 2) . " ل.س\n";
+        $reportText .= "🔹 اجمالي مدين سوري : " . number_format( $totalCreditSyp, 2) . " ل.س\n";
+        $reportText .= "🔹  الرصيد بينهما  : " . number_format( $balanceBetweenSyp, 2) . " ل.س\n";
+        $reportText .= "====================\n\n";
+
+        return [
+            Textarea::make('report')
+                ->label(false)
+                ->extraAttributes(['style' => 'border: none; background: transparent;'])
+                ->default($reportText)
+                ->disabled()
+                ->rows(15),
         ];
     }
 }
