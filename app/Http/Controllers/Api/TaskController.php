@@ -29,11 +29,11 @@ class TaskController extends Controller
         $page = $request->get('page') ?? 1;
         $isComplete = $request->get('is_complete');
 
-        $query = Task::orWhere(['user_id' => auth()->id(), 'delegate_id' => auth()->id()]);
-
+        $query = Task::orWhere(['user_id' => auth()->id(), 'delegate_id' => auth()->id()])
+        ->where('is_canceled' , false);
         if ($isComplete !== null) {
-            $query->where('is_complete', (bool)$isComplete )
-                  ->where('is_canceled' , false);
+            $query->where('is_complete', (bool)$isComplete );
+                //   ->where('is_canceled' , false);
         }
 
         $tasks = $query->latest()->paginate(15, ['*'], 'page', $page);
