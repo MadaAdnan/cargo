@@ -8,6 +8,7 @@ use App\Http\Resources\Api\PaginateResource;
 use App\Http\Resources\Api\TaskResource;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
 {
@@ -31,7 +32,8 @@ class TaskController extends Controller
         $query = Task::orWhere(['user_id' => auth()->id(), 'delegate_id' => auth()->id()]);
 
         if ($isComplete !== null) {
-            $query->where('is_complete', (bool)$isComplete);
+            $query->where('is_complete', (bool)$isComplete )
+                  ->where('is_canceled' , false);
         }
 
         $tasks = $query->latest()->paginate(15, ['*'], 'page', $page);
@@ -107,9 +109,54 @@ class TaskController extends Controller
                 'msg'=>'لم يتم إيجاد المهمة',
             ],401,'error');
         }
+        if($task->is_complete==true || $task->is_canceled==true){
+            return ApiHelper::apiResponse([
+                'msg'=>'لا يمكنك تاكيد مهمة ملغتاة او مكتملة',
+            ],401,'error');
+        }
         $task->update(['is_complete'=>true]);
         return ApiHelper::apiResponse([
             'task'=>new TaskResource($task)
+        ]);
+    }
+
+
+    public function canceledTask(string $id , Request $request){
+
+         // قواعد التحقق
+            $validator = Validator::make($request->all(), [
+                'cancel_info' => 'required|string'
+            ], [
+                'cancel_info.required' => 'حقل سبب الإلغاء مطلوب',
+            ]);
+
+            // إذا فشل التحقق
+            if ($validator->fails()) {
+                return ApiHelper::apiResponse([
+                    'errors' => $validator->errors(),
+                    'msg' => 'البيانات المدخلة غير صالحة'
+                ], 422, 'error');
+            }
+        $task = Task::find($id);
+        if ($task == null) {
+            return ApiHelper::apiResponse([
+                'msg'=>'لم يتم إيجاد المهمة',
+            ],401,'error');
+        }
+        if($task->user_id!=auth()->id() && $task->delegate_id !=auth()->id()){
+            return ApiHelper::apiResponse([
+                'msg'=>'لم يتم إيجاد المهمة',
+            ],401,'error');
+        }
+        if($task->is_complete==true || $task->is_canceled==true){
+            return ApiHelper::apiResponse([
+                'msg'=>'لا يمكنك الغاء مهمة ملغاة او مكتملة',
+            ],401,'error');
+        }
+        $task->update(['is_canceled'=>true , 'cancel_info' => $request->cancel_info]);
+        return ApiHelper::apiResponse([
+            'task'=>new TaskResource($task),
+            'msg' => 'تم إلغاء المهمة بنجاح'
         ]);
     }
     public function incompleteCount()

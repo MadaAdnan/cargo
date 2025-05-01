@@ -31,6 +31,7 @@ Route::prefix('v1')->group(function () {
         //Tasks
         Route::apiResource('tasks', \App\Http\Controllers\Api\TaskController::class)->only(['index', 'store', 'update']);
         Route::post('tasks/success/{id}', [\App\Http\Controllers\Api\TaskController::class, 'confirmedTask']);
+        Route::post('tasks/cancel/{id}', [\App\Http\Controllers\Api\TaskController::class, 'canceledTask']);
         Route::get('tasks/incomplete-count', [\App\Http\Controllers\Api\TaskController::class, 'incompleteCount']);
 
         //Orders

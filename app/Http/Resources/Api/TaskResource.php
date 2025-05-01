@@ -22,6 +22,8 @@ class TaskResource extends JsonResource
             'receivePhone'=>$this->receive_phone,
             'body'=>$this->task,
             'is_complete'=>$this->is_complete,
+            'is_canceled'=>$this->is_canceled,
+            'cancel_info'=>$this->cancel_info,
             'createdAt'=>$this->created_at->format('Y-m-d H:i'),
 
 
