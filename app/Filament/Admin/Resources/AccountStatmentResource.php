@@ -159,7 +159,10 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
 
                 Tables\Columns\TextColumn::make('order.qr_code')->label('كود الشحنة')
                 ->url(function ($record) {
-                    return OrderResource::getUrl('edit', ['record' => $record->order->id]);
+                    if ($record->order && $record->order->id) {
+                        return OrderResource::getUrl('edit', ['record' => $record->order->id]);
+                    }
+                    return null; // سيخفي الرابط إذا كانت العلاقة غير موجودة
                 })
                 ->openUrlInNewTab(false),
 
