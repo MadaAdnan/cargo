@@ -724,20 +724,57 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                         })->label('إلغاء الشحنات')->visible(auth()->user()->hasRole('super_admin')),
 
 
-                    Tables\Actions\BulkAction::make('returned_confirm_all')->action(function ($records) {
+                    // Tables\Actions\BulkAction::make('returned_confirm_all')->action(function ($records) {
+                    //     DB::beginTransaction();
+                    //     try {
+                    //         foreach ($records as $record) {
+                    //             $record->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value]);
+                    //             HelperBalance::confirmReturn($record);
+                    //         }
+                    //         DB::commit();
+                    //         Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
+                    //     } catch (\Exception | Error $e) {
+                    //         DB::rollBack();
+                    //         Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
+                    //     }
+                    // })->label('تأكيد تسليم المرتجع')->requiresConfirmation(),
+
+                    Tables\Actions\BulkAction::make('returned_confirm_all')
+                    ->form([
+                        \Filament\Forms\Components\Radio::make('far')
+                            ->label('تحميل الأجور على المرسل؟')
+                            ->options([
+                                1 => 'نعم',
+                                0 => 'لا'
+                            ])
+                            ->default(0)
+                    ])
+                    ->action(function ($records, array $data) {
+                        $far = $data['far'] ?? 0;
+
                         DB::beginTransaction();
                         try {
                             foreach ($records as $record) {
                                 $record->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value]);
-                                HelperBalance::confirmReturn($record);
+                                HelperBalance::confirmReturn($record, $far);
                             }
                             DB::commit();
-                            Notification::make('success')->title('نجاح العملية')->body('تم تغيير حالة الطلب')->success()->send();
-                        } catch (\Exception | Error $e) {
+                            Notification::make()
+                                ->title('نجاح العملية')
+                                ->body('تم تغيير حالة الطلب')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
                             DB::rollBack();
-                            Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
+                            Notification::make()
+                                ->title('فشل العملية')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
                         }
-                    })->label('تأكيد تسليم المرتجع')->requiresConfirmation(),
+                    })
+                    ->label('تأكيد تسليم المرتجع')
+                    ->requiresConfirmation()
 
 
                 ]),

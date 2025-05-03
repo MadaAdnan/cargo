@@ -550,7 +550,7 @@ class HelperBalance
         return (int)$user + 1;
     }
 
-    public static function confirmReturn(Order $order)
+    public static function confirmReturn(Order $order , $far =0 )
     {
         $customer = $order->sender;
         $staff = $order->returned;
@@ -560,7 +560,7 @@ class HelperBalance
         try {
             // add Far
             if ($order->far_sender == false) {
-                if ($order->far > 0) {
+                if ($order->far > 0  && $far == 1) {
                     Balance::create([
                         'credit' => $order->far,
                         'debit' => 0,
@@ -576,7 +576,7 @@ class HelperBalance
                     ]);
                 }
 //
-                if ($order->far_tr > 0) {
+                if ($order->far_tr > 0  && $far == 1) {
                     Balance::create([
                         'credit' => $order->far_tr,
                         'debit' => 0,

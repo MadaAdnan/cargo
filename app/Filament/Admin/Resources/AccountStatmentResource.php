@@ -157,6 +157,7 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                 ->searchable(),
 
 
+                Tables\Columns\TextColumn::make('order.qr_code')->label('كود الشحنة'),
 
                 Tables\Columns\TextColumn::make('order.sender.name')->label('المرسل')->description(fn($record) => $record->order?->general_sender_name != null ? "{$record->order->general_sender_name}" : "")->searchable(),
                 Tables\Columns\TextColumn::make('order.global_name')->label('المستلم'),
