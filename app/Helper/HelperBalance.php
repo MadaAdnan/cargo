@@ -666,4 +666,30 @@ class HelperBalance
         ];
     }
 
+    public static function cancelOrder(Order $order)
+    {
+        $sender = User::find($order->sender_id);
+        // $staff = User::find($order->given_id);
+        // $receive = User::find($order->receive_id);
+
+         try {
+            Balance::create([
+                'credit' => 0,
+                'debit' => 0,
+                'order_id' => $order->id,
+                'user_id' => $sender->id,
+                'currency_id' => 1,
+                'info' => 'شحنة ملغاة #' . $order->id,
+                'type' => BalanceTypeEnum::CATCH->value,
+                'is_complete' => true,
+                'created_at'=>$order->created_at,
+                ]);
+            Balance::where('order_id', $order->id)->where('pending', true)->delete();
+        } catch (\Exception | \Error $e) {
+            throw new \Exception($e->getMessage().'=='.$e->getLine());
+        }
+
+
+    }
+
 }

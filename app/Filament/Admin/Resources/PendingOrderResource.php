@@ -918,7 +918,8 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                         ->action(function ($records, $data) {
                             foreach ($records as $record) {
                                 $record->update(['status' => OrderStatusEnum::CANCELED->value, 'canceled_info' => $data['msg']]);
-                                $record->balances()->delete();
+                                HelperBalance::cancelOrder($record);
+                                // $record->balances()->delete();
                             }
                             Notification::make('success')->title('نجاح')->body('تم إلغاء الشحنات بنجاح')->success()->send();
 
