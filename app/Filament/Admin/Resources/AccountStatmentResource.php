@@ -25,7 +25,7 @@ use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use App\Enums\OrderTypeEnum;
 use App\Enums\OrderStatusEnum;
 use App\Enums\FarType;
-
+use App\Filament\Admin\Resources\OrderResource;
 class AccountStatmentResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Balance::class;
@@ -157,7 +157,11 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                 ->searchable(),
 
 
-                Tables\Columns\TextColumn::make('order.qr_code')->label('كود الشحنة'),
+                Tables\Columns\TextColumn::make('order.qr_code')->label('كود الشحنة')
+                ->url(function ($record) {
+                    return OrderResource::getUrl('edit', ['record' => $record->order->id]);
+                })
+                ->openUrlInNewTab(false),
 
                 Tables\Columns\TextColumn::make('order.sender.name')->label('المرسل')->description(fn($record) => $record->order?->general_sender_name != null ? "{$record->order->general_sender_name}" : "")->searchable(),
                 Tables\Columns\TextColumn::make('order.global_name')->label('المستلم'),
