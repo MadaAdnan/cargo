@@ -66,7 +66,7 @@ class UserResource extends Resource
                                 //                                Forms\Components\TextInput::make('phone')->label('الهاتف')->tel()->required(),
                                 Forms\Components\Grid::make(2) // تقسيم الحقول إلى صفين
                                 ->schema([
-                                    Forms\Components\TextInput::make('phone_number')
+                                    Forms\Components\TextInput::make('phone')
                                     ->label('رقم الهاتف')
                                     ->placeholder('1234567890')
                                     ->nullable()
@@ -75,9 +75,9 @@ class UserResource extends Resource
                                     ->rules([
                                         'nullable',
                                         'max:15',
-                                        Rule::when(filled('phone_number'), ['regex:/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/']),
+                                        Rule::when(filled('phone'), ['regex:/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/']),
                                     ]),
-                                    // Forms\Components\TextInput::make('phone_number')
+                                    // Forms\Components\TextInput::make('phone')
                                     //     ->label('رقم الهاتف')
                                     //     ->placeholder('1234567890')
                                     //     ->numeric() // التأكد أن الحقل يقبل الأرقام فقط
