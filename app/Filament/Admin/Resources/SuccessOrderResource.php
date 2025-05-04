@@ -742,12 +742,13 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                     Tables\Actions\BulkAction::make('returned_confirm_all')
                     ->form([
                         \Filament\Forms\Components\Radio::make('far')
+                            ->required()
                             ->label('تحميل الأجور على المرسل؟')
                             ->options([
                                 1 => 'نعم',
                                 0 => 'لا'
                             ])
-                            ->default(0)
+                            // ->default(0)
                     ])
                     ->action(function ($records, array $data) {
                         $far = $data['far'] ?? 0;

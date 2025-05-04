@@ -558,9 +558,52 @@ class HelperBalance
 
         // $existingBalanceColor = Balance::where('order_id', $order->id)->where('color', 'green')->first();
         try {
-            // add Far
-            if ($order->far_sender == false) {
-                if ($order->far > 0  && $far == 1) {
+
+                // الاجور على المرسل
+               // عدم تحميل الاجور على المرسل انشاء قيد صفري باسم المرسل اجور شحن
+              // في حال تحميل الاجور على المرسل لا تنفذ اي اجراء هنا لانه بشكل مسبق اثناء انشاء الشحنة تم انشاء قيد الاجور على المرسل وحالته pending = 0
+
+            if ($order->far_sender == true && $far == 0) {
+                    // عدم تحميل الاجور على المرسل بالتالي حذف القيد السابق المنشأ وتم انشاء قيد صفري بالاعلى باسم المرسل عندما تكون الاجور على المرسل
+             Balance::where('order_id', $order->id)->where('pending', false)->where('type', 'catch')->delete();
+
+             if ($order->far > 0) {
+                    Balance::create([
+                        'credit' => 0,
+                        'debit' => 0,
+                        'order_id' => $order->id,
+                        'user_id' => $customer->id,
+                        'currency_id' => 1,
+                        'info' => 'أجور شحن  #' . $order->id,
+                        'type' => BalanceTypeEnum::CATCH->value,
+                        'is_complete' => true,
+                        'created_at'=>$order->created_at,
+                        // 'color'=> $existingBalanceColor? 'green' : null,
+                        'color' => $orderBalance?->color,
+                    ]);
+                }
+//
+                if ($order->far_tr > 0) {
+                    Balance::create([
+                        'credit' => 0,
+                        'debit' => 0,
+                        'order_id' => $order->id,
+                        'user_id' => $customer->id,
+                        'currency_id' => 2,
+                        'info' => 'أجور شحن  #' . $order->id,
+                        'type' => BalanceTypeEnum::CATCH->value,
+                        'is_complete' => true,
+                        'created_at'=>$order->created_at,
+                        'color' => $orderBalance?->color,
+                    ]);
+                }
+//
+            }
+            // الاجور على المستلم
+             // تحميل الاجور على المرسل
+
+            if ($order->far_sender == false && $far == 1) {
+                if ($order->far > 0) {
                     Balance::create([
                         'credit' => $order->far,
                         'debit' => 0,
@@ -576,9 +619,44 @@ class HelperBalance
                     ]);
                 }
 //
-                if ($order->far_tr > 0  && $far == 1) {
+                if ($order->far_tr > 0) {
                     Balance::create([
                         'credit' => $order->far_tr,
+                        'debit' => 0,
+                        'order_id' => $order->id,
+                        'user_id' => $customer->id,
+                        'currency_id' => 2,
+                        'info' => 'أجور شحن  #' . $order->id,
+                        'type' => BalanceTypeEnum::CATCH->value,
+                        'is_complete' => true,
+                        'created_at'=>$order->created_at,
+                        'color' => $orderBalance?->color,
+                    ]);
+                }
+//
+            }
+
+             //  في حال عدم تحميل الاجور على المستلم انشاء قيد صفري للاجور باسم المرسل
+             if ($order->far_sender == false && $far == 0) {
+                if ($order->far > 0) {
+                    Balance::create([
+                        'credit' => 0,
+                        'debit' => 0,
+                        'order_id' => $order->id,
+                        'user_id' => $customer->id,
+                        'currency_id' => 1,
+                        'info' => 'أجور شحن  #' . $order->id,
+                        'type' => BalanceTypeEnum::CATCH->value,
+                        'is_complete' => true,
+                        'created_at'=>$order->created_at,
+                        // 'color'=> $existingBalanceColor? 'green' : null,
+                        'color' => $orderBalance?->color,
+                    ]);
+                }
+//
+                if ($order->far_tr > 0) {
+                    Balance::create([
+                        'credit' => 0,
                         'debit' => 0,
                         'order_id' => $order->id,
                         'user_id' => $customer->id,
@@ -647,6 +725,8 @@ class HelperBalance
                    'color' => $orderBalance?->color,
                 ]);
             }
+
+                // تحميل الاجور على المرسل نعم بالتالي حذف القيود كلها ما عدا قيد الاجور على المرسل لان pending = 0
             Balance::where('order_id', $order->id)->where('pending', true)->delete();
 
         } catch (\Exception | \Error $e) {
