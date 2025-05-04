@@ -16,6 +16,7 @@ use App\Models\User;
 use DB;
 use Error;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
@@ -156,6 +157,18 @@ class OrderController extends Controller
 
     public function setToConfirmedReturned(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'far'=> 'required',
+        ],[
+            'far.required' => 'حقل سؤال تحميل الاجور على المرسل مطلوب',
+        ]);
+         // إذا فشل التحقق
+         if ($validator->fails()) {
+            return ApiHelper::apiResponse([
+                'errors' => $validator->errors(),
+                'msg' => 'البيانات المدخلة غير صالحة'
+            ], 422, 'error');
+        }
         $msg=$request->msg;
 
         if (empty($request->qr_code)) {
@@ -176,7 +189,7 @@ class OrderController extends Controller
                 'user_id' => $order?->sender_id,
                 'order_id' => $order->id
             ]);
-            HelperBalance::confirmReturn($order);
+            HelperBalance::confirmReturn($order , $request->far);
             DB::commit();
             $order->refresh();
             return ApiHelper::apiResponse([
