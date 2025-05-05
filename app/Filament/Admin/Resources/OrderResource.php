@@ -353,8 +353,8 @@ class OrderResource extends Resource implements HasShieldPermissions
                                 ->label('الكود')
                                 ->rule(
                                     fn(callable $get) => $get('allow_duplicates')
-                                        ? ['required', 'string', 'max:7', 'unique:orders,qr_code']
-                                        : ['nullable', 'string', 'max:7']
+                                        ? ['required', 'string', 'max:255', 'unique:orders,qr_code']
+                                        : ['nullable', 'string', 'max:255']
                                 )
                                 ->columnSpan(1),
                         ])

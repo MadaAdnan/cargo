@@ -373,7 +373,7 @@ Forms\Components\Radio::make('currency_id')->options([
 ])
     ->label('نوع التحويل')->default(1)->required()
     ->afterStateUpdated(function ($get, $set) {
-        $amount = HelperBalance::formatNumber((double)$get('amount'));
+        $amount = (double)$get('amount');
         $exchange = (double)$get('exchange');
 
         switch ($get('currency_id')) {
@@ -407,7 +407,7 @@ Forms\Components\Radio::make('currency_id')->options([
     })->live()->debounce(1000),
 Forms\Components\TextInput::make('amount')->label('القيمة')->numeric()->required()->default(1)
 ->afterStateUpdated(function ($get, $set) {
-    $amount = HelperBalance::formatNumber((double)$get('amount'));
+    $amount = (double)$get('amount');
     $exchange = (double)$get('exchange');
 
     switch ($get('currency_id')) {
@@ -450,7 +450,7 @@ Forms\Components\TextInput::make('exchange')->label('سعر التصريف')->nu
 //         // 'regex' => 'يجب أن يكون السعر رقمًا صحيحًا أو عشريًا'
 //     ])
 ->afterStateUpdated(function ($get, $set) {
-    $amount = HelperBalance::formatNumber((double)$get('amount'));
+    $amount = (double)$get('amount');
     $exchange = (double)$get('exchange');
 
     switch ($get('currency_id')) {
@@ -495,7 +495,7 @@ Forms\Components\TextInput::make('result')->dehydrated(false)->label('الإجم
         6 => ['from' => 3, 'to' => 2], // SYP → TRY
     ];
 
-    $amount = HelperBalance::formatNumber((double)$data['amount']);
+    $amount = (double)$data['amount'];
     $exchange = (double)$data['exchange'];
 
     switch ($data['currency_id']) {
