@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\BalanceController;
 use App\Http\Controllers\Api\BranchController;
+use App\Http\Controllers\Api\CategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -35,12 +36,13 @@ Route::prefix('v1')->group(function () {
         Route::get('tasks/incomplete-count', [\App\Http\Controllers\Api\TaskController::class, 'incompleteCount']);
 
         //Orders
-        Route::apiResource('orders', \App\Http\Controllers\Api\OrderController::class)->only(['index', 'show']);
+        Route::get('orders/senderorrecevirinfo', [\App\Http\Controllers\Api\OrderController::class, 'getSenderOrRecevirUserInfo']);
+        Route::apiResource('orders', \App\Http\Controllers\Api\OrderController::class)->only(['index', 'show' ,'store']);
         Route::post('orders/success', [\App\Http\Controllers\Api\OrderController::class, 'setToSuccess']);
         Route::post('orders/returned', [\App\Http\Controllers\Api\OrderController::class, 'setToReturned']);
         Route::post('orders/confirmed', [\App\Http\Controllers\Api\OrderController::class, 'setToConfirmedReturned']);
         Route::post('orders/canceled', [\App\Http\Controllers\Api\OrderController::class, 'setToCanceled']);
-
+        Route::get('orders/senderorrecevirinfo', [\App\Http\Controllers\Api\OrderController::class, 'getSenderOrRecevirUserInfo']);
 
         //Balances
         Route::apiResource('balances', \App\Http\Controllers\Api\BalanceController::class)->only(['index']);
@@ -53,5 +55,11 @@ Route::prefix('v1')->group(function () {
         // Branchs
         Route::apiResource('branches',BranchController::class)->only(['index']);
 
-    });
+        //Units
+         Route::apiResource('units', \App\Http\Controllers\Api\UnitController::class)->only(['index']);
+
+        //Categories
+        Route::get('categories/getbytype',[CategoryController::class,'getCategoreisByType']);
+
+        });
 });

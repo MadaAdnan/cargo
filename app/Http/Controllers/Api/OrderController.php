@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\OrderResource;
 
 use App\Http\Resources\Api\PaginateResource;
+use App\Http\Resources\Api\SenderOrRecevirOrderInfoResource;
 use App\Models\Marker;
 use App\Models\Order;
 use App\Models\User;
@@ -17,29 +18,15 @@ use DB;
 use Error;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\CreateOrderRequest;
+use Illuminate\Database\Eloquent\Collection;
 
 class OrderController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    // public function index()
-    // {
-    //     $status = \request()->get('status');
-    //     $qr = \request()->get('qr_code');
-    //     $me = \request()->get('only');
-    //     $orders = Order::whereHas('markers', fn($query) => $query->where('markers.user_id', auth()->id()))
-    //         ->when($me == 'me', fn($query) => $query->where('current_user', auth()->id()))
-    //         ->when(!empty($status), fn($query) => $query->where('status', $status))
-    //         ->when(!empty($qr), fn($query) => $query->where('qr_code', $qr))
-    //         ->latest()
-    //         ->with(['citySource', 'branchSource', 'cityTarget', 'branchTarget', 'unit', 'sender', 'createdBy'])
-    //         ->paginate(15);
-    //     return ApiHelper::apiResponse([
-    //         'orders' => OrderResource::collection($orders),
-    //         'paginate' => new PaginateResource($orders)
-    //     ]);
-    // }
+
 
     public function index()
     {
@@ -235,12 +222,73 @@ class OrderController extends Controller
         }
     }
 
+    public function getSenderOrRecevirUserInfo(){
+        $users = User::where('level',LevelUserEnum::USER->value)
+        ->active()->get();
+        if (!$users) {
+            return ApiHelper::apiResponse([
+                'msg' =>'لا يوجد مستخدمين',
+            ], 401, 'error');
+        }
+        return ApiHelper::apiResponse([
+            'users' =>SenderOrRecevirOrderInfoResource::collection($users),
+        ], 200, 'success');
+
+    }
+
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateOrderRequest $request)
     {
-        //
+        try {
+            $data = $request->validated();
+
+            // // Set default values similar to the form
+            // $data['shipping_date'] = $data['shipping_date'] ?? Carbon::now()->format('Y-m-d');
+            // $data['type'] = $data['type'] ?? OrderTypeEnum::HOME->value;
+
+            // // Handle sender information
+            // if (isset($data['sender_id'])) {
+            //     $sender = User::active()->with('city')->find($data['sender_id']);
+            //     if ($sender) {
+            //         $data['sender_phone'] = $sender->phone;
+            //         $data['sender_address'] = $sender->address;
+            //         $data['city_source_id'] = $sender->city_id;
+            //         $data['pick_id'] = User::active()
+            //             ->where(['level' => LevelUserEnum::BRANCH->value, 'branch_id' => $sender->branch_id])
+            //             ->first()?->id;
+            //     }
+            // }
+
+            // // Handle receiver information
+            // if (isset($data['receive_id'])) {
+            //     $receiver = User::with('city')->find($data['receive_id']);
+            //     if ($receiver) {
+            //         $data['receive_phone'] = $receiver->phone;
+            //         $data['receive_address'] = $receiver->address;
+            //         $data['city_target_id'] = $receiver->city_id;
+            //     }
+            // }
+
+            // // Generate QR code if allowed
+            // if ($data['allow_duplicates'] ?? true) {
+            //     $data['qr_code'] = $data['qr_code'] ?? Str::random(10);
+            // }
+
+            // // Create the order
+            $order = Order::create($data);
+
+            return ApiHelper::apiResponse([
+                'order' => new OrderResource($order),
+            ], 200, 'success');
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'msg' => 'Failed to create order',
+                'error' => $e->getMessage()
+            ], 500 );
+        }
     }
 
     /**

@@ -39,7 +39,7 @@ class ListAccountStatments extends ListRecords
 {
 
     return [
-        AccountStats::class,
+        // AccountStats::class,
     ];
 }
 }

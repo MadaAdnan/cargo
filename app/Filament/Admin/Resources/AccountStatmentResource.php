@@ -27,6 +27,7 @@ use App\Enums\OrderStatusEnum;
 use App\Enums\FarType;
 use App\Filament\Admin\Resources\OrderResource;
 use App\Filament\Admin\Resources\AccountStatmentResource\Widgets\AccountStats;
+
 class AccountStatmentResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Balance::class;
@@ -320,8 +321,16 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                         ->warning()
                         ->send();
                 }
+                 // $recordsToDelete->each->delete();
+                     // حذف السجلات المرتبطة مع السجل الذي سيتم حذفه
+                    // احصل على قائمة الـ UUID الفريدة
+                    $uuidsToDelete = $recordsToDelete->pluck('uuid')->unique();
 
-                $recordsToDelete->each->delete();
+                    // حذف كل السجلات التي لها نفس uuid و order_id = null فقط
+                    Balance::whereIn('uuid', $uuidsToDelete)
+                        ->whereNull('order_id')
+                        ->delete();
+
             })
             ->deselectRecordsAfterCompletion()
             ->requiresConfirmation()
