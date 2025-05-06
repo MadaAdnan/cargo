@@ -18,7 +18,7 @@ use DB;
 use Error;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Requests\CreateOrderRequest;
+use App\Http\Requests\Api\CreateOrderRequest;
 use Illuminate\Database\Eloquent\Collection;
 
 class OrderController extends Controller

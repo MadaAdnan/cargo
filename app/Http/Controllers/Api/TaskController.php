@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Helper\ApiHelper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\CreateTaskRequest;
 use App\Http\Resources\Api\PaginateResource;
 use App\Http\Resources\Api\TaskResource;
 use App\Models\Task;
@@ -47,9 +48,23 @@ class TaskController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateTaskRequest $request)
     {
-        //
+        try {
+            $data = $request->validated();
+            $data['created_id'] = auth()->id();
+            $task = Task::create($data);
+
+            return ApiHelper::apiResponse([
+                'task' => $task ,
+            ], 200, 'success');
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'msg' => 'Failed to create order',
+                'error' => $e->getMessage()
+            ], 500 );
+        }
     }
 
     /**
