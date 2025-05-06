@@ -487,12 +487,12 @@ Forms\Components\TextInput::make('result')->dehydrated(false)->label('الإجم
 
 ->action(function($record, $data) {
     $conversionMap = [
-        1 => ['from' => 1, 'to' => 2], // USD → TRY
-        2 => ['from' => 2, 'to' => 1], // TRY → USD
-        3 => ['from' => 1, 'to' => 3], // USD → SYP
-        4 => ['from' => 3, 'to' => 1], // SYP → USD
-        5 => ['from' => 2, 'to' => 3], // TRY → SYP
-        6 => ['from' => 3, 'to' => 2], // SYP → TRY
+        1 => ['from' => 1, 'to' => 2,'label' => 'من الدولار إلى التركي'], // USD → TRY
+        2 => ['from' => 2, 'to' => 1,'label' => 'من التركي إلى الدولار'], // TRY → USD
+        3 => ['from' => 1, 'to' => 3,'label' => 'من الدولار إلى السوري'], // USD → SYP
+        4 => ['from' => 3, 'to' => 1,'label' => 'من السوري إلى الدولار'], // SYP → USD
+        5 => ['from' => 2, 'to' => 3,'label' => 'من التركي إلى السوري'], // TRY → SYP
+        6 => ['from' => 3, 'to' => 2,'label' => 'من السوري إلى التركي'], // SYP → TRY
     ];
 
     $amount = (double)$data['amount'];
@@ -526,7 +526,7 @@ Forms\Components\TextInput::make('result')->dehydrated(false)->label('الإجم
     } catch (\Exception | \DivisionByZeroError $e) {
         $result=0;
     }
-
+    $infoMessage = "تحويل عملة: {$conversionMap[$data['currency_id']]['label']} - المبلغ: {$amount} بسعر الصرف: {$exchange}";
 $uuid=\Str::uuid();
 \DB::beginTransaction();
 try{
@@ -538,7 +538,7 @@ try{
         'is_complete' => true,
         'pending' => false,
         'uuid' => $uuid,
-        'info' => 'تصريف عملة من قبل المدير'
+        'info' => $infoMessage,
 
   ]);
   Balance::create([
@@ -549,7 +549,7 @@ try{
     'is_complete' => true,
     'pending' => false,
     'uuid' => $uuid,
-    'info' => 'تصريف عملة من قبل المدير'
+    'info' => $infoMessage,
 ]);
   \DB::commit();
   Notification::make('success')->success()->title('نجاح العملية')->body('تم تصريف العملة بنجاح')->send();

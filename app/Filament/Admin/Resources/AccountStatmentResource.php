@@ -26,6 +26,7 @@ use App\Enums\OrderTypeEnum;
 use App\Enums\OrderStatusEnum;
 use App\Enums\FarType;
 use App\Filament\Admin\Resources\OrderResource;
+use App\Filament\Admin\Resources\AccountStatmentResource\Widgets\AccountStats;
 class AccountStatmentResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Balance::class;
@@ -72,6 +73,12 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
     {
         return auth()->user()->hasPermissionTo('delete_account::statment');
     }
+    public static function getWidgets(): array
+{
+    return [
+        AccountStats::class,
+    ];
+}
 
     public static function form(Form $form): Form
     {
@@ -225,6 +232,8 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
                             ->pluck('name', 'id');
                     })
                     ->searchable()->default(0)->label('المستخدم')->preload(),
+
+
 
 
                 Tables\Filters\TernaryFilter::make('pending')->trueLabel('قيد التحصيل')->falseLabel('مكتمل')
