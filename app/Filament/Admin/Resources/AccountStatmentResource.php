@@ -74,12 +74,7 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
     {
         return auth()->user()->hasPermissionTo('delete_account::statment');
     }
-    public static function getWidgets(): array
-{
-    return [
-        AccountStats::class,
-    ];
-}
+
 
     public static function form(Form $form): Form
     {
