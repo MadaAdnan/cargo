@@ -23,16 +23,17 @@ class AccountStats extends BaseWidget
 
     public function getStats(): array
     {
-       // جلب الطلبات المرتبطة بالمستخدم فقط عبر الفلتر
-    $query = $this->getPageTableQuery();
+        $userId = $this->getTablePageInstance()->getTableFilterState('user_id')['value'] ?? null;
 
-    // نتحقق إذا كان الاستعلام يحتوي على فلتر user_id ضمنياً
-    $filteredQuery = clone $query;
-    $userId = $filteredQuery->value('user_id');
+        if (!$userId) {
+            return [];
+        }
 
-    if (!$userId || $userId ==54) {
-        return []; // لا تعرض شيء إذا لم يكن هناك user_id في البيانات
-    }
+
+        if (!$userId) {
+            return []; // لا تعرض شيء إذا لم يتم اختيار فلتر المستخدم
+        }
+
         // تحميل فقط عمود order_id لتقليل الحمل
         $orderIds = $this->getPageTableQuery()
             ->whereNotNull('order_id')
