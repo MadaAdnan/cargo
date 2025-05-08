@@ -23,6 +23,7 @@ class AccountStats extends BaseWidget
 
     public function getStats(): array
     {
+        //جلب الفلتر المطبق على الجدول فلتر المستخدم
         $userId = $this->getTablePageInstance()->getTableFilterState('user_id')['value'] ?? null;
 
         if (!$userId) {

@@ -9,6 +9,18 @@ use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Admin\Resources\AccountStatmentResource\Widgets\AccountStats;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
+
+use App\Enums\BalanceTypeEnum;
+use App\Filament\Admin\Resources\AccountResource;
+use App\Models\Balance;
+use App\Models\User;
+
+
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\DB;
+use App\Enums\ActivateStatusEnum;
 class ListAccountStatments extends ListRecords
 {
     use ExposesTableToWidgets;
@@ -18,6 +30,47 @@ class ListAccountStatments extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+            Actions\Action::make('quid_pending')->form([
+                Select::make('source_id')->options(User::WithAccount()->active()->select('id', 'name')->pluck('name', 'id'))->searchable()->label(' الحساب')->required(),
+                // Select::make('target_id')->options(User::WithAccount()->active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
+                // TextInput::make('amount')->required()->numeric()->rules([
+                //     fn(): Closure => function (string $attribute, $value, Closure $fail) {
+                //         if ($value <= 0) {
+                //             $fail('يجب ان تكون القيمة أكبر من 0');
+                //         }
+                //     },
+                // ])->required()->label('القيمة'),
+                TextInput::make('amount')
+                ->default(function () {
+                    return 0; // يمكنك استبدال هذا بحساب ديناميكي
+                })
+                ->disabled()->label('القيمة'),
+                TextInput::make('info')->default('سند تعليق')->label('ملاحظات')
+           ])
+                ->action(function ($data) {
+                    DB::beginTransaction();
+                    try {
+                        $uuid = \Str::uuid();
+                        Balance::create([
+                            'user_id' => $data['source_id'],
+                            'currency_id' => 1,
+                            'pending' => false,
+                            'is_complete' => true,
+                            'info' => $data['info'],
+                            'uuid' => $uuid,
+                            'type' => BalanceTypeEnum::PUSH->value,
+                            'credit' => 0,
+                            'debit' => 0,
+                            'customer_name' => User::find($data['source_id'])?->name,
+                        ]);
+
+                        DB::commit();
+                        Notification::make('error')->success()->title('نجاح العملية')->body('تم إضافة السند بنجاح')->send();
+                    } catch (\Exception | \Error $e) {
+                        DB::rollBack();
+                        Notification::make('error')->danger()->title('خطأ في العملية')->body($e->getMessage())->send();
+                    }
+                })->label('سند تعليق'),
         ];
     }
     public function getTabs(): array
