@@ -63,7 +63,7 @@ class BalancePolicy
      */
     public function forceDelete(User $user, Balance $balance): bool
     {
-        return $user->can('force_delete_balance');
+        return $user->can('{{ ForceDelete }}');
     }
 
     /**
@@ -71,7 +71,7 @@ class BalancePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_balance');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -79,7 +79,7 @@ class BalancePolicy
      */
     public function restore(User $user, Balance $balance): bool
     {
-        return $user->can('restore_balance');
+        return $user->can('{{ Restore }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class BalancePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_balance');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class BalancePolicy
      */
     public function replicate(User $user, Balance $balance): bool
     {
-        return $user->can('replicate_balance');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class BalancePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_balance');
+        return $user->can('{{ Reorder }}');
     }
 }

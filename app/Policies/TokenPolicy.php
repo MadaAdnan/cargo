@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Order;
+use Rupadana\ApiService\Models\Token;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class OrderPolicy
+class TokenPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class OrderPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_success::order');
+        return $user->can('view_any_token');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Order $order): bool
+    public function view(User $user, Token $token): bool
     {
-        return $user->can('view_success::order');
+        return $user->can('view_token');
     }
 
     /**
@@ -31,23 +31,23 @@ class OrderPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_success::order');
+        return $user->can('create_token');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Order $order): bool
+    public function update(User $user, Token $token): bool
     {
-        return $user->can('update_success::order');
+        return $user->can('update_token');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Order $order): bool
+    public function delete(User $user, Token $token): bool
     {
-        return $user->can('delete_success::order');
+        return $user->can('delete_token');
     }
 
     /**
@@ -55,15 +55,15 @@ class OrderPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_success::order');
+        return $user->can('delete_any_token');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Order $order): bool
+    public function forceDelete(User $user, Token $token): bool
     {
-        return $user->can('{{ ForceDelete }}');
+        return $user->can('force_delete_token');
     }
 
     /**
@@ -71,15 +71,15 @@ class OrderPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('{{ ForceDeleteAny }}');
+        return $user->can('force_delete_any_token');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Order $order): bool
+    public function restore(User $user, Token $token): bool
     {
-        return $user->can('{{ Restore }}');
+        return $user->can('restore_token');
     }
 
     /**
@@ -87,15 +87,15 @@ class OrderPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('{{ RestoreAny }}');
+        return $user->can('restore_any_token');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Order $order): bool
+    public function replicate(User $user, Token $token): bool
     {
-        return $user->can('{{ Replicate }}');
+        return $user->can('replicate_token');
     }
 
     /**
@@ -103,6 +103,6 @@ class OrderPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('{{ Reorder }}');
+        return $user->can('reorder_token');
     }
 }

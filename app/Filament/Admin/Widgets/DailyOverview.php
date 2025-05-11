@@ -3,30 +3,32 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Order;
-use Filament\Widgets\Concerns\InteractsWithPageFilters;
+use App\Enums\OrderStatusEnum;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use App\Enums\OrderStatusEnum;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Support\Carbon;
 
 class DailyOverview extends BaseWidget
 {
     use InteractsWithPageFilters;
+
+public static function canView(): bool
+{
+    // اسم الصفحة هو كما عرّفته في PublicReports
+    return request()->routeIs('filament.admin.pages.public-reports');
+}
+
     protected static bool $shouldPersistFiltersInSession = true;
 
-    protected ?string $heading = 'تقرير يومي';
-
-    public static function canView(): bool
-    {
-        return auth()->user()->can('widget_DailyOverview');
-    }
+    protected ?string $heading = 'تقرير الشحنات اليومي';
 
     protected static bool $isLazy = false;
 
     protected function getStats(): array
     {
-        $filters = session('Dashboard_filters', $this->filters ?? []);
-        $savedFilters = session('Dashboard_filters', []);
+        $filters = session('PublicReports_filters', $this->filters ?? []);
+        $savedFilters = session('PublicReports_filters', []);
 
         $activeFilters = array_merge($this->filters ?? [], $savedFilters);
 
@@ -70,4 +72,5 @@ class DailyOverview extends BaseWidget
             Stat::make('أجور الشحنات TRY على المستلم', $receiverFar->sum('far_tr')),
         ];
     }
+
 }

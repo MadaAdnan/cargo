@@ -93,8 +93,10 @@ class AccountStats extends BaseWidget
         // استخراج القيم
         $totalBalanceUsd = $balances->get(1)?->cleared_balance ?? 0;
         $totalBalancependingUsd = $balances->get(1)?->pending_balance ?? 0;
+        $totalUsd = (double)$totalBalanceUsd + (double)$totalBalancependingUsd;
         $totalBalanceTry = $balances->get(2)?->cleared_balance ?? 0;
         $totalBalancependingTry = $balances->get(2)?->pending_balance ?? 0;
+        $totlalTry = (double) $totalBalancependingTry + (double)$totalBalanceTry;
 
         // استعلام واحد فقط يحتوي على جميع الإحصائيات
         $orderCounts = Order::whereIn('id', $orderIds)
@@ -119,8 +121,10 @@ class AccountStats extends BaseWidget
             Stat::make('شحنات تم تاكيد تسليمها كمرتجعة', $orderCounts->confirm_returned_count),
             Stat::make('USD الرصيد ' ,$totalBalanceUsd ),
             Stat::make('USD  قيد التحصيل ' ,$totalBalancependingUsd ),
+            Stat::make('USD  المحصلة  ' ,$totalUsd ),
             Stat::make('TRY الرصيد ' ,$totalBalanceTry ),
             Stat::make('TRY قيد التحصيل ' ,$totalBalancependingTry ),
+            Stat::make('TRY المحصلة ' ,$totlalTry ),
         ];
     }
 

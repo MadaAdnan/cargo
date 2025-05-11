@@ -28,7 +28,12 @@ class ReportResource extends Resource
     protected static ?string $navigationGroup = 'التقارير';
 
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
-
+    //
+    protected static bool $shouldRegisterNavigation = false;// منع الظهور في القائمة الجانبية
+    public static function canViewAny(): bool // منع الوصول بشكل كامل
+    {
+        return false;
+    }
 
     public static function canEdit(Model $record): bool
     {

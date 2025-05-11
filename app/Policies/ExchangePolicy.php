@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Order;
+use App\Models\Exchange;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class OrderPolicy
+class ExchangePolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class OrderPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_success::order');
+        return $user->can('view_any_request::exchange');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Order $order): bool
+    public function view(User $user, Exchange $exchange): bool
     {
-        return $user->can('view_success::order');
+        return $user->can('view_request::exchange');
     }
 
     /**
@@ -31,23 +31,23 @@ class OrderPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_success::order');
+        return $user->can('create_request::exchange');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Order $order): bool
+    public function update(User $user, Exchange $exchange): bool
     {
-        return $user->can('update_success::order');
+        return $user->can('update_request::exchange');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Order $order): bool
+    public function delete(User $user, Exchange $exchange): bool
     {
-        return $user->can('delete_success::order');
+        return $user->can('delete_request::exchange');
     }
 
     /**
@@ -55,13 +55,13 @@ class OrderPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_success::order');
+        return $user->can('delete_any_request::exchange');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Order $order): bool
+    public function forceDelete(User $user, Exchange $exchange): bool
     {
         return $user->can('{{ ForceDelete }}');
     }
@@ -77,7 +77,7 @@ class OrderPolicy
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Order $order): bool
+    public function restore(User $user, Exchange $exchange): bool
     {
         return $user->can('{{ Restore }}');
     }
@@ -93,7 +93,7 @@ class OrderPolicy
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Order $order): bool
+    public function replicate(User $user, Exchange $exchange): bool
     {
         return $user->can('{{ Replicate }}');
     }

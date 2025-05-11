@@ -18,56 +18,56 @@ use HasFiltersForm;
 
 
 
-public function filtersForm(Form $form): Form
-{
-    return $form->schema([
-        DatePicker::make('date')
-            ->default(now())
-            ->reactive()
-            ->dehydrated(true),
+// public function filtersForm(Form $form): Form
+// {
+//     return $form->schema([
+//         DatePicker::make('date')
+//             ->default(now())
+//             ->reactive()
+//             ->dehydrated(true),
 
-        Select::make('branch_source_id')
-            ->label('الفرع المرسل')
-            ->reactive()
-            ->searchable()
-            ->options(function (callable $get) {
-                $date = $get('date') ? Carbon::parse($get('date'))->format('Y-m-d') : null;
-                $branchTargetId = $get('branch_target_id');
+//         Select::make('branch_source_id')
+//             ->label('الفرع المرسل')
+//             ->reactive()
+//             ->searchable()
+//             ->options(function (callable $get) {
+//                 $date = $get('date') ? Carbon::parse($get('date'))->format('Y-m-d') : null;
+//                 $branchTargetId = $get('branch_target_id');
 
-                if (!$date) return [];
+//                 if (!$date) return [];
 
-                $query = Order::whereDate('created_at', $date);
+//                 $query = Order::whereDate('created_at', $date);
 
-                if ($branchTargetId) {
-                    $query->where('branch_target_id', $branchTargetId);
-                }
+//                 if ($branchTargetId) {
+//                     $query->where('branch_target_id', $branchTargetId);
+//                 }
 
-                $branchIds = $query->distinct()->pluck('branch_source_id')->filter();
+//                 $branchIds = $query->distinct()->pluck('branch_source_id')->filter();
 
-                return Branch::whereIn('id', $branchIds)->pluck('name', 'id');
-            }),
+//                 return Branch::whereIn('id', $branchIds)->pluck('name', 'id');
+//             }),
 
-        Select::make('branch_target_id')
-            ->label('الفرع المستلم')
-            ->reactive()
-            ->searchable()
-            ->options(function (callable $get) {
-                $date = $get('date') ? Carbon::parse($get('date'))->format('Y-m-d') : null;
-                $branchSourceId = $get('branch_source_id');
+//         Select::make('branch_target_id')
+//             ->label('الفرع المستلم')
+//             ->reactive()
+//             ->searchable()
+//             ->options(function (callable $get) {
+//                 $date = $get('date') ? Carbon::parse($get('date'))->format('Y-m-d') : null;
+//                 $branchSourceId = $get('branch_source_id');
 
-                if (!$date) return [];
+//                 if (!$date) return [];
 
-                $query = Order::whereDate('created_at', $date);
+//                 $query = Order::whereDate('created_at', $date);
 
-                if ($branchSourceId) {
-                    $query->where('branch_source_id', $branchSourceId);
-                }
+//                 if ($branchSourceId) {
+//                     $query->where('branch_source_id', $branchSourceId);
+//                 }
 
-                $branchIds = $query->distinct()->pluck('branch_target_id')->filter();
+//                 $branchIds = $query->distinct()->pluck('branch_target_id')->filter();
 
-                return Branch::whereIn('id', $branchIds)->pluck('name', 'id');
-            }),
-    ])->statePath('filters');
-}
+//                 return Branch::whereIn('id', $branchIds)->pluck('name', 'id');
+//             }),
+//     ])->statePath('filters');
+// }
 
 }
