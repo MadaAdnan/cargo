@@ -25,12 +25,7 @@ class AccountStats extends BaseWidget
     {
         //جلب الفلتر المطبق على الجدول فلتر المستخدم
         $userId = $this->getTablePageInstance()->getTableFilterState('user_id')['value'] ?? null;
-
-        if (!$userId) {
-            return [];
-        }
-
-
+        $activeTab = $this->getTablePageInstance()->activeTab ?? 'all';
         if (!$userId) {
             return []; // لا تعرض شيء إذا لم يتم اختيار فلتر المستخدم
         }
@@ -41,6 +36,7 @@ class AccountStats extends BaseWidget
             ->select('order_id') // تحميل عمود واحد فقط
             ->distinct()
             ->pluck('order_id');
+
 
         // في حال عدم وجود بيانات، تجنب استعلام غير ضروري
         if ($orderIds->isEmpty()) {
@@ -53,6 +49,52 @@ class AccountStats extends BaseWidget
                 Stat::make('شحنات تم تاكيد تسليمها كمرتجعة', 0),
             ];
         }
+
+        // $totalBalanceUsd = \App\Models\Balance::query()
+        // ->where('user_id', $userId)
+        // ->where('currency_id', 1)
+        // ->where('is_complete', true)
+        // ->where('pending', false)
+        // ->selectRaw('SUM(credit - debit) as total')
+        // ->value('total') ?? 0;
+        // $totalBalancependingUsd = \App\Models\Balance::query()
+        // ->where('user_id', $userId)
+        // ->where('currency_id', 1)
+        // ->where('is_complete', false)
+        // ->where('pending', true)
+        // ->selectRaw('SUM(credit - debit) as total')
+        // ->value('total') ?? 0;
+        // $totalBalanceTry = \App\Models\Balance::query()
+        // ->where('user_id', $userId)
+        // ->where('currency_id', 2)
+        // ->where('is_complete', true)
+        // ->where('pending', false)
+        // ->selectRaw('SUM(credit - debit) as total')
+        // ->value('total') ?? 0;
+        // $totalBalancependingTry = \App\Models\Balance::query()
+        // ->where('user_id', $userId)
+        // ->where('currency_id', 2)
+        // ->where('is_complete', false)
+        // ->where('pending', true)
+        // ->selectRaw('SUM(credit - debit) as total')
+        // ->value('total') ?? 0;
+        // استعلام واحد لجميع أرصدة العملات
+        $balances = \App\Models\Balance::query()
+        ->where('user_id', $userId)
+        ->selectRaw("
+            currency_id,
+            SUM(CASE WHEN is_complete = true AND pending = false THEN credit - debit ELSE 0 END) as cleared_balance,
+            SUM(CASE WHEN is_complete = false AND pending = true THEN credit - debit ELSE 0 END) as pending_balance
+        ")
+        ->groupBy('currency_id')
+        ->get()
+        ->keyBy('currency_id');
+
+        // استخراج القيم
+        $totalBalanceUsd = $balances->get(1)?->cleared_balance ?? 0;
+        $totalBalancependingUsd = $balances->get(1)?->pending_balance ?? 0;
+        $totalBalanceTry = $balances->get(2)?->cleared_balance ?? 0;
+        $totalBalancependingTry = $balances->get(2)?->pending_balance ?? 0;
 
         // استعلام واحد فقط يحتوي على جميع الإحصائيات
         $orderCounts = Order::whereIn('id', $orderIds)
@@ -67,7 +109,7 @@ class AccountStats extends BaseWidget
             ->first();
 
         return [
-            Stat::make('معرف الحساب', $userId),
+            // Stat::make('معرف الحساب', $userId),
 
             Stat::make('عدد الشحنات', $orderCounts->total),
             Stat::make('شحنات تم التسليم', $orderCounts->success_count),
@@ -75,6 +117,11 @@ class AccountStats extends BaseWidget
             Stat::make('شحنات ملغاة', $orderCounts->canceled_count),
             Stat::make('شحنات مرتجعة', $orderCounts->returned_count),
             Stat::make('شحنات تم تاكيد تسليمها كمرتجعة', $orderCounts->confirm_returned_count),
+            Stat::make('USD الرصيد ' ,$totalBalanceUsd ),
+            Stat::make('USD  قيد التحصيل ' ,$totalBalancependingUsd ),
+            Stat::make('TRY الرصيد ' ,$totalBalanceTry ),
+            Stat::make('TRY قيد التحصيل ' ,$totalBalancependingTry ),
         ];
     }
+
 }

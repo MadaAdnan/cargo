@@ -21,6 +21,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
 use App\Enums\ActivateStatusEnum;
+use Livewire\Attributes\Url;
+
 class ListAccountStatments extends ListRecords
 {
     use ExposesTableToWidgets;
@@ -32,14 +34,7 @@ class ListAccountStatments extends ListRecords
             Actions\CreateAction::make(),
             Actions\Action::make('quid_pending')->form([
                 Select::make('source_id')->options(User::WithAccount()->active()->select('id', 'name')->pluck('name', 'id'))->searchable()->label(' الحساب')->required(),
-                // Select::make('target_id')->options(User::WithAccount()->active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
-                // TextInput::make('amount')->required()->numeric()->rules([
-                //     fn(): Closure => function (string $attribute, $value, Closure $fail) {
-                //         if ($value <= 0) {
-                //             $fail('يجب ان تكون القيمة أكبر من 0');
-                //         }
-                //     },
-                // ])->required()->label('القيمة'),
+
                 TextInput::make('amount')
                 ->default(function () {
                     return 0; // يمكنك استبدال هذا بحساب ديناميكي
@@ -87,7 +82,7 @@ class ListAccountStatments extends ListRecords
 {
 
     return [
-        AccountStats::class,
+        AccountStats::class
     ];
 }
 }

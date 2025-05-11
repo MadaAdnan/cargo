@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\BalanceController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CityController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +52,9 @@ Route::prefix('v1')->group(function () {
         Route::Post('balances/push/cancel/{id}',[BalanceController::class,'pushCancel']);
         Route::post('balances/pull', [\App\Http\Controllers\Api\BalanceController::class, 'pull']);
         Route::get('balances/pendingbalance-count',[BalanceController::class,'pendingBalancesCount']);
+
+        // Cities
+        Route::apiResource('cities',CityController::class)->only(['index']);
 
         // Branchs
         Route::apiResource('branches',BranchController::class)->only(['index']);

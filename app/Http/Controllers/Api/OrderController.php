@@ -14,6 +14,7 @@ use App\Http\Resources\Api\SenderOrRecevirOrderInfoResource;
 use App\Models\Marker;
 use App\Models\Order;
 use App\Models\User;
+use App\Models\City;
 use DB;
 use Error;
 use Illuminate\Http\Request;
@@ -275,6 +276,17 @@ class OrderController extends Controller
             // if ($data['allow_duplicates'] ?? true) {
             //     $data['qr_code'] = $data['qr_code'] ?? Str::random(10);
             // }
+
+        $city_source=City::find($data['city_source_id']);
+        $city_target=City::find($data['city_target_id']);
+
+        $data['branch_source_id'] =$city_source->branch_id;
+        $data['branch_target_id'] =$city_target->branch_id;
+        // $target=User::where('level',LevelUserEnum::BRANCH->value)->where('branch_id',$data['branch_target_id'] )->first();
+       /* $data['given_id']=$target?->id;
+        $data['status']=OrderStatusEnum::TRANSFER->value;*/
+        $data['code'] = "AWB" . now()->format('YmdHis'); // الطابع الزمني بتنسيق قصير
+
 
             // // Create the order
             $order = Order::create($data);
