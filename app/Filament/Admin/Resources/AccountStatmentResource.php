@@ -90,9 +90,10 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
     public static function table(Table $table): Table
     {
         return $table
-         ->modifyQueryUsing(function (Builder $query) {
-            $query->orderBy('created_at');
-        })
+        //  ->modifyQueryUsing(function (Builder $query) {
+        //     $query->orderBy('created_at');
+        // })
+
             //  ->poll(10)
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('رقم  الفاتورة')
