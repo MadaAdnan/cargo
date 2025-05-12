@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Hash;
 use LaraZeus\Popover\Tables\PopoverColumn;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
-
+use PHPUnit\Exception;
 class SuccessOrderResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Order::class;
@@ -775,7 +775,37 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                         }
                     })
                     ->label('تأكيد تسليم المرتجع')
-                    ->requiresConfirmation()
+                    ->requiresConfirmation(),
+         Tables\Actions\BulkAction::make('returnTOPending')
+                      ->action(function ($records) {
+                        foreach ($records as $record) {
+                            DB::beginTransaction();
+                            try {
+                                   $given_id = User::where([
+                                    'level' => LevelUserEnum::BRANCH->value,
+                                    'branch_id' => $record->branch_target_id
+                                ])->first()?->id;
+                                if ($given_id == null) {
+                                    $given_id=User::where('email', 'ahmadrakbi@gmail.com')->first()?->id;
+                                }
+                                 $dataUpdate['given_id'] = $given_id;
+                                if ($given_id != null) {
+                                    $dataUpdate['status']  = OrderStatusEnum::TRANSFER->value;;
+                                }
+                                $dataUpdate['returned_id'] =null;
+                                $record->update($dataUpdate);
+
+                                DB::commit();
+                                Notification::make('success')->title('نجاح')->body('تم اعادة الشحنات لحالة النقل بنجاح')->success()->send();
+
+                            } catch (Exception | \Error $e) {
+                                DB::rollBack();
+                                Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
+
+                            }
+
+                        }
+                    })->label('اعادة الشحنة لحالة النقل')->requiresConfirmation(),
 
 
                 ]),
