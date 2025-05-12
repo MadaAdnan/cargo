@@ -20,6 +20,8 @@ public static function canAccess(): bool
 {
     return auth()->user()->can('page_PublicReports');
 }
+
+ protected static string $filterSessionKey = 'PublicReports_filters';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static string $view = 'filament.admin.pages.public-reports';
@@ -161,8 +163,8 @@ protected static ?int $navigationSort = 999;
         ]);
     }
    // Save Filter Parameter In Session PublicReports_Filter
-    public function persistsFiltersInSession(): bool
-    {
-        return true;
-    }
+    // public function persistsFiltersInSession(): bool
+    // {
+    //     return true;
+    // }
 }
