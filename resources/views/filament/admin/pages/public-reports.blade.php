@@ -1,4 +1,4 @@
-<x-filament-panels::page>
-    {{-- ✅ عرض فورمة الفلاتر --}}
+{{-- <x-filament-panels::page>
+
     {{ $this->filtersForm }}
-</x-filament-panels::page>
+</x-filament-panels::page> --}}

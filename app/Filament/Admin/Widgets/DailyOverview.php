@@ -17,10 +17,6 @@ public static function canView(): bool
 {
     return !request()->routeIs('filament.admin.pages.dashboard');
 }
-// public static function canView(): bool
-// {
-//     return Str::startsWith(request()->route()->getName(), 'filament.admin.pages.public-reports');
-// }
 
     protected static bool $shouldPersistFiltersInSession = true;
 
@@ -30,17 +26,14 @@ public static function canView(): bool
 
     protected function getStats(): array
     {
-        $filters = session('PublicReports_filters', $this->filters ?? []);
-        $savedFilters = session('PublicReports_filters', []);
+        // dd($this->filters['startDate']);
+       // Directly access filters without session merging
+    $startDate = Carbon::parse($this->filters['start_date'] ?? now());
+    $endDate = Carbon::parse($this->filters['end_date'] ?? now());
 
-        $activeFilters = array_merge($this->filters ?? [], $savedFilters);
+    $branchTargetId = $this->filters['branch_target_id'] ?? null;
+    $branchSourceId = $this->filters['branch_source_id'] ?? null;
 
-        // $date = $activeFilters['date'] ?? now();
-        $startDate = Carbon::parse($activeFilters['start_date'] ?? now())->startOfDay();
-        $endDate = Carbon::parse($activeFilters['end_date'] ?? now())->endOfDay();
-
-        $branchTargetId = $activeFilters['branch_target_id'] ?? null;
-        $branchSourceId = $activeFilters['branch_source_id'] ?? null;
 
         if ($startDate->equalTo($endDate)) {
             $ordersQuery = Order::query()

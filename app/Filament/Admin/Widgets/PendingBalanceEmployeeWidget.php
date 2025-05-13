@@ -30,7 +30,12 @@ class PendingBalanceEmployeeWidget extends BaseWidget
         $path = $request->decodedPath();
 
         //  القائمة الممنوعة
-        $blockedPaths = ['admin', 'admin/'];
+       $blockedPaths = [
+        'admin',
+        'admin/',
+        'admin/public-reports', // المسار الجديد
+        'admin/public-reports/' // مع الشرطة المائلة
+    ];
 
         //  التحقق مع حساسية أقل للنصوص
         return !in_array(trim($path, '/'), array_map('trim', $blockedPaths, ['/']));

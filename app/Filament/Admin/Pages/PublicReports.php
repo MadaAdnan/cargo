@@ -10,92 +10,34 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
+use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 use Illuminate\Support\Carbon;
-
-class PublicReports extends Page
+class PublicReports extends BaseDashboard
 {
-    use HasFiltersForm;
+   use HasFiltersForm;
+protected static string $routePath = 'public-reports';
+protected static ?string $title = ' Public Reports';
 public static function canAccess(): bool
 {
     return auth()->user()->can('page_PublicReports');
 }
 
- protected static string $filterSessionKey = 'PublicReports_filters';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.admin.pages.public-reports';
+    // protected static string $view = 'filament.admin.pages.public-reports'; // هذا يجعلها صفحة عادية بالتالي لا تطبق الفلاتر عليها كما انه يحب عدم تعريف صفحة blade لها
 
     protected ?string $heading = 'التقارير';
     protected static ?string $navigationLabel = 'التقارير';
     protected static ?string $navigationGroup = 'التقارير';
 protected static ?int $navigationSort = 999;
 
-    protected function getFooterWidgets(): array
+   public function filtersForm (Form $form): Form
     {
-        return [
-            DailyOverview::class, // تقرير الشحنات اليومي
-            BalanceView::class,   // رصيد الصندوق
-        ];
-    }
+        return $form
+            ->schema([
 
-    // public function filtersForm(Form $form): Form
-    // {
-    //     return $form->schema([
-    //            DatePicker::make('date')
-    //                 ->default(now())
-    //                 ->reactive()
-    //                 ->dehydrated(true),
-
-    //             Select::make('branch_source_id')
-    //                 ->label('الفرع المرسل')
-    //                 ->reactive()
-    //                 ->searchable()
-    //                 ->options(function (callable $get) {
-    //                     $date = $get('date') ? Carbon::parse($get('date'))->format('Y-m-d') : null;
-    //                     $branchTargetId = $get('branch_target_id');
-
-    //                     if (!$date) return [];
-
-    //                     $query = Order::whereDate('created_at', $date);
-
-    //                     if ($branchTargetId) {
-    //                         $query->where('branch_target_id', $branchTargetId);
-    //                     }
-
-    //                     $branchIds = $query->distinct()->pluck('branch_source_id')->filter();
-
-    //                     return Branch::whereIn('id', $branchIds)->pluck('name', 'id');
-    //                 }),
-
-    //             Select::make('branch_target_id')
-    //                 ->label('الفرع المستلم')
-    //                 ->reactive()
-    //                 ->searchable()
-    //                 ->options(function (callable $get) {
-    //                     $date = $get('date') ? Carbon::parse($get('date'))->format('Y-m-d') : null;
-    //                     $branchSourceId = $get('branch_source_id');
-
-    //                     if (!$date) return [];
-
-    //                     $query = Order::whereDate('created_at', $date);
-
-    //                     if ($branchSourceId) {
-    //                         $query->where('branch_source_id', $branchSourceId);
-    //                     }
-
-    //                     $branchIds = $query->distinct()->pluck('branch_target_id')->filter();
-
-    //                     return Branch::whereIn('id', $branchIds)->pluck('name', 'id');
-    //                 }),
-
-    //     ]);
-    // }
-
-      public function filtersForm(Form $form): Form
-    {
-        return $form->schema([
-            DatePicker::make('start_date')
+                 DatePicker::make('start_date')
                 ->label('تاريخ البداية')
                 ->reactive()
                 ->default(now()->startOfMonth())
@@ -160,11 +102,20 @@ protected static ?int $navigationSort = 999;
                     $branchIds = $query->distinct()->pluck('branch_target_id')->filter();
                     return Branch::whereIn('id', $branchIds)->pluck('name', 'id');
                 }),
-        ]);
+
+
+            ])->statePath('filters');
+
     }
-   // Save Filter Parameter In Session PublicReports_Filter
-    // public function persistsFiltersInSession(): bool
+    // Wedgit تظهر بشكل تلقائي لانها من نوع Dashboard
+    // protected function getFooterWidgets(): array
     // {
-    //     return true;
+    //     return [
+    //         DailyOverview::class, // تقرير الشحنات اليومي
+    //         BalanceView::class,   // رصيد الصندوق
+    //     ];
     // }
+
+
+
 }
