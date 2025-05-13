@@ -588,11 +588,12 @@ try{
                         Notification::make('success')->success()->title('نجاح')->body('تم تصحيح الرصيد')->send();
                     })
                         ->label('تصحيح الرصيدUSD'),
+                     // المقصود حساب القيمة واضافتها في القيد بحيث ان هذه القيمة تجعل الرصيد الحالي الكلي مساوي للقيمة المدخلة الصحيحة
                     Tables\Actions\Action::make('currect_TRY')->form([
                         Forms\Components\TextInput::make('value')->label('الرصيد الصحيح')
                     ])
                         ->action(function($record,$data){
-                            $currentBalance=$record->total_balance;
+                            $currentBalance=$record->total_balance_tr;
                             $value=$data['value'] - $currentBalance;
                             if($value>0){
                                 Balance::create([
