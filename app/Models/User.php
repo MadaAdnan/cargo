@@ -204,7 +204,29 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
 {
     return (double) $this->total_balance_syp + (double) $this->total_balance_syp_pending;
 }
+  // جلب معلومات الرصيد بكافة العملات وبشكل مفصل للمستخدم
+    public function getAllDetailsBalancesAttribute(): array
+{
+    $balances = \App\Models\Balance::query()
+        ->where('user_id', $this->id)
+        ->selectRaw("
+            currency_id,
+            SUM(CASE WHEN is_complete = true AND pending = false THEN credit - debit ELSE 0 END) as cleared_balance,
+            SUM(CASE WHEN is_complete = false AND pending = true THEN credit - debit ELSE 0 END) as pending_balance
+        ")
+        ->groupBy('currency_id')
+        ->get()
+        ->keyBy('currency_id');
 
+    return [
+        'totalBalanceUsd' => HelperBalance::formatNumber($balances->get(1)?->cleared_balance ?? 0),
+        'totalBalancependingUsd' => HelperBalance::formatNumber($balances->get(1)?->pending_balance ?? 0),
+        'totalUsd' => (double) (($balances->get(1)?->cleared_balance ?? 0) + ($balances->get(1)?->pending_balance ?? 0)),
+        'totalBalanceTry' => HelperBalance::formatNumber($balances->get(2)?->cleared_balance ?? 0),
+        'totalBalancependingTry' => HelperBalance::formatNumber($balances->get(2)?->pending_balance ?? 0),
+        'totalTry' => (double) (($balances->get(2)?->cleared_balance ?? 0) + ($balances->get(2)?->pending_balance ?? 0)),
+    ];
+}
 
     public function getIbanNameAttribute(): string
     {
@@ -234,5 +256,7 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
     {
         return $query->withoutGlobalScope('userOnly');
     }
+
+
 
 }
