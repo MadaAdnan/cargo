@@ -114,9 +114,9 @@ class BalancesCustomerPublicReport extends BaseWidget
                         ->options(function () use ($startDate, $endDate) {
                             return User::query()
                                 ->select(['users.id', 'users.name'])
-                                ->join('balances', function($join) use ($startDate, $endDate) {
-                                    $join->on('users.id', '=', 'balances.user_id')
-                                        ->whereBetween('balances.created_at', [$startDate, $endDate]);
+                                ->join('orders', function($join) use ($startDate, $endDate) {
+                                    $join->on('users.id', '=', 'orders.sender_id')
+                                        ->whereBetween('orders.created_at', [$startDate, $endDate]);
                                 })
                                 ->where('users.level', LevelUserEnum::USER->value)
                                 ->groupBy('users.id', 'users.name')
