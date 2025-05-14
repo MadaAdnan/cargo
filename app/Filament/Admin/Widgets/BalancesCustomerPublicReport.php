@@ -31,7 +31,8 @@ class BalancesCustomerPublicReport extends BaseWidget
 
         return $table
         ->query(function () use ($startDate, $endDate) {
-            return User::query()
+            return
+            User::query()
             ->select([
                 'users.id',
                 'users.name',
@@ -109,7 +110,7 @@ class BalancesCustomerPublicReport extends BaseWidget
 
             // ])
                 ->filters([
-                    Tables\Filters\SelectFilter::make('id')
+                    Tables\Filters\SelectFilter::make('users.id')
                         ->label('اسم العميل')
                         ->options(function () use ($startDate, $endDate) {
                             return User::query()
