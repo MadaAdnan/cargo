@@ -32,47 +32,42 @@ class BalancesCustomerPublicReport extends BaseWidget
         return $table
         ->query(function () use ($startDate, $endDate) {
             return User::query()
-                ->select([
-                    'users.id',
-                    'users.name',
-                    DB::raw("
-                        COALESCE(SUM(CASE
-                            WHEN balances.currency_id = 1
-                                 AND balances.is_complete = true
-                                 AND balances.pending = false
-                            THEN balances.credit - balances.debit
-                            ELSE 0
-                        END), 0) AS balance_usd
-                    "),
-                    DB::raw("
-                        COALESCE(SUM(CASE
-                            WHEN balances.currency_id = 1
-                                 AND balances.pending = true
-                            THEN balances.credit - balances.debit
-                            ELSE 0
-                        END), 0) AS pending_usd
-                    "),
-                    DB::raw("
-                        COALESCE(SUM(CASE
-                            WHEN balances.currency_id = 2
-                                 AND balances.is_complete = true
-                                 AND balances.pending = false
-                            THEN balances.credit - balances.debit
-                            ELSE 0
-                        END), 0) AS balance_try
-                    "),
-                    DB::raw("
-                        COALESCE(SUM(CASE
-                            WHEN balances.currency_id = 2
-                                 AND balances.pending = true
-                            THEN balances.credit - balances.debit
-                            ELSE 0
-                        END), 0) AS pending_try
-                    "),
-                ])
-                ->join('balances', function($join) use ($startDate, $endDate) {
-                    $join->on('users.id', '=', 'balances.user_id')
-                         ->whereBetween('balances.created_at', [$startDate, $endDate]);
+            ->select([
+                'users.id',
+                'users.name',
+
+                DB::raw("
+                    SUM(
+                        COALESCE(
+                            CASE WHEN orders.status != 'canceled' THEN orders.price ELSE 0 END,
+                        0)
+                    ) AS price_usd
+                "),
+                DB::raw("
+                    SUM(
+                        COALESCE(
+                            CASE WHEN orders.status != 'canceled' THEN orders.far ELSE 0 END,
+                        0)
+                    ) AS far_usd
+                "),
+                DB::raw("
+                    SUM(
+                        COALESCE(
+                             CASE WHEN orders.status != 'canceled' THEN orders.price_tr ELSE 0 END,
+                        0)
+                    ) AS price_try
+                "),
+                DB::raw("
+                    SUM(
+                        COALESCE(
+                             CASE WHEN orders.status != 'canceled' THEN orders.far_tr ELSE 0 END,
+                        0)
+                    ) AS far_try
+                "),
+            ])
+                ->join('orders', function($join) use ($startDate, $endDate) {
+                    $join->on('users.id', '=', 'orders.sender_id')
+                         ->whereBetween('orders.created_at', [$startDate, $endDate]);
                 })
                 ->where('users.level', LevelUserEnum::USER->value)
                 ->groupBy('users.id', 'users.name');
@@ -87,42 +82,27 @@ class BalancesCustomerPublicReport extends BaseWidget
                     ->sortable(),
 
                 // أرصدة الدولار
-               Tables\Columns\TextColumn::make('balance_usd')
-                ->label('الرصيد دولار')
+               Tables\Columns\TextColumn::make('price_usd')
+                ->label('قيمة الشحنات دولار')
                 ->prefix('$ ')
                 ->color('success'),
 
-                Tables\Columns\TextColumn::make('pending_usd')
-                    ->label('قيد التحصيل دولار')
+                Tables\Columns\TextColumn::make('far_usd')
+                    ->label(' الاجور دولار')
                     ->prefix('$ ')
                     ->color('warning'),
 
-               Tables\Columns\TextColumn::make('total_usd')
-                ->label('المحصلة دولار')
-                ->state(function ($record) {
-                    return $record->balance_usd + $record->pending_usd;
-                })
-                ->prefix('$ ')
-                ->color('primary'),
 
                 // أرصدة الليرة التركية
-                Tables\Columns\TextColumn::make('balance_try')
-                    ->label('الرصيد تركي')
+                Tables\Columns\TextColumn::make('price_try')
+                    ->label(' قيمة الشحنات تركي')
                     ->prefix('₺ ')
                     ->color('success'),
 
-                Tables\Columns\TextColumn::make('pending_try')
-                    ->label('قيد التحصيل تركي')
+                Tables\Columns\TextColumn::make('far_try')
+                    ->label(' الاجور تركي')
                     ->prefix('₺ ')
                     ->color('warning'),
-
-                Tables\Columns\TextColumn::make('total_try')
-                    ->label('المحصلة تركي')
-                    ->state(function ($record) {
-                        return $record->balance_try + $record->pending_try;
-                    })
-                    ->prefix('₺ ')
-                    ->color('primary'),
             ])
             // ->filters([
             //  Tables\Filters\SelectFilter::make('id')->options(User::where('level', LevelUserEnum::USER->value)->pluck('name', 'id'))->searchable() ->label('اسم العميل')
