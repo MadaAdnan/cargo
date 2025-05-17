@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BalanceController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\CategoryController;
@@ -29,6 +30,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/profile', [\App\Http\Controllers\Api\AuthController::class, 'profile']);
         Route::get('me', [\App\Http\Controllers\Api\AuthController::class, 'me']);
         Route::get('users', [\App\Http\Controllers\Api\AuthController::class, 'index']);
+        Route::get('user/{email}',[\App\Http\Controllers\Api\AuthController::class, 'getUserByEmail']);
 
         //Tasks
         Route::apiResource('tasks', \App\Http\Controllers\Api\TaskController::class)->only(['index', 'store', 'update']);

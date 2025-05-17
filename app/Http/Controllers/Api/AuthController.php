@@ -106,6 +106,28 @@ class AuthController extends Controller
         return ApiHelper::apiResponse(['user' => new UserResource($user->refresh())]);
     }
 
+
+   public function getUserByEmail(string $email)
+{
+    try {
+        $user = User::where('email', $email)->first();
+
+        if(!$user) {
+            return ApiHelper::apiResponse([
+                'msg' => 'البريد غير موجود في النظام'
+            ], 404, 'error');
+        }
+
+        return ApiHelper::apiResponse([
+            'user' => new UserResource($user->makeHidden(['password', 'remember_token'])) // إخفاء الحساسة
+        ], 200, 'success');
+
+    } catch (\Exception $e) {
+        return ApiHelper::apiResponse([
+            'msg' => 'حدث خطأ في الخادم'
+        ], 500, 'error');
+    }
+}
     /**
      * Display a listing of the resource.
      */

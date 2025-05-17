@@ -52,7 +52,7 @@ class CreateOrderRequest extends FormRequest
             'price_tr' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'far_tr' => ['sometimes', 'nullable', 'numeric', 'min:0'],
 
-            'pick_id' => ['required', 'exists:users,id'],
+            'pick_id' => ['nullable'],
             'far_sender' => ['required', 'boolean'],
             'qr_code' => ['required','max:255', 'unique:orders,qr_code'],
             // 'allow_duplicates' => ['sometimes', 'boolean'],
