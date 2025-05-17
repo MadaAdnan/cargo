@@ -25,7 +25,10 @@ class ListAccounts extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+
             Actions\CreateAction::make(),
+             // تجميع الأزرار في مجموعة واحدة
+            Actions\ActionGroup::make([
             Actions\Action::make('quid_usd')->form([
                 Select::make('source_id')->options(User::WithAccount()->active()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('من حساب')->required(),
                 Select::make('target_id')->options(User::WithAccount()->active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
@@ -176,6 +179,11 @@ class ListAccounts extends ListRecords
                             Notification::make('error')->danger()->title('خطأ في العملية')->body($e->getMessage())->send();
                         }
                     })->label('سند قيد SYP'),
+                     ])
+            ->label(' سندات قيد فردية') // عنوان المجموعة
+            ->icon('heroicon-o-document-text') // أيقونة المجموعة
+            ->button() // لجعلها تظهر كزر بدلاً من قائمة منسدلة مباشرة
+            ->color('primary'), // لون الزر
            /* Actions\Action::make('multi_Tr')->form([
 
                 Repeater::make('balances')->schema([
@@ -335,7 +343,7 @@ class ListAccounts extends ListRecords
 
                     }
                 })->label('سند دولار متعدد'),*/
-
+        Actions\ActionGroup::make([
             Actions\Action::make('multi_Tr')->form([
                 Repeater::make('balances')->schema([
                     Grid::make(4)->schema([
@@ -504,7 +512,12 @@ class ListAccounts extends ListRecords
                             DB::rollBack();
                         }
                     })->label('سند سوري متعدد'),
-                    Actions\Action::make('quid_pending')->form([
+                     ])
+            ->label('سندات قيد متعددة') // عنوان المجموعة
+            ->icon('heroicon-o-document-text') // أيقونة المجموعة
+            ->button() // لجعلها تظهر كزر بدلاً من قائمة منسدلة مباشرة
+            ->color('primary'), // لون الزر
+                    Actions\Action::make(name: 'quid_pending')->form([
                         Select::make('source_id')->options(User::WithAccount()->active()->select('id', 'name')->pluck('name', 'id'))->searchable()->label(' الحساب')->required(),
                         // Select::make('target_id')->options(User::WithAccount()->active()->hideGlobal()->select('id', 'name')->pluck('name', 'id'))->searchable()->label('إلى حساب')->required(),
                         // TextInput::make('amount')->required()->numeric()->rules([
@@ -545,6 +558,143 @@ class ListAccounts extends ListRecords
                                 Notification::make('error')->danger()->title('خطأ في العملية')->body($e->getMessage())->send();
                             }
                         })->label('سند تعليق'),
+                                        // سند قيد متعدد
+                Actions\Action::make('multi_Quid')->form([
+                    Repeater::make('balances')->schema([
+                        Grid::make(4)->schema([
+                            Select::make('user_id')->options(User::withAccount()->active()->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
+                            TextInput::make('info')->label('البيان'),
+                            Select::make('currency_id')
+                            ->label('العملة')
+                            ->options([
+                                1 => 'دولار',
+                                2 => 'تركي',
+                                3 => 'سوري',
+                            ])
+                            ->default(1)
+                            ->required()
+                            ->reactive(), // مهم لتحديث القيم عند تغيير العملة
+                            TextInput::make('ex_cur')
+                            ->label('معامل الصرف')
+                            ->default(1)->numeric()
+                            ->visible(fn ($get) => in_array($get('currency_id'), [2, 3])),
+                            TextInput::make('credit')->label('مدين')->default(0)->numeric(),
+                            TextInput::make('debit')->label('دائن')->default(0)->numeric(),
+
+                        ]),
+
+                    ])->defaultItems(10)->label('سند قيد متعدد')
+//  ->rules([
+//     fn (): Closure => function (string $attribute, $value, Closure $fail) {
+//         $totalCredit = '0';
+//         $totalDebit = '0';
+
+//         foreach ($value as $item) {
+//             $exchangeRate = '1';
+
+//             if (in_array($item['currency_id'], [2, 3])) {
+//                 $exchangeRate = isset($item['exchange_rate']) ? (string) $item['exchange_rate'] : '1';
+//             }
+
+//             // نحول القيم إلى نصوص لكي تستخدم في العمليات بدقة عالية
+//             $credit = isset($item['credit']) ? (string) $item['credit'] : '0';
+//             $debit = isset($item['debit']) ? (string) $item['debit'] : '0';
+
+//             // نضرب القيم بمعامل الصرف بدقة
+//             $creditInBaseCurrency = bcmul($credit, $exchangeRate, 10);
+//             $debitInBaseCurrency = bcmul($debit, $exchangeRate, 10);
+
+//             // نجمع بدقة عالية
+//             $totalCredit = bcadd($totalCredit, $creditInBaseCurrency, 10);
+//             $totalDebit = bcadd($totalDebit, $debitInBaseCurrency, 10);
+//         }
+
+//         if (bccomp($totalCredit, $totalDebit, 10) !== 0) {
+//             $fail("القيد غير متوازن بعد تحويل العملات (مجموع المدين لا يساوي مجموع الدائن).");
+//         }
+//     }
+// ])
+->rules([
+    fn (): Closure => function (string $attribute, $value, Closure $fail) {
+        $totalCredit = 0;
+        $totalDebit = 0;
+        $baseCurrency = 1; // الدولار كعملة أساس
+        $hasError = false;
+
+        foreach ($value as $index => $item) {
+            if (empty($item['user_id'])) {
+                continue;
+            }
+
+            $currency = $item['currency_id'] ?? $baseCurrency;
+
+
+            $exchangeRate = ($currency == $baseCurrency) ? 1 : (float)$item['ex_cur'];
+
+            // التحقق من أن معامل الصرف موجب
+            if ($exchangeRate <= 0) {
+                $fail("السطر " . ($index + 1) . ": معامل الصرف يجب أن يكون أكبر من الصفر");
+                $hasError = true;
+            }
+
+            $credit = (float)($item['credit'] ?? 0);
+            $debit = (float)($item['debit'] ?? 0);
+            if($exchangeRate == $baseCurrency){ // العملة دولار
+            $totalCredit += $credit * $exchangeRate;
+            $totalDebit += $debit * $exchangeRate;
+            }else{ // العملة سوري او تركي
+            $totalCredit += $credit / $exchangeRate;
+            $totalDebit += $debit / $exchangeRate;
+            }
+
+        }
+
+        if ($hasError) {
+            return;
+        }
+
+        // مقارنة دقيقة جداً بدون تقريب
+        if ($totalCredit !== $totalDebit) {
+            $diff = abs($totalCredit - $totalDebit);
+            $fail(sprintf(
+                "القيد غير متوازن. الفرق: %.8f دولار (المجموع المدين: %.8f - المجموع الدائن: %.8f)",
+                $diff,
+                $totalCredit,
+                $totalDebit
+            ));
+        }
+    }
+])
+
+                ])
+                    ->action(function ($data) {
+                        \DB::beginTransaction();
+                        try{
+                            $uuid=\Str::uuid();
+                            foreach ($data['balances'] as $item){
+                                if($item['credit']==0 && $item['debit']==0){
+                                    continue;
+                                }
+                                Balance::create([
+                                    'uuid'=>$uuid,
+                                    'currency_id'=>$item['currency_id'],
+                                    'ex_cur'=>$item['ex_cur'],
+                                    'debit'=>$item['debit'],
+                                    'credit'=>$item['credit'],
+                                    'info'=>$item['info'] .
+         (in_array($item['currency_id'], [2, 3]) ? ' - معامل الصرف: ' . ($item['ex_cur'] ?? 1) : ''),
+                                    'user_id'=>$item['user_id'],
+                                    'pending'=>false,
+                                    'is_complete'=>true,
+                                ]);
+                            }
+
+                            DB::commit();
+                        }catch (\Exception|\Error $e){
+                            DB::rollBack();
+                        }
+                    })->label('سند قيد '),
+
         ];
     }
 }
