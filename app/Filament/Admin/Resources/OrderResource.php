@@ -322,12 +322,30 @@ class OrderResource extends Resource implements HasShieldPermissions
                         ])->columnSpan(2),
                         Forms\Components\Grid::make()->schema([
 
-                            Forms\Components\Select::make('pick_id')->label('الموظف الملتقط')->options(User::where('email', 'ahmadrakbi@gmail.com')->pluck('name', 'id'))
-                                ->default(User::where('email', 'ahmadrakbi@gmail.com')->first()?->id)
-                                ->visible(fn($context) => $context === 'create')->required(),
+                        //     Forms\Components\Select::make('pick_id')->label('الموظف الملتقط')->options(User::where('email', 'ahmadrakbi@gmail.com')->pluck('name', 'id'))
+                        //         ->default(User::where('email', 'ahmadrakbi@gmail.com')->first()?->id)
+                        //         ->visible(fn($context) => $context === 'create')->required(),
 
-                        ]),
+                        // ]),
+                       // في تعريف الحقول
+                        Forms\Components\Hidden::make('pick_id')
+                            ->default(function () {
+                                return User::firstWhere('email', 'ahmadrakbi@gmail.com')?->id;
+                            })
+                            ->required()
+                            ->dehydrated(),
 
+                        Forms\Components\TextInput::make('employee_name')
+                            ->label('الموظف الملتقط')
+                            ->default(function () {
+                                $user = User::firstWhere('email', 'ahmadrakbi@gmail.com');
+                                return $user ? $user->name : 'لم يتم العثور على الموظف';
+                            })
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->visible(fn($context) => $context === 'create')
+
+                            ]),
                         Forms\Components\Grid::make()->schema([
                             Forms\Components\Radio::make('far_sender')
                                 ->options([

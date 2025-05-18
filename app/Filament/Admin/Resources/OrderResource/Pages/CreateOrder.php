@@ -25,7 +25,10 @@ class CreateOrder extends CreateRecord
 
         $city_source=City::find($data['city_source_id']);
         $city_target=City::find($data['city_target_id']);
-
+        $pick_user = User::where('email', 'ahmadrakbi@gmail.com')
+                ->firstOrFail()
+                ->id;
+        $data['pick_id'] = $pick_user;
         $data['branch_source_id'] =$city_source->branch_id;
         $data['branch_target_id'] =$city_target->branch_id;
         $target=User::where('level',LevelUserEnum::BRANCH->value)->where('branch_id',$data['branch_target_id'] )->first();
