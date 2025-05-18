@@ -147,17 +147,17 @@ class BalancesCustomerPublicReport extends BaseWidget
                         ->searchable()
                 ])
 
-            // ->headerActions([
-            //     ExportAction::make()->exports([
-            //         ExcelExport::make()->withChunkSize(100)->fromTable()
-            //     ])
-            // ])
-            // ->actions([
-            //     Tables\Actions\Action::make('statement')
-            //         ->label('كشف حساب')
-            //         ->icon('heroicon-o-document-text')
-            //         ->url(fn (User $record) => route('user.statement', $record)),
-            // ])
+            ->headerActions([
+                ExportAction::make()->exports([
+                    ExcelExport::make()->withChunkSize(100)->fromTable()
+                ])
+            ])
+            ->actions([
+                Tables\Actions\Action::make('statement')
+                    ->label('كشف حساب')
+                    ->icon('heroicon-o-document-text')
+                    ->url(fn (User $record) => route('user.statement', $record)),
+            ])
             ->bulkActions([
                ExportBulkAction::make()->exports([
                         ExcelExport::make()->withChunkSize(300)->fromTable()
