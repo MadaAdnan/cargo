@@ -65,6 +65,18 @@ class BalancesCustomerPublicReport extends BaseWidget
                         0)
                     ) AS far_try
                 "),
+                         // إضافة تعداد الشحنات
+                DB::raw("
+                    COUNT(
+                        CASE WHEN orders.price > 0 OR orders.far > 0 THEN 1 END
+                    ) AS no_order_usd
+                "),
+                DB::raw("
+                    COUNT(
+                        CASE WHEN orders.price_tr > 0 OR orders.far_tr > 0 THEN 1 END
+                    ) AS no_order_try
+                "),
+
             ])
                 ->join('orders', function($join) use ($startDate, $endDate) {
                     $join->on('users.id', '=', 'orders.sender_id')
@@ -83,7 +95,11 @@ class BalancesCustomerPublicReport extends BaseWidget
                     ->sortable(),
 
                 // أرصدة الدولار
-               Tables\Columns\TextColumn::make('price_usd')
+                Tables\Columns\TextColumn::make('no_order_usd')
+                ->label('عدد الشحنات دولار')
+                ->color('success'),
+
+                Tables\Columns\TextColumn::make('price_usd')
                 ->label('قيمة الشحنات دولار')
                 ->prefix('$ ')
                 ->color('success'),
@@ -95,6 +111,10 @@ class BalancesCustomerPublicReport extends BaseWidget
 
 
                 // أرصدة الليرة التركية
+              Tables\Columns\TextColumn::make('no_order_try')
+                ->label('عدد الشحنات تركي')
+                ->color('success'),
+
                 Tables\Columns\TextColumn::make('price_try')
                     ->label(' قيمة الشحنات تركي')
                     ->prefix('₺ ')

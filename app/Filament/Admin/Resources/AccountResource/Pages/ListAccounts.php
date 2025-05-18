@@ -12,12 +12,14 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\DB;
 use App\Enums\ActivateStatusEnum;
-
+use Filament\Support\Enums\MaxWidth;
+use Filament\Forms\Components\Actions\Action;
 class ListAccounts extends ListRecords
 {
     protected static string $resource = AccountResource::class;
@@ -558,12 +560,21 @@ class ListAccounts extends ListRecords
                                 Notification::make('error')->danger()->title('خطأ في العملية')->body($e->getMessage())->send();
                             }
                         })->label('سند تعليق'),
-                                        // سند قيد متعدد
+           // سند قيد متعدد
                 Actions\Action::make('multi_Quid')->form([
+
                     Repeater::make('balances')->schema([
-                        Grid::make(4)->schema([
-                            Select::make('user_id')->options(User::withAccount()->active()->pluck('name', 'id'))->searchable()->required()->label('الحساب'),
-                            TextInput::make('info')->label('البيان'),
+                        // Grid::make(columns: 8)->schema([ // زيادة عرض الشاشة
+                        Select::make('user_id')->options(User::withAccount()->active()->pluck('name', 'id'))->searchable()
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, $set) {
+                                $set('required_fields', !empty($state));
+                            })
+                             ->columnSpan(2) // توسيع حقل ,
+                            ->label('الحساب'),
+                            TextInput::make('info')
+                            ->label('البيان')
+                            ->columnSpan(2), // توسيع حقل البيان,
                             Select::make('currency_id')
                             ->label('العملة')
                             ->options([
@@ -572,101 +583,76 @@ class ListAccounts extends ListRecords
                                 3 => 'سوري',
                             ])
                             ->default(1)
-                            ->required()
+                            ->required(fn ($get) => !empty($get('user_id')))
                             ->reactive(), // مهم لتحديث القيم عند تغيير العملة
                             TextInput::make('ex_cur')
                             ->label('معامل الصرف')
                             ->default(1)->numeric()
                             ->visible(fn ($get) => in_array($get('currency_id'), [2, 3])),
-                            TextInput::make('credit')->label('مدين')->default(0)->numeric(),
-                            TextInput::make('debit')->label('دائن')->default(0)->numeric(),
+                            TextInput::make('credit')->label('مدين')->default(0)->numeric()->required(fn ($get) => !empty($get('user_id'))),
+                            TextInput::make('debit')->label('دائن')->default(0)->numeric()->required(fn ($get) => !empty($get('user_id'))),
 
-                        ]),
+                        // ]),
 
-                    ])->defaultItems(10)->label('سند قيد متعدد')
-//  ->rules([
-//     fn (): Closure => function (string $attribute, $value, Closure $fail) {
-//         $totalCredit = '0';
-//         $totalDebit = '0';
+                    ])->defaultItems(9)
+                    ->label('سند قيد متعدد')
+                     ->columns(columns: 9)
+                     ->reorderable(false)
+                    //  ->deletable(false)
 
-//         foreach ($value as $item) {
-//             $exchangeRate = '1';
+                        ->rules([
+                            fn (): Closure => function (string $attribute, $value, Closure $fail) {
+                                $totalCredit = 0;
+                                $totalDebit = 0;
+                                $baseCurrency = 1; // الدولار كعملة أساس
+                                $hasError = false;
 
-//             if (in_array($item['currency_id'], [2, 3])) {
-//                 $exchangeRate = isset($item['exchange_rate']) ? (string) $item['exchange_rate'] : '1';
-//             }
+                                foreach ($value as $index => $item) {
+                                    if (empty($item['user_id'])) {
+                                        continue;
+                                    }
 
-//             // نحول القيم إلى نصوص لكي تستخدم في العمليات بدقة عالية
-//             $credit = isset($item['credit']) ? (string) $item['credit'] : '0';
-//             $debit = isset($item['debit']) ? (string) $item['debit'] : '0';
-
-//             // نضرب القيم بمعامل الصرف بدقة
-//             $creditInBaseCurrency = bcmul($credit, $exchangeRate, 10);
-//             $debitInBaseCurrency = bcmul($debit, $exchangeRate, 10);
-
-//             // نجمع بدقة عالية
-//             $totalCredit = bcadd($totalCredit, $creditInBaseCurrency, 10);
-//             $totalDebit = bcadd($totalDebit, $debitInBaseCurrency, 10);
-//         }
-
-//         if (bccomp($totalCredit, $totalDebit, 10) !== 0) {
-//             $fail("القيد غير متوازن بعد تحويل العملات (مجموع المدين لا يساوي مجموع الدائن).");
-//         }
-//     }
-// ])
-->rules([
-    fn (): Closure => function (string $attribute, $value, Closure $fail) {
-        $totalCredit = 0;
-        $totalDebit = 0;
-        $baseCurrency = 1; // الدولار كعملة أساس
-        $hasError = false;
-
-        foreach ($value as $index => $item) {
-            if (empty($item['user_id'])) {
-                continue;
-            }
-
-            $currency = $item['currency_id'] ?? $baseCurrency;
+                                    $currency = $item['currency_id'] ?? $baseCurrency;
 
 
-            $exchangeRate = ($currency == $baseCurrency) ? 1 : (float)$item['ex_cur'];
+                                    $exchangeRate = ($currency == $baseCurrency) ? 1 : (float)$item['ex_cur'];
 
-            // التحقق من أن معامل الصرف موجب
-            if ($exchangeRate <= 0) {
-                $fail("السطر " . ($index + 1) . ": معامل الصرف يجب أن يكون أكبر من الصفر");
-                $hasError = true;
-            }
+                                    // التحقق من أن معامل الصرف موجب
+                                    if ($exchangeRate <= 0) {
+                                        $fail("السطر " . ($index + 1) . ": معامل الصرف يجب أن يكون أكبر من الصفر");
+                                        $hasError = true;
+                                    }
 
-            $credit = (float)($item['credit'] ?? 0);
-            $debit = (float)($item['debit'] ?? 0);
-            if($exchangeRate == $baseCurrency){ // العملة دولار
-            $totalCredit += $credit * $exchangeRate;
-            $totalDebit += $debit * $exchangeRate;
-            }else{ // العملة سوري او تركي
-            $totalCredit += $credit / $exchangeRate;
-            $totalDebit += $debit / $exchangeRate;
-            }
+                                    $credit = (float)($item['credit'] ?? 0);
+                                    $debit = (float)($item['debit'] ?? 0);
+                                    if($exchangeRate == $baseCurrency){ // العملة دولار
+                                    $totalCredit += $credit * $exchangeRate;
+                                    $totalDebit += $debit * $exchangeRate;
+                                    }else{ // العملة سوري او تركي
+                                    $totalCredit += $credit / $exchangeRate;
+                                    $totalDebit += $debit / $exchangeRate;
+                                    }
 
-        }
+                                }
 
-        if ($hasError) {
-            return;
-        }
+                                if ($hasError) {
+                                    return;
+                                }
 
-        // مقارنة دقيقة جداً بدون تقريب
-        if ($totalCredit !== $totalDebit) {
-            $diff = abs($totalCredit - $totalDebit);
-            $fail(sprintf(
-                "القيد غير متوازن. الفرق: %.8f دولار (المجموع المدين: %.8f - المجموع الدائن: %.8f)",
-                $diff,
-                $totalCredit,
-                $totalDebit
-            ));
-        }
-    }
-])
+                                // مقارنة دقيقة جداً بدون تقريب
+                                if ($totalCredit !== $totalDebit) {
+                                    $diff = abs($totalCredit - $totalDebit);
+                                    $fail(sprintf(
+                                        "القيد غير متوازن. الفرق: %.8f دولار (المجموع المدين: %.8f - المجموع الدائن: %.8f)",
+                                        $diff,
+                                        $totalCredit,
+                                        $totalDebit
+                                    ));
+                                }
+                            }
+                        ])
 
-                ])
+                ]) ->modalWidth(MaxWidth::SevenExtraLarge)
                     ->action(function ($data) {
                         \DB::beginTransaction();
                         try{
@@ -682,7 +668,7 @@ class ListAccounts extends ListRecords
                                     'debit'=>$item['debit'],
                                     'credit'=>$item['credit'],
                                     'info'=>$item['info'] .
-         (in_array($item['currency_id'], [2, 3]) ? ' - معامل الصرف: ' . ($item['ex_cur'] ?? 1) : ''),
+                                     (in_array($item['currency_id'], [2, 3]) ? ' - معامل الصرف: ' . ($item['ex_cur'] ?? 1) : ''),
                                     'user_id'=>$item['user_id'],
                                     'pending'=>false,
                                     'is_complete'=>true,
@@ -693,7 +679,8 @@ class ListAccounts extends ListRecords
                         }catch (\Exception|\Error $e){
                             DB::rollBack();
                         }
-                    })->label('سند قيد '),
+                    })->label('سند قيد ')
+
 
         ];
     }
