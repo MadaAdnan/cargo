@@ -37,9 +37,12 @@ class ViewSanadat extends ListRecords
                              return "سندات قيد #{$uuids[$record->uuid]}";
                     })
                     ->getDescriptionFromRecordUsing(function (Balance $record) {
-                        $totalCredit = Balance::where('uuid', $record->uuid)->sum('credit');
-                        $totalDebit = Balance::where('uuid', $record->uuid)->sum('debit');
-                        return "المدين: {$totalCredit} | الدائن: {$totalDebit}";
+                        $totalCredit = Balance::where('uuid', $record->uuid)->where('currency_id' , 1)->sum('credit');
+                        $totalDebit = Balance::where('uuid', $record->uuid)->where('currency_id' , 1)->sum('debit');
+                        $totalCredittry = Balance::where('uuid', $record->uuid)->where('currency_id' , 2)->sum('credit');
+                        $totalDebittry = Balance::where('uuid', $record->uuid)->where('currency_id' , 2)->sum('debit');
+
+                        return "المدين$ :  {$totalCredit} |  الدائن$ :  {$totalDebit} || المدين ₺: {$totalCredittry} |  الدائن ₺: {$totalDebittry}";
                     }),
             ])
             ->columns([
@@ -53,6 +56,8 @@ class ViewSanadat extends ListRecords
                     ->label('دائن'),
                 Tables\Columns\TextColumn::make('currency.name')
                     ->label('العملة'),
+                Tables\Columns\TextColumn::make('ex_cur')
+                    ->label('سعر الصرف'),
                 Tables\Columns\TextColumn::make('info')
                     ->label('البيان'),
                 Tables\Columns\TextColumn::make('created_at')
