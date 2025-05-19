@@ -599,6 +599,66 @@ class ListAccounts extends ListRecords
                      ->columns(columns: 9)
                      ->reorderable(false)
                     //  ->deletable(false)
+                     ->extraItemActions([
+                            Action::make('check_balance')
+                                ->label('موازنة')
+                                ->icon('heroicon-o-scale')
+                                ->color('primary')
+                                ->action(function ($get) {
+                                    $items = $get('balances');
+                                    $totalCredit = 0;
+                                    $totalDebit = 0;
+                                    $baseCurrency = 1;
+                                    $hasEntries = false;
+
+                                    foreach ($items as $index => $item) {
+                                        if (empty($item['user_id'])) continue;
+
+                                        $hasEntries = true;
+                                        $currency = $item['currency_id'] ?? $baseCurrency;
+                                        $exchangeRate = ($currency == $baseCurrency) ? 1 : (float)($item['ex_cur'] ?? 1);
+
+                                        $credit = (float)($item['credit'] ?? 0);
+                                        $debit = (float)($item['debit'] ?? 0);
+
+                                        if ($currency == $baseCurrency) {
+                                            $totalCredit += $credit * $exchangeRate;
+                                            $totalDebit += $debit * $exchangeRate;
+                                        } else {
+                                            $totalCredit += $credit / $exchangeRate;
+                                            $totalDebit += $debit / $exchangeRate;
+                                        }
+                                    }
+
+                                    if (!$hasEntries) {
+                                        return Notification::make()
+                                            ->title('لا توجد قيود مدخلة')
+                                            ->danger()
+                                            ->send();
+                                    }
+
+                                    $diff = abs($totalCredit - $totalDebit);
+
+                                    if ($diff < 0.0001) { // هامش خطأ صغير للتعويم
+                                        Notification::make()
+                                            ->title('الميزانية متوازنة بنجاح')
+                                            ->success()
+                                            ->body('المجموع المدين: ' . number_format($totalCredit, 2) . ' دولار')
+                                            ->send();
+                                    } else {
+                                        Notification::make()
+                                            ->title('الميزانية غير متوازنة')
+                                            ->danger()
+                                            ->body(sprintf(
+                                                'الفرق: %.2f دولار (المدين: %.2f - الدائن: %.2f)',
+                                                $diff,
+                                                $totalCredit,
+                                                $totalDebit
+                                            ))
+                                            ->send();
+                                    }
+                                })
+                            ])
 
                         ->rules([
                             fn (): Closure => function (string $attribute, $value, Closure $fail) {
@@ -652,7 +712,8 @@ class ListAccounts extends ListRecords
                             }
                         ])
 
-                ]) ->modalWidth(MaxWidth::SevenExtraLarge)
+                 ]) ->modalWidth(MaxWidth::SevenExtraLarge)
+
                     ->action(function ($data) {
                         \DB::beginTransaction();
                         try{
@@ -667,6 +728,7 @@ class ListAccounts extends ListRecords
                                     'ex_cur'=>$item['ex_cur'],
                                     'debit'=>$item['debit'],
                                     'credit'=>$item['credit'],
+                                    'type' => BalanceTypeEnum::SANADQUID->value,
                                     'info'=>$item['info'] .
                                      (in_array($item['currency_id'], [2, 3]) ? ' - معامل الصرف: ' . ($item['ex_cur'] ?? 1) : ''),
                                     'user_id'=>$item['user_id'],
@@ -679,7 +741,14 @@ class ListAccounts extends ListRecords
                         }catch (\Exception|\Error $e){
                             DB::rollBack();
                         }
-                    })->label('سند قيد ')
+                    })->label('سند قيد '),
+
+                       Actions\Action::make('sanadat_view')
+                                ->label('عرض سندات القيد')
+                                ->url(AccountResource::getUrl('view-sanadat'))
+                                // ->icon('heroicon-o-document-text')
+                                ->color('primary'),
+
 
 
         ];

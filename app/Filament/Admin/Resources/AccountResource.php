@@ -179,6 +179,7 @@ class AccountResource extends Resource implements HasShieldPermissions
             'index' => Pages\ListAccounts::route('/'),
             'create' => Pages\CreateAccount::route('/create'),
             'edit' => Pages\EditAccount::route('/{record}/edit'),
+            'view-sanadat' => Pages\ViewSanadat::route('/view-sanadat'),
         ];
     }
 }

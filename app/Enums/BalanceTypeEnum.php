@@ -11,6 +11,7 @@ enum BalanceTypeEnum:string implements HasLabel ,HasColor,HasIcon
     case PUSH='push';
     case CATCH='catch';
     case START='start';
+    case SANADQUID ='sanadquid';
    // case TASK='branch';
 
 
@@ -20,6 +21,7 @@ enum BalanceTypeEnum:string implements HasLabel ,HasColor,HasIcon
             self::PUSH => 'سند دفع',
             self::CATCH => 'سند قبض',
             self::START => 'بداية المدة',
+            self::SANADQUID => 'سند قيد',
            // self::TASK => 'نقل',
 
         };
@@ -31,6 +33,7 @@ enum BalanceTypeEnum:string implements HasLabel ,HasColor,HasIcon
             self::PUSH => 'info',
             self::CATCH => 'success',
             self::START => 'danger',
+            self::SANADQUID => 'primary',
           //  self::TASK => 'warning',
 
         };
