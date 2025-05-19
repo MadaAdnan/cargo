@@ -179,6 +179,7 @@ class TaskController extends Controller
         $userId = auth()->id();
 
         $tasksCount = Task::where('is_complete', 0)
+        ->where('is_cancel', false)
             ->where(function ($query) use ($userId) {
                 $query->where('user_id', $userId)
                       ->orWhere('delegate_id', $userId);
