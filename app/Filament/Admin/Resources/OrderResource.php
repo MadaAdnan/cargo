@@ -541,7 +541,8 @@ class OrderResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record) => 'موظف الإلتقاط : ' . $record->pick?->name)
                     ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل')->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary')->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('marker')->formatStateUsing(fn($record)=>$record->markers->first()?->user?->name)->label('تواجد الشحنة')->color('primary')->toggleable(isToggledHiddenByDefault: false),
+                // Tables\Columns\TextColumn::make('marker')->formatStateUsing(fn($record)=>$record->markers->first()?->user?->name)->label('تواجد الشحنة')->color('primary')->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('currentUser.name')->label('تواجد الشحنة')->color('primary'),
 
 
 
@@ -915,7 +916,7 @@ class OrderResource extends Resource implements HasShieldPermissions
     public static function getRelations(): array
     {
         return [
-            RelationManagers\AgenciesRelationManager::class,
+            // RelationManagers\AgenciesRelationManager::class,
             RelationManagers\MarkersRelationManager::class
         ];
     }

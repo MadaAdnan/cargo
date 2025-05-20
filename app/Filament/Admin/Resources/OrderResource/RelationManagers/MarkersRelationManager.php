@@ -41,9 +41,12 @@ class MarkersRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')->label('الموظف'),
-                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d H:i')->label('التاريخ'),
-            ])
+                Tables\Columns\TextColumn::make('user.name')->label('في عهدة '),
+                Tables\Columns\TextColumn::make('created_at')->date('Y-m-d H:i')->label('تاريخ الاستلام'),
+                Tables\Columns\TextColumn::make('info')
+                ->label('الحالة')
+                ->wrap()
+           ])->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])

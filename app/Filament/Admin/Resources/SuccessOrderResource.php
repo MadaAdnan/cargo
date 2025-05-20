@@ -779,6 +779,7 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
          Tables\Actions\BulkAction::make('returnTOPending')
                       ->action(function ($records) {
                         foreach ($records as $record) {
+                            HelperBalance::transferAfterReturn($record);
                             DB::beginTransaction();
                             try {
                                    $given_id = User::where([
@@ -803,7 +804,6 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                                 Notification::make('error')->title('فشل العملية')->body($e->getMessage())->danger()->send();
 
                             }
-
                         }
                     })->label('اعادة الشحنة لحالة النقل')->requiresConfirmation(),
 

@@ -5,6 +5,7 @@ namespace App\Helper;
 use App\Enums\BalanceTypeEnum;
 use App\Models\Balance;
 use App\Models\Order;
+use App\Models\Marker;
 use App\Models\User;
 use Str;
 
@@ -39,7 +40,14 @@ class HelperBalance
     {
         $sender = User::find($order->sender_id);
         $staff = User::find($order->receive_id);
-
+        $order->current_user =  $order->pick_id;
+         if ($order->current_user) {
+                    Marker::create([
+                   'order_id' => $order->id,
+                   'user_id' => $order->current_user,
+                   'info'=> 'تم التقاط الشحنة'
+               ]);
+             }
         try {
             if ($order->far_sender == true) {
                 if ($order->far > 0) {
@@ -217,6 +225,15 @@ class HelperBalance
 
     public static function completeOrder(Order $order)
     {
+        $order->update(['current_user' => $order->receive_id ]);
+         if ($order->current_user) {
+              Marker::create([
+             'order_id' => $order->id,
+             'user_id' => $order->current_user,
+             'info'=> 'تم تسليم الشحنة'
+            ]);
+            }
+
         $uuid = Str::uuid();
         $sender = User::find($order->sender_id);
         $staff = User::find($order->given_id);
@@ -552,6 +569,14 @@ class HelperBalance
 
     public static function confirmReturn(Order $order , $far =0 )
     {
+        $order->update(['current_user' => $order?->sender_id]);
+         if ($order->current_user) {
+              Marker::create([
+             'order_id' => $order->id,
+             'user_id' => $order->current_user,
+             'info'=> 'تم تاكيد تسليم الشحنة كمرتجع'
+            ]);
+            }
         $customer = $order->sender;
         $staff = $order->returned;
         $orderBalance = Balance::where('order_id', $order->id)->whereNotNull('color')->first();
@@ -734,6 +759,28 @@ class HelperBalance
         }
     }
 
+        public static function Return (Order $order , $far =0 )
+    {
+        // $order->update(['current_user' => $order?->given_id]);
+         if ($order->current_user) {
+              Marker::create([
+             'order_id' => $order->id,
+             'user_id' => $order->current_user,
+             'info'=> 'تم تحديد الشحنة كمرتجع'
+            ]);
+            }
+    }
+    public static function transferAfterReturn (Order $order , $far =0 )
+    {
+        // $order->update(['current_user' => $order?->given_id]);
+         if ($order->current_user) {
+              Marker::create([
+             'order_id' => $order->id,
+             'user_id' => $order->current_user,
+             'info'=> 'تم اتاحة الشحنة للنقل بعد ان وضعت كمرتجع'
+            ]);
+            }
+    }
     public static function getBalanceTypeArray(){
         return [
             'ارساليات'=>'ارساليات',
@@ -751,6 +798,14 @@ class HelperBalance
         $sender = User::find($order->sender_id);
         // $staff = User::find($order->given_id);
         // $receive = User::find($order->receive_id);
+         $order->update(['current_user' => $order->sender_id ]);
+         if ($order->current_user) {
+              Marker::create([
+             'order_id' => $order->id,
+             'user_id' => $order->current_user,
+             'info'=> 'تم الغاء الشحنة'
+            ]);
+            }
 
          try {
             Balance::create([

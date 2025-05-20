@@ -9,6 +9,7 @@ use App\Helper\HelperBalance;
 use App\Models\Balance;
 use App\Models\Branch;
 use App\Models\Order;
+use App\Models\Marker;
 use Filament\Notifications\Notification;
 use App\Enums\LevelUserEnum;
 use Illuminate\Foundation\Auth\User;
@@ -41,6 +42,7 @@ class OrderObserver
         if ($given_id != null) {
             $order->status = OrderStatusEnum::TRANSFER;
         }
+        $order->current_user =  $order->pick_id;
         Cache::forget('navigation_badge_count_order');
         Cache::forget('navigation_badge_count_pending_order');
         Cache::forget('navigation_badge_count_success_order');
@@ -53,14 +55,10 @@ class OrderObserver
      */
     public function created(Order $order): void
     {
-
         if ($order->receive_id != null) {
             \DB::beginTransaction();
             try {
-
                 HelperBalance::completePicker($order);
-
-
                 \DB::commit();
             } catch (\Exception | \Error $e) {
                 \DB::rollBack();

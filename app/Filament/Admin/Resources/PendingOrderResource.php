@@ -928,6 +928,7 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                     Tables\Actions\BulkAction::make('returned_order')
                         ->action(function ($records) {
                         foreach ($records as $record) {
+                            HelperBalance::Return($record);
                             DB::beginTransaction();
                             try {
                                 $user = User::where([
@@ -938,7 +939,6 @@ class PendingOrderResource extends Resource implements HasShieldPermissions
                                 $dataUpdate['returned_id'] = $record->pick_id;
                                 $dataUpdate['status'] = OrderStatusEnum::RETURNED->value;
                                 $record->update($dataUpdate);
-
                                 DB::commit();
                                 Notification::make('success')->title('نجاح')->body('تم تحديد الشحنات كمرتجع بنجاح')->success()->send();
 

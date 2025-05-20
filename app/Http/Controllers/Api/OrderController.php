@@ -79,10 +79,10 @@ class OrderController extends Controller
 
         try {
             $order->update(['given_id' => auth()->id(), 'status' => OrderStatusEnum::SUCCESS->value,'canceled_info'=>$msg , 'current_user' => $order?->receive_id]);
-            Marker::create([
-                'user_id' => $order?->receive_id,
-                'order_id' => $order->id
-            ]);
+            // Marker::create([
+            //     'user_id' => $order?->receive_id,
+            //     'order_id' => $order->id
+            // ]); // تمت المعالجة ضمن Helper
             HelperBalance::completeOrder($order);
             DB::commit();
             $order->refresh();
@@ -132,6 +132,7 @@ class OrderController extends Controller
             $order->update($dataUpdate);
             DB::commit();
             $order->refresh();
+            HelperBalance::Return($order);
             return ApiHelper::apiResponse([
                 'order' => new OrderResource($order),
             ]);
@@ -173,10 +174,10 @@ class OrderController extends Controller
         DB::beginTransaction();
         try {
             $order->update(['status' => OrderStatusEnum::CONFIRM_RETURNED->value,'canceled_info'=>$msg , 'current_user' => $order?->sender_id]);
-            Marker::create([
-                'user_id' => $order?->sender_id,
-                'order_id' => $order->id
-            ]);
+            // Marker::create([
+            //     'user_id' => $order?->sender_id,
+            //     'order_id' => $order->id
+            // ]);
             HelperBalance::confirmReturn($order , $request->far);
             DB::commit();
             $order->refresh();
@@ -209,6 +210,7 @@ class OrderController extends Controller
         DB::beginTransaction();
         try {
             $order->update(['status' => OrderStatusEnum::CANCELED->value, 'canceled_info' => $request->msg]);
+            HelperBalance::cancelOrder($order);
             DB::commit();
             $order->refresh();
             return ApiHelper::apiResponse([
@@ -317,7 +319,8 @@ class OrderController extends Controller
             if ($user) {
                 Marker::create([
                     'user_id' => $user->id,
-                    'order_id' => $order->id
+                    'order_id' => $order->id,
+                    'info' => 'الشحنة مع موظف التوصيل الذي مسح الباركود'
                 ]);
                 $order->update(['current_user' => $userId]);
             }
