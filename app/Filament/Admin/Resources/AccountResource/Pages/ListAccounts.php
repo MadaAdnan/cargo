@@ -600,65 +600,160 @@ class ListAccounts extends ListRecords
                      ->reorderable(false)
                     //  ->deletable(false)
                      ->extraItemActions([
-                            Action::make('check_balance')
+                            Action::make('balance_row')
                                 ->label('موازنة')
                                 ->icon('heroicon-o-scale')
                                 ->color('primary')
-                                ->action(function ($get) {
-                                    $items = $get('balances');
-                                    $totalCredit = 0;
-                                    $totalDebit = 0;
-                                    $baseCurrency = 1;
-                                    $hasEntries = false;
+                                // ->before(function ($state, array $arguments) {
+                                // dd($arguments['item']);
+                                // })
+                                ->action(function ($state, array $arguments, callable $get, callable $set) {
+                                        // dd($arguments['item'], $state);
 
-                                    foreach ($items as $index => $item) {
-                                        if (empty($item['user_id'])) continue;
-
-                                        $hasEntries = true;
-                                        $currency = $item['currency_id'] ?? $baseCurrency;
-                                        $exchangeRate = ($currency == $baseCurrency) ? 1 : (float)($item['ex_cur'] ?? 1);
-
-                                        $credit = (float)($item['credit'] ?? 0);
-                                        $debit = (float)($item['debit'] ?? 0);
-
-                                        if ($currency == $baseCurrency) {
-                                            $totalCredit += $credit * $exchangeRate;
-                                            $totalDebit += $debit * $exchangeRate;
-                                        } else {
-                                            $totalCredit += $credit / $exchangeRate;
-                                            $totalDebit += $debit / $exchangeRate;
-                                        }
-                                    }
-
-                                    if (!$hasEntries) {
+                                    $rowIndex = $arguments['item'];
+                                    if ($rowIndex === null) {
                                         return Notification::make()
-                                            ->title('لا توجد قيود مدخلة')
+                                            ->title('خطأ في تحديد موضع السطر')
+                                            ->danger()
+                                            ->send();
+                                    }
+                                    $balances = $get('balances');
+                                    // dd($balances);
+                                    $baseCurrency = 1; // الدولار
+
+                                    $current = $balances[$rowIndex] ?? null;
+
+                                    if (!$current || empty($current['user_id']) || !in_array($current['currency_id'], [2, 3])) {
+                                        return Notification::make()
+                                            ->title('لا يمكن موازنة هذا السطر')
                                             ->danger()
                                             ->send();
                                     }
 
-                                    $diff = abs($totalCredit - $totalDebit);
+                                    $ex_cur = (float)($current['ex_cur'] ?? 0);
+                                    $credit = (float)($current['credit'] ?? 0);
+                                    $debit = (float)($current['debit'] ?? 0);
 
-                                    if ($diff < 0.0001) { // هامش خطأ صغير للتعويم
-                                        Notification::make()
-                                            ->title('الميزانية متوازنة بنجاح')
+                                    // ======= [ الحالة 1: موازنة أحد الحقول ] =======
+                                    if ($ex_cur > 1 && ($credit == 0 || $debit == 0)) {
+                                        $totalCredit = 0;
+                                        $totalDebit = 0;
+
+                                        foreach ($balances as $i => $item) {
+                                            if ($i == $rowIndex || empty($item['user_id'])) continue;
+
+                                            $currency = $item['currency_id'] ?? $baseCurrency;
+                                            $rate = ($currency == $baseCurrency) ? 1 : (float)($item['ex_cur'] ?? 1);
+
+                                            $totalCredit += ($currency == $baseCurrency)
+                                                ? (float)($item['credit'] ?? 0)
+                                                : (float)($item['credit'] ?? 0) / $rate;
+
+                                            $totalDebit += ($currency == $baseCurrency)
+                                                ? (float)($item['debit'] ?? 0)
+                                                : (float)($item['debit'] ?? 0) / $rate;
+                                        }
+
+                                        $diff = $totalCredit - $totalDebit;
+
+                                        if (abs($diff) < 0.0001) {
+                                            return Notification::make()
+                                                ->title('السند متوازن')
+                                                ->success()
+                                                ->send();
+                                        }
+
+                                        if ($diff > 0) {
+                                            // نحتاج زيادة "مدين"
+                                            $balances[$rowIndex]['debit'] = round($diff * $ex_cur, 2);
+                                            $balances[$rowIndex]['credit'] = 0;
+                                        } else {
+                                            // نحتاج زيادة "دائن"
+                                            $balances[$rowIndex]['credit'] = round(abs($diff) * $ex_cur, 2);
+                                            $balances[$rowIndex]['debit'] = 0;
+                                        }
+
+                                        $set('balances', $balances);
+
+                                        return Notification::make()
+                                            ->title('تمت موازنة السطر')
                                             ->success()
-                                            ->body('المجموع المدين: ' . number_format($totalCredit, 2) . ' دولار')
-                                            ->send();
-                                    } else {
-                                        Notification::make()
-                                            ->title('الميزانية غير متوازنة')
-                                            ->danger()
-                                            ->body(sprintf(
-                                                'الفرق: %.2f دولار (المدين: %.2f - الدائن: %.2f)',
-                                                $diff,
-                                                $totalCredit,
-                                                $totalDebit
-                                            ))
+                                            ->body('تم تعديل قيمة دائن أو مدين وفق الفرق.')
                                             ->send();
                                     }
+
+                                    // ======= [ الحالة 2: حساب معامل الصرف ] =======
+                                    if ($credit > 0 && $debit > 0 && $ex_cur == 1) {
+                                        // هذا غير منطقي: الاثنين موجودين، والمفترض فقط أحدهما
+                                        return Notification::make()
+                                            ->title('يرجى ملء حقل واحد فقط: دائن أو مدين')
+                                            ->danger()
+                                            ->send();
+                                    }
+
+                                    if (($credit > 0 || $debit > 0) && $ex_cur == 1) {
+                                        $totalCredit = 0;
+                                        $totalDebit = 0;
+
+                                        foreach ($balances as $i => $item) {
+                                            if ($i == $rowIndex || empty($item['user_id'])) continue;
+
+                                            $currency = $item['currency_id'] ?? $baseCurrency;
+                                            $rate = ($currency == $baseCurrency) ? 1 : (float)($item['ex_cur'] ?? 1);
+
+                                            $totalCredit += ($currency == $baseCurrency)
+                                                ? (float)($item['credit'] ?? 0)
+                                                : (float)($item['credit'] ?? 0) / $rate;
+
+                                            $totalDebit += ($currency == $baseCurrency)
+                                                ? (float)($item['debit'] ?? 0)
+                                                : (float)($item['debit'] ?? 0) / $rate;
+                                        }
+
+                                        $diff = $totalCredit - $totalDebit;
+
+                                        if (abs($diff) < 0.0001) {
+                                            return Notification::make()
+                                                ->title('السند متوازن')
+                                                ->success()
+                                                ->send();
+                                        }
+
+                                        if ($credit > 0 && $diff < 0) {
+
+                                            // نحتاج حساب معامل الصرف للدائن
+                                            $new_ex = abs($credit) / $diff;
+                                            $balances[$rowIndex]['ex_cur'] = round($new_ex, 4);
+                                        } elseif ($debit > 0 && $diff > 0) {
+                                            // نحتاج حساب معامل الصرف للمدين
+                                            $new_ex = abs($debit) / $diff;
+                                            $balances[$rowIndex]['ex_cur'] = round($new_ex, 4);
+                                        } else {
+                                            return Notification::make()
+                                                ->title('القيمة غير مناسبة لحساب المعامل')
+                                                ->danger()
+                                                ->send();
+                                        }
+
+                                        $set('balances', $balances);
+
+                                        return Notification::make()
+                                            ->title('تم حساب معامل الصرف')
+                                            ->success()
+                                            ->send();
+                                    }
+
+                                    // حالة غير معالجة
+                                    return Notification::make()
+                                        ->title('لم يتم استيفاء شروط الموازنة')
+                                        ->danger()
+                                        ->send();
                                 })
-                            ])
+                            // ->arguments([
+                            //         'statepath' => fn ($livewire, $get, $set, $component) => $component->getState(),
+                            //     ])
+                        ])
+
 
                         ->rules([
                             fn (): Closure => function (string $attribute, $value, Closure $fail) {
@@ -700,7 +795,7 @@ class ListAccounts extends ListRecords
                                 }
 
                                 // مقارنة دقيقة جداً بدون تقريب
-                                if ($totalCredit !== $totalDebit) {
+                                if (abs($totalCredit - $totalDebit) > 0.00001) {
                                     $diff = abs($totalCredit - $totalDebit);
                                     $fail(sprintf(
                                         "القيد غير متوازن. الفرق: %.8f دولار (المجموع المدين: %.8f - المجموع الدائن: %.8f)",
