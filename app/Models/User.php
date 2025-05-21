@@ -184,7 +184,7 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
     }
    public function getTotalBalanceTrySumAttribute(): float  // to Show Sum Syp In Table Users
     {
-        return (double) $this->total_balance_syp + (double) $this->total_balance_syp_pending;
+        return (double) $this->total_balance_tr + (double) $this->total_balance_tr_pending;
     }
     public function getTotalBalanceSypAttribute(): float
     {
