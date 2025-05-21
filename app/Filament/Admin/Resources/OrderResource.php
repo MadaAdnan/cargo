@@ -542,8 +542,15 @@ class OrderResource extends Resource implements HasShieldPermissions
                     ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل')->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary')->toggleable(isToggledHiddenByDefault: false),
                 // Tables\Columns\TextColumn::make('marker')->formatStateUsing(fn($record)=>$record->markers->first()?->user?->name)->label('تواجد الشحنة')->color('primary')->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('currentUser.name')->label('تواجد الشحنة')->color('primary'),
-
+                // Tables\Columns\TextColumn::make('currentUser.name')->label('تواجد الشحنة')->color('primary'),
+                Tables\Columns\TextColumn::make('currentUser.name')
+                ->label('تواجد الشحنة')
+                ->color('primary')
+                ->icon('heroicon-o-map-pin')
+                ->iconPosition('after')
+                ->url(fn (Order $record): string => static::getUrl('markers', ['record' => $record]))
+                ->description(fn (Order $record): string => $record->markers()->latest()->first()?->created_at?->diffForHumans() ?? 'لا يوجد تتبع')
+                ->tooltip('انقر لعرض سجل تتبع الشحنة'),
 
 
             ])
@@ -659,7 +666,11 @@ class OrderResource extends Resource implements HasShieldPermissions
                 Tables\Actions\Action::make('print')->url(fn($record)=>route('print',$record->id))->label('طباعة')->icon('fas-print'),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-
+                Tables\Actions\Action::make('track')
+                    ->label('تتبع الشحنة')
+                    ->icon('heroicon-o-map')
+                    ->color('info')
+                    ->url(fn (Order $record): string => static::getUrl('markers', ['record' => $record])),
                 //                Tables\Actions\ActionGroup::make([
                 //                    Tables\Actions\Action::make('set_picker')->form([
                 //                        Forms\Components\Select::make('pick_id')
@@ -917,7 +928,7 @@ class OrderResource extends Resource implements HasShieldPermissions
     {
         return [
             // RelationManagers\AgenciesRelationManager::class,
-            RelationManagers\MarkersRelationManager::class
+            // RelationManagers\MarkersRelationManager::class
         ];
     }
 
@@ -933,6 +944,7 @@ class OrderResource extends Resource implements HasShieldPermissions
             'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
             'fast-order' => Pages\FastOrder::route('/fast-order'),
+            'markers' => Pages\MarkersOrder::route('/{record}/markers'),
         ];
     }
 
