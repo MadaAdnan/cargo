@@ -35,7 +35,7 @@ class BalanceResource extends JsonResource
     return match((string)$this->currency_id) {
         '1' => '$',       // دولار
         '2' => '₺',       // ليرة تركية
-        '3' => 'ل.س',     // ليرة سورية
+        '3' => 'SYP',     // ليرة سورية
         default => '?',   // رمز افتراضي للقيم غير المعروفة
     };
 }
