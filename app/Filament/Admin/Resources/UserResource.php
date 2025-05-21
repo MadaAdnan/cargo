@@ -238,6 +238,7 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('total_balance_tr')->label('الرصيد TRY'),
                 Tables\Columns\TextColumn::make('total_balance_tr_pending')->label('الرصيد TRYقيد التحصيل'),
                 Tables\Columns\TextColumn::make('num_id')->formatStateUsing(fn($record)=>(double)$record->total_balance_tr+(double)$record->total_balance_tr_pending)->label('محصلة TRY'),
+                Tables\Columns\TextColumn::make('total_balance_try_sum') ->label('2محصلة TRY'),
 
                 Tables\Columns\TextColumn::make('total_balance_syp')->label('الرصيد SYP'),
                 Tables\Columns\TextColumn::make('total_balance_syp_pending')->label('الرصيد SYP قيد التحصيل'),

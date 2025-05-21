@@ -182,7 +182,10 @@ class User extends Authenticatable implements HasMedia, FilamentUser, HasAvatar
             ->selectRaw('SUM(credit) - SUM(debit) as total')->first()?->total ?? 0;
         return  HelperBalance::formatNumber($total);
     }
-
+   public function getTotalBalanceTrySumAttribute(): float  // to Show Sum Syp In Table Users
+    {
+        return (double) $this->total_balance_syp + (double) $this->total_balance_syp_pending;
+    }
     public function getTotalBalanceSypAttribute(): float
     {
         $total = DB::table('balances')->where('user_id', $this->id)->where('is_complete', true)
