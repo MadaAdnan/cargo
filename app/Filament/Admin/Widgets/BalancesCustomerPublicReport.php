@@ -15,6 +15,8 @@ use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Database\Eloquent\Builder;
 class BalancesCustomerPublicReport extends BaseWidget
 {
     use InteractsWithPageFilters;
@@ -154,4 +156,12 @@ class BalancesCustomerPublicReport extends BaseWidget
         ]),
             ]);
     }
+    protected function paginateTableQuery(Builder $query): Paginator
+{
+    return $query->simplePaginate(
+        ($this->getTableRecordsPerPage() === 'all')
+            ? $query->count()
+            : $this->getTableRecordsPerPage()
+    );
+}
 }
