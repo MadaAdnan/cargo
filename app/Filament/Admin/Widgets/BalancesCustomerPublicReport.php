@@ -90,7 +90,7 @@ class BalancesCustomerPublicReport extends BaseWidget
                     ->sortable(),
 
                  Tables\Columns\TextColumn::make('no_order')
-                ->label('عدد دولار')
+                ->label('عدد الشحنات')
                 ->color('Primary'),
                 // أرصدة الدولار
                 Tables\Columns\TextColumn::make('price_usd')
@@ -114,7 +114,7 @@ class BalancesCustomerPublicReport extends BaseWidget
                     ->label(' الاجور تركي')
                     ->prefix('₺ ')
                     ->color('warning'),
-            ])
+            ]) ->paginated([10, 25, 50, 100,200, 'all'])
             // ->filters([
             //  Tables\Filters\SelectFilter::make('id')->options(User::where('level', LevelUserEnum::USER->value)->pluck('name', 'id'))->searchable() ->label('اسم العميل')
 
