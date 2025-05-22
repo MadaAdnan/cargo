@@ -18,19 +18,64 @@ class BalanceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
-    {
-        $query = Balance::where("user_id", auth()->id());
-        // $balances=Balance::where('user_id',auth()->id())->latest()->paginate(30);
-        if($request->pending !== null){
-            $query->where("pending", $request->pending);
-        }
-        $balances = $query->latest()->paginate(30);
-        return ApiHelper::apiResponse([
-            'balance' => BalanceResource::collection($balances),
-            'paginate' => new PaginateResource($balances)
-        ]);
-    }
+    // public function index(Request $request)
+    // {
+    //     $query = Balance::where("user_id", auth()->id());
+    //     // $balances=Balance::where('user_id',auth()->id())->latest()->paginate(30);
+    //     if($request->pending !== null){
+    //         $query->where("pending", $request->pending);
+    //     }
+    //     $balances = $query->latest()->paginate(30);
+    //     return ApiHelper::apiResponse([
+    //         'balance' => BalanceResource::collection($balances),
+    //         'paginate' => new PaginateResource($balances)
+    //     ]);
+    // }
+public function index(Request $request)
+{
+    $balances = Balance::query()
+        ->where('user_id', auth()->id())
+        ->when($request->filled('pending'), fn($q) => $q->where('pending', $request->pending))
+        ->when($request->filled('currency_id'), fn($q) => $q->where('currency_id', $request->currency_id))
+
+        // إذا كان startDate و endDate موجودين ومتساويين => فلترة على يوم واحد فقط
+        ->when(
+            $request->filled('startDate') &&
+            $request->filled('endDate') &&
+            $request->startDate === $request->endDate,
+            fn($q) => $q->whereDate('created_at', $request->startDate)
+        )
+
+        // إذا كان startDate و endDate مختلفين => فلترة من تاريخ إلى تاريخ
+        ->when(
+            $request->filled('startDate') &&
+            $request->filled('endDate') &&
+            $request->startDate !== $request->endDate,
+            fn($q) => $q->whereBetween('created_at', [$request->startDate, $request->endDate])
+        )
+
+        // في حال فقط startDate موجودة
+        ->when(
+            $request->filled('startDate') && !$request->filled('endDate'),
+            fn($q) => $q->whereDate('created_at', '>=', $request->startDate)
+        )
+
+        // في حال فقط endDate موجودة
+        ->when(
+            !$request->filled('startDate') && $request->filled('endDate'),
+            fn($q) => $q->whereDate('created_at', '<=', $request->endDate)
+        )
+
+        ->latest()
+        ->paginate(30);
+
+    return ApiHelper::apiResponse([
+        'balance' => BalanceResource::collection($balances),
+        'paginate' => new PaginateResource($balances)
+    ]);
+}
+
+
 
     /**
      * Store a newly created resource in storage.
