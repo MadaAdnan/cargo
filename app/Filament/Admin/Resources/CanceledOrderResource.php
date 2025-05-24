@@ -500,7 +500,15 @@ class CanceledOrderResource extends Resource implements HasShieldPermissions
                     ->searchable()->color('danger'),
                 Tables\Columns\TextColumn::make('pick.name')->formatStateUsing(fn($record) => 'موظف الإلتقاط : ' . $record->pick?->name)
                     ->description(fn($record) => 'موظف التسليم : ' . $record->given?->name)->label('التوكيل'),
-                Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
+                Tables\Columns\TextColumn::make('currentUser.name')
+                ->label('تواجد الشحنة')
+                ->color('primary')
+                ->icon('heroicon-o-map-pin')
+                ->iconPosition('after')
+                ->url(fn (Order $record): string => OrderResource::getUrl('markers', ['record' => $record]))
+                ->description(fn (Order $record): string => $record->markers()->latest()->first()?->created_at?->diffForHumans() ?? 'لا يوجد تتبع')
+                ->tooltip('انقر لعرض سجل تتبع الشحنة'),
+                    Tables\Columns\TextColumn::make('note')->label('ملاحظات')->color('primary'),
 
 
             ])
