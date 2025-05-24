@@ -210,6 +210,14 @@ class AccountStatmentResource extends Resource implements HasShieldPermissions
 
                 //H: disabled the cell
                 //Tables\Columns\TextColumn::make('total')->label('الرصيد'),
+               Tables\Columns\TextColumn::make('order.currentUser.name')
+                ->label('تواجد الشحنة')
+                ->color('primary')
+                ->icon('heroicon-o-map-pin')
+                ->iconPosition('after')
+                ->url(fn ($record) => $record->order ? OrderResource::getUrl('markers', ['record' => $record->order]) : '#')
+                ->description(fn ($record) => optional($record->order?->markers()->latest()->first())->created_at?->diffForHumans() ?? 'لا يوجد تتبع')
+                ->tooltip('انقر لعرض سجل تتبع الشحنة'),
 
                 //H: get date and time and split them using two temporary columns
                 Tables\Columns\TextColumn::make('created_at')->date('Y-m-d')->description(fn($record) => $record->created_at->format('H:i'))
