@@ -518,6 +518,10 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
 
                 Tables\Filters\Filter::make('created_at')
                     ->form([
+                          Forms\Components\Select::make('current_user')
+                        ->label(' الشحنة في عهدة الموظف')
+                        ->options($users->pluck('name' , 'id'))
+                        ->searchable(),
                         Forms\Components\Select::make('branch_source_id')->relationship('branchSource', 'name')
                             ->label('اسم الفرع المرسل')->multiple(),
                         //H: added delivery employee filter to table
@@ -613,6 +617,10 @@ class SuccessOrderResource extends Resource implements HasShieldPermissions
                             ->when(
                                 $data['given_id'],
                                 fn(Builder $query, $value): Builder => $query->where('given_id', $value),
+                            )
+                             ->when(
+                                $data['current_user'],
+                                fn(Builder $query ,$value): Builder => $query->where('current_user' , $value),
                             );
                     })
 
