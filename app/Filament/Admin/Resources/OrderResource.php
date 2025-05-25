@@ -363,17 +363,17 @@ class OrderResource extends Resource implements HasShieldPermissions
                         // ->required(),
 
 
-                        Forms\Components\TextInput::make('employee_name')
-                            ->label('الموظف الملتقط')
-                            ->default(function () {
-                                $user = User::firstWhere('email', 'ahmadrakbi@gmail.com');
-                                return $user ? $user->name : 'لم يتم العثور على الموظف';
-                            })
-                            ->disabled()
-                            ->dehydrated(false)
-                            ->visible(fn($context) => $context === 'create')
+                        // Forms\Components\TextInput::make('employee_name')
+                        //     ->label('الموظف الملتقط')
+                        //     ->default(function () {
+                        //         $user = User::firstWhere('email', 'ahmadrakbi@gmail.com');
+                        //         return $user ? $user->name : 'لم يتم العثور على الموظف';
+                        //     })
+                        //     ->disabled()
+                        //     ->dehydrated(false)
+                        //     ->visible(fn($context) => $context === 'create')
 
-                            ]),
+                        //     ]),
                         Forms\Components\Grid::make()->schema([
                             Forms\Components\Radio::make('far_sender')
                                 ->options([
