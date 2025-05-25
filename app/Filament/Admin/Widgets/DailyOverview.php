@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Order;
+use App\Models\Balance;
 use App\Enums\OrderStatusEnum;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -63,8 +64,18 @@ public static function canView(): bool
 
         $receiverFar = clone $ordersQuery;
         $receiverFar->where('far_sender', 0);
+        // الاستعلام من جدول الارصدة
+        $orderIds = $orders->pluck('id');
 
+        $balancesQuery = Balance::whereIn('order_id', $orderIds);
+
+        $usdCredit = (clone $balancesQuery)->where('currency_id', 1)->sum('credit');
+        $tryCredit = (clone $balancesQuery)->where('currency_id', 2)->sum('credit');
+
+        $usdDedit = (clone $balancesQuery)->where('currency_id', 1)->sum('debit');
+        $tryDedit = (clone $balancesQuery)->where('currency_id', 2)->sum('debit');
         return [
+
             Stat::make('الشحنات المنشأة من ' . Carbon::parse($startDate)->format('Y/m/d') . ' إلى ' . Carbon::parse($endDate)->format('Y/m/d'), $orders->count()),
             Stat::make('إجمالي قيمة الشحنات USD', $orders->sum('price')),
             Stat::make('إجمالي قيمة الشحنات TRY', $orders->sum('price_tr')),
@@ -72,6 +83,10 @@ public static function canView(): bool
             Stat::make('أجور الشحنات USD على المستلم', $receiverFar->sum('far')),
             Stat::make('أجور الشحنات TRY على المرسل', $senderFar->sum('far_tr')),
             Stat::make('أجور الشحنات TRY على المستلم', $receiverFar->sum('far_tr')),
+            Stat::make('اجمالي دائن USD', $usdCredit),
+            Stat::make('اجمالي دائن TRY', $tryCredit),
+            Stat::make('اجمالي مدين USD', $usdDedit),
+            Stat::make('اجمالي مدين TRY', $tryDedit),
         ];
     }
 
