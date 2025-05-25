@@ -373,7 +373,7 @@ class OrderResource extends Resource implements HasShieldPermissions
                         //     ->dehydrated(false)
                         //     ->visible(fn($context) => $context === 'create')
 
-                        //     ]),
+                            ]),
                         Forms\Components\Grid::make()->schema([
                             Forms\Components\Radio::make('far_sender')
                                 ->options([
