@@ -47,7 +47,7 @@ use PhpOffice\PhpSpreadsheet\Calculation\LookupRef\Selection;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
-
+use Filament\Forms\Components\Select;
 
 class OrderResource extends Resource implements HasShieldPermissions
 {
@@ -106,6 +106,27 @@ class OrderResource extends Resource implements HasShieldPermissions
         return $form
             ->schema([
 
+                Forms\Components\Section::make('معلومات المنطقة')->schema([
+                Forms\Components\Fieldset::make('المنطقة')->schema([
+                Forms\Components\Grid::make(2)
+                ->schema([
+                Select::make('filter_city_id')
+                ->label('المنطقة/المدينة')
+                ->options(City::Where('is_main' , 1 )->pluck('name', 'id'))
+                ->searchable()
+                ->dehydrated(false)
+                ->live()
+                ->afterStateUpdated(function ($state) {
+                    // حفظ التحديد مؤقتاً في الكاش لاستخدامه لاحقاً
+                    Cache::put('user_'.auth()->id().'_last_city_filter', $state);
+                })
+                ->default(function () {
+                    // جلب آخر قيمة محفوظة في الكاش إن وجدت
+                    return Cache::get('user_'.auth()->id().'_last_city_filter');
+                }),
+                ])
+                ])
+            ]),
 
                 Forms\Components\Section::make('معلومات الطلب')->schema([
                     //                    SpatieMediaLibraryFileUpload::make('images')->collection('images')->label('أرفق صور')->imageEditor(),
@@ -124,13 +145,15 @@ class OrderResource extends Resource implements HasShieldPermissions
 
                                 Forms\Components\Select::make('sender_id')
                                     // ->relationship('sender', 'name', fn($query) => $query->active())
-                                    ->options(function () {
-                                        $users = User::where('level', LevelUserEnum::USER->value)
-                                        ->where('status','!=',ActivateStatusEnum::BLOCK->value)->get();
-                                        foreach ($users as $user) {
-                                            $options[$user->id] = $user->name;
-                                        }
-                                        return $options;
+                                   ->options(function (callable $get) {
+                                        $cityId = $get('filter_city_id');
+                                        if (!$cityId) return [];
+                                        $citeisInResion = City::where('city_id' , $cityId)->pluck('id');
+                                        return User::whereIn('city_id', $citeisInResion)
+                                            ->where('level', LevelUserEnum::USER->value)
+                                            ->where('status', '!=', ActivateStatusEnum::BLOCK->value)
+                                            ->orderBy('name')
+                                            ->pluck('name', 'id');
                                     })
                                     ->label('معرف المرسل')->required()
                                     ->afterStateUpdated(function ($state, $set) {
@@ -144,6 +167,7 @@ class OrderResource extends Resource implements HasShieldPermissions
                                         }
                                     })->live()->visible(fn($context) => $context === 'create')
                                     ->searchable()
+                                    ->hint('اختر المتجر بعد تحديد المنطقة بالاعلى')
                                     ->noSearchResultsMessage('الاسم غير موجود')
                                     ->suffixAction(
                                         Action::make('copyCostToPrice')->label('إضافة مستخدم جديد')
