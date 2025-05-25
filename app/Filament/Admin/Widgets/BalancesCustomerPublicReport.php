@@ -21,7 +21,7 @@ class BalancesCustomerPublicReport extends BaseWidget
 {
     use InteractsWithPageFilters;
   protected int | string | array $columnSpan = 'full';
-    protected static ?string $heading = "أرصدة العملاء";
+    protected static ?string $heading = " مفصل أرصدة شحنات العملاء";
     public static function canView(): bool
 {
     return !request()->routeIs('filament.admin.pages.dashboard');

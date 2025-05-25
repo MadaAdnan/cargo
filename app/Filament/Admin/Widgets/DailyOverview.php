@@ -46,13 +46,13 @@ public static function canView(): bool
         }
 
         // تطبيق فلاتر الفرع المرسل
-        if ($branchSourceId) {
-            $ordersQuery->where('branch_source_id', $branchSourceId);
+        if (!empty($branchSourceId)) {
+            $ordersQuery->whereIn('branch_source_id', is_array($branchSourceId) ? $branchSourceId : [$branchSourceId]);
         }
 
         // تطبيق فلاتر الفرع المستلم
-        if ($branchTargetId) {
-            $ordersQuery->where('branch_target_id', $branchTargetId);
+        if (!empty($branchTargetId)) {
+            $ordersQuery->whereIn('branch_target_id', is_array($branchTargetId) ? $branchTargetId : [$branchTargetId]);
         }
 
         // نسخ الاستعلامات للعمليات المتنوعة

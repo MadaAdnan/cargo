@@ -64,6 +64,7 @@ protected static ?int $navigationSort = 999;
             Select::make('branch_source_id')
                 ->label('الفرع المرسل')
                 ->reactive()
+                ->multiple()
                 ->searchable()
                 ->options(function (callable $get) {
                     $start = $get('start_date');
@@ -74,7 +75,9 @@ protected static ?int $navigationSort = 999;
 
                     $query = Order::whereBetween('created_at', [Carbon::parse($start)->startOfDay(), Carbon::parse($end)->endOfDay()]);
 
-                    if ($target) {
+                   if ($target && is_array($target)) {
+                     $query->whereIn('branch_target_id', $target);
+                    } elseif ($target) {
                         $query->where('branch_target_id', $target);
                     }
 
@@ -85,6 +88,7 @@ protected static ?int $navigationSort = 999;
             Select::make('branch_target_id')
                 ->label('الفرع المستلم')
                 ->reactive()
+                ->multiple()
                 ->searchable()
                 ->options(function (callable $get) {
                     $start = $get('start_date');
@@ -95,9 +99,11 @@ protected static ?int $navigationSort = 999;
 
                     $query = Order::whereBetween('created_at', [Carbon::parse($start)->startOfDay(), Carbon::parse($end)->endOfDay()]);
 
-                    if ($source) {
-                        $query->where('branch_source_id', $source);
-                    }
+                     if ($source && is_array($source)) {
+                            $query->whereIn('branch_source_id', $source);
+                        } elseif ($source) {
+                            $query->where('branch_source_id', $source);
+                        }
 
                     $branchIds = $query->distinct()->pluck('branch_target_id')->filter();
                     return Branch::whereIn('id', $branchIds)->pluck('name', 'id');
@@ -115,6 +121,7 @@ protected static ?int $navigationSort = 999;
     //         BalanceView::class,   // رصيد الصندوق
     //     ];
     // }
+
 
 
 
