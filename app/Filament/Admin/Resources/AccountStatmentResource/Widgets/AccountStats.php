@@ -84,7 +84,7 @@ class AccountStats extends BaseWidget
         ->selectRaw("
             currency_id,
             SUM(CASE WHEN is_complete = true AND pending = false THEN credit - debit ELSE 0 END) as cleared_balance,
-            SUM(CASE WHEN is_complete = false AND pending = true THEN credit - debit ELSE 0 END) as pending_balance
+            SUM(CASE WHEN pending = true THEN credit - debit ELSE 0 END) as pending_balance
         ")
         ->groupBy('currency_id')
         ->get()
