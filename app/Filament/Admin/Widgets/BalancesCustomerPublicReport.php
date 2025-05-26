@@ -166,8 +166,8 @@ class BalancesCustomerPublicReport extends BaseWidget
                     ->modalHeading('تقرير الشحنات')
                     ->modalDescription('عرض تقرير الشحنات.')
                     ->modalSubmitActionLabel('إغلاق')
-                    ->form(fn($records) => static::getReportForm($records))
-                    ->action(fn($records) => static::generateReport($records)),
+                    ->form(fn($records) => static::getReportForm($records)),
+                    // ->action(fn($records) => static::generateReport($records)),
             ]);
     }
     protected function paginateTableQuery(Builder $query): Paginator
