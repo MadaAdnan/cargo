@@ -16,10 +16,13 @@ class BalanceResource extends JsonResource
     {
 
 
+
         return [
             'id'=>$this->id,
             'credit'=>$this->credit,
             'debit'=>$this->debit,
+            'order_id'=>$this->order_id,
+            'sender_name' => $this->order?->sender->name ?? null,
             'info'=>$this->info,
             'customerName'=>$this->customer_name,
             'currency'=>$this->getCurrencySymbol(),
